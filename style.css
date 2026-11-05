@@ -435,7 +435,6 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 
 /* Mobil på bredden (liggande): tonerna i två rader om åtta */
 @media (orientation: landscape) and (max-height: 520px) {
-  html.fixed-screen #pads[data-formation="grid"] { grid-template-columns: repeat(8, 1fr); }
   html.fixed-screen header { padding-top: 6px; }
   html.fixed-screen #play-bar { padding: 4px 14px 2px; }
 }

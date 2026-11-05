@@ -34,7 +34,8 @@ const MAX_CHORDS = 8;
 const DEFAULT_CHORDS = [[0, ''], [7, ''], [9, 'm'], [5, ''], [2, 'm'], [4, 'm'], [4, '7'], [10, '']]
   .map(([root, type]) => ({ root, type }));
 
-const PAD_COUNT = 16;
+const NOTE_COUNT_MIN = 2;
+const NOTE_COUNT_MAX = 32;
 const ONESHOT_MS = 300;
 
 const $ = (id) => document.getElementById(id);
@@ -47,6 +48,7 @@ const ui = {
   root: $('root'),
   octave: $('octave'),
   scale: $('scale'),
+  noteCount: $('note-count'),
   chordCount: $('chord-count'),
   chordOctave: $('chord-octave'),
   chordBass: $('chord-bass'),
@@ -220,40 +222,47 @@ function release(pad) {
 function noteScale() {
   const scale = SCALES[ui.scale.value];
   const base = 12 * (Number(ui.octave.value) + 1) + Number(ui.root.value); // C4 = 60
-  return Array.from({ length: PAD_COUNT }, (_, i) =>
+  return Array.from({ length: notePads.length }, (_, i) =>
     clampNote(base + 12 * Math.floor(i / scale.length) + scale[i % scale.length])
   );
 }
 
+// Lägger till eller tar bort rutor i slutet, så att uppladdade ljudfiler finns kvar.
 function buildNotePads() {
-  for (let i = 0; i < PAD_COUNT; i++) {
-    const el = document.createElement('button');
-    el.className = 'pad';
-    el.type = 'button';
-    const pad = {
-      el, note: 0, sample: null, sampleName: '', release: null,
-      notes: () => [pad.note],
-      label: () => noteName(pad.note),
-    };
-    notePads.push(pad);
-    attachHover(pad, el);
-
-    // Dra-och-släpp en ljudfil till en ruta
-    el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('dragover'); });
-    el.addEventListener('dragleave', () => el.classList.remove('dragover'));
-    el.addEventListener('drop', (e) => onDropSample(e, pad));
-    // Högerklick tar bort ljudfilen
-    el.addEventListener('contextmenu', (e) => {
-      if (!pad.sample) return;
-      e.preventDefault();
-      pad.sample = null;
-      renderNotePad(pad);
-      log(`Ruta ${i + 1}: ljudfil borttagen`);
-    });
-
-    ui.pads.append(el);
-  }
+  const count = Number(ui.noteCount.value);
+  notePads.forEach(release);
+  while (notePads.length > count) notePads.pop().el.remove();
+  while (notePads.length < count) addNotePad(notePads.length);
   updateNotes();
+  layoutPads();
+}
+
+function addNotePad(i) {
+  const el = document.createElement('button');
+  el.className = 'pad';
+  el.type = 'button';
+  const pad = {
+    el, note: 0, sample: null, sampleName: '', release: null,
+    notes: () => [pad.note],
+    label: () => noteName(pad.note),
+  };
+  notePads.push(pad);
+  attachHover(pad, el);
+
+  // Dra-och-släpp en ljudfil till en ruta
+  el.addEventListener('dragover', (e) => { e.preventDefault(); el.classList.add('dragover'); });
+  el.addEventListener('dragleave', () => el.classList.remove('dragover'));
+  el.addEventListener('drop', (e) => onDropSample(e, pad));
+  // Högerklick tar bort ljudfilen
+  el.addEventListener('contextmenu', (e) => {
+    if (!pad.sample) return;
+    e.preventDefault();
+    pad.sample = null;
+    renderNotePad(pad);
+    log(`Ruta ${i + 1}: ljudfil borttagen`);
+  });
+
+  ui.pads.append(el);
 }
 
 function updateNotes() {
@@ -838,6 +847,31 @@ function showTab(tab) {
 }
 
 // ---------- Formation (layout.js räknar ut positionerna) ----------
+// Antal kolumner i rutnätet.
+function gridColumns(container, n) {
+  if (FIXED_SCREEN) {
+    // Fast skärm: välj det kolumnantal som ger störst rutor på den yta som finns
+    const cs = getComputedStyle(container);
+    const W = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    const H = container.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    const gap = parseFloat(cs.columnGap) || 0;
+    let best = 1;
+    let bestSide = 0;
+    for (let cols = 1; cols <= n; cols++) {
+      const rows = Math.ceil(n / cols);
+      const side = Math.min((W - (cols - 1) * gap) / cols, (H - (rows - 1) * gap) / rows);
+      if (side > bestSide + 0.5) { bestSide = side; best = cols; }
+    }
+    return best;
+  }
+  const wanted = n <= 4 ? n : n <= 8 ? Math.ceil(n / 2) : n <= 16 ? 4 : n <= 24 ? 6 : 8;
+  // Men aldrig så många att rutorna blir smalare än ca 60 px med valt mellanrum
+  const cs = getComputedStyle(container);
+  const W = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+  const gap = parseFloat(cs.columnGap) || 0;
+  return Math.max(1, Math.min(wanted, Math.floor((W + gap) / (60 + gap))));
+}
+
 // Knappar med en liten bild per formation; valet sparas i det dolda fältet #formation.
 function buildFormationButtons() {
   const box = $('formation-buttons');
@@ -882,9 +916,7 @@ function layoutPads() {
 
   if (f === 'grid') {
     container.style.height = '';
-    const count = pads.length;
-    container.style.gridTemplateColumns =
-      container === ui.pads ? '' : `repeat(${count <= 4 ? count : Math.ceil(count / 2)}, 1fr)`;
+    container.style.gridTemplateColumns = `repeat(${gridColumns(container, pads.length)}, 1fr)`;
     return;
   }
 
@@ -923,7 +955,7 @@ function layoutPads() {
 function log(msg) { ui.log.textContent = msg; }
 
 // ---------- Inställningar ----------
-const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'formation', 'root', 'octave', 'scale',
+const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'formation', 'noteCount', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity'];
 
 function loadSettings() {
@@ -956,6 +988,8 @@ const FIXED_SCREEN = matchMedia('(pointer: coarse)').matches || navigator.maxTou
   || new URLSearchParams(location.search).has('fast');
 document.documentElement.classList.toggle('fixed-screen', FIXED_SCREEN);
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
+for (let n = NOTE_COUNT_MIN; n <= NOTE_COUNT_MAX; n++) ui.noteCount.append(new Option(n, n));
+ui.noteCount.value = 16;
 loadSettings();
 buildFormationButtons();
 document.body.classList.toggle('advanced', isAdvanced());
@@ -970,6 +1004,7 @@ showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
 [ui.root, ui.octave, ui.scale].forEach((el) => el.addEventListener('change', updateNotes));
 ui.chordCount.addEventListener('change', buildChordPads);
+ui.noteCount.addEventListener('change', buildNotePads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
 ui.padGap.addEventListener('input', applyGap);
 ui.formation.addEventListener('change', layoutPads);

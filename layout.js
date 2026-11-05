@@ -90,8 +90,14 @@ const LAYOUTS = {
   strings(n, W, H, gap) {
     const MAX = 120;
     const { g, s: fitted } = fitGap(gap, MIN_STRING, (g) => (W - g * (n - 1)) / n);
-    const s = Math.max(12, Math.min(fitted, MAX));
-    const x0 = (W - (n * s + (n - 1) * g)) / 2;
-    return Array.from({ length: n }, (_, i) => ({ x: x0 + i * (s + g), y: 0, w: s, h: H, font: 14 }));
+    let s = Math.max(12, Math.min(fitted, MAX));
+    let gg = g;
+    if (n * s + (n - 1) * gg > W) {
+      // Många strängar på smal skärm: minsta mellanrum och dela bredden lika
+      gg = Math.min(g, 3);
+      s = (W - gg * (n - 1)) / n;
+    }
+    const x0 = (W - (n * s + (n - 1) * gg)) / 2;
+    return Array.from({ length: n }, (_, i) => ({ x: x0 + i * (s + gg), y: 0, w: s, h: H, font: Math.min(14, s * 0.6) }));
   },
 };
