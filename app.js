@@ -33,6 +33,8 @@ const MAX_CHORDS = 8;
 // Standard: C G Am F Dm Em E7 Bb
 const DEFAULT_CHORDS = [[0, ''], [7, ''], [9, 'm'], [5, ''], [2, 'm'], [4, 'm'], [4, '7'], [10, '']]
   .map(([root, type]) => ({ root, type }));
+// Färdig färgpreset: 1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos
+const CHORD_PALETTE = ['#e5484d', '#f5c518', '#3fb950', '#3b82f6', '#f97316', '#a855f7', '#ec4899', '#14b8a6'];
 
 const NOTE_COUNT_MIN = 2;
 const NOTE_COUNT_MAX = 32;
@@ -363,7 +365,7 @@ const CHORD_SHIFTS = [[-1, 'Oktav −1'], [0, 'Oktav ±0'], [1, 'Oktav +1']];
 let chords = loadChords();
 
 function loadChords() {
-  const fill = (c) => ({ voicing: 'root', shift: 0, ...c });
+  const fill = (c, i) => ({ voicing: 'root', shift: 0, color: CHORD_PALETTE[i], ...c });
   try {
     const saved = JSON.parse(localStorage.getItem('hoverPadsChords'));
     if (Array.isArray(saved) && saved.length === MAX_CHORDS) return saved.map(fill);
@@ -431,6 +433,7 @@ function buildChordPads() {
       notes: () => chordNotes(chord),
       strumNotes: () => strumNotes(chord),
       label: () => chordName(chord),
+      chord,
     };
     chordPads.push(pad);
     attachHover(pad, el);
@@ -486,17 +489,52 @@ function buildChordEditor() {
         select('Oktavläge', CHORD_SHIFTS, chord.shift, 'shift', Number),
       );
     }
-    row.append(name);
+    // Färg för just det här ackordet
+    const color = document.createElement('input');
+    color.type = 'color';
+    color.title = 'Färg';
+    color.value = chord.color || '#5b6078';
+    color.classList.toggle('none', !chord.color);
+    color.addEventListener('input', () => {
+      chords[i].color = color.value;
+      color.classList.remove('none');
+      saveChords();
+      paintChordPad(pad);
+      name.style.color = color.value;
+    });
+    name.style.color = chord.color || '';
+    row.append(color, name);
     box.append(row);
   });
 }
 
 function renderChordPad(pad) {
   pad.el.querySelector('.chord-name').textContent = pad.label();
+  paintChordPad(pad);
   // En prick per ton längs strängen (syns bara i formationen Strängar)
   const n = pad.strumNotes().length;
   pad.el.querySelector('.strum').innerHTML = Array.from({ length: n }, (_, k) =>
     `<i style="bottom:${((k + 0.5) / n) * 100}%"></i>`).join('');
+}
+
+// Ackordets egen färg (tom = ingen färg). Sätts som CSS-variabler som style.css använder.
+function paintChordPad(pad) {
+  const hex = pad.chord.color;
+  pad.el.classList.toggle('colored', !!hex);
+  if (!hex) return;
+  const n = parseInt(hex.slice(1), 16);
+  const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255];
+  pad.el.style.setProperty('--c', hex);
+  pad.el.style.setProperty('--c-rgb', `${r}, ${g}, ${b}`);
+  // Mörk text på ljusa färger när rutan lyser
+  pad.el.style.setProperty('--c-ink', 0.299 * r + 0.587 * g + 0.114 * b > 150 ? '#1a1206' : '#fff');
+}
+
+function setChordColors(colors) {
+  colors.forEach((c, i) => { chords[i].color = c; });
+  saveChords();
+  chordPads.forEach(paintChordPad);
+  buildChordEditor();
 }
 
 // ---------- Harpa: håll inne och dra över strängarna ----------
@@ -968,7 +1006,10 @@ function layoutPads() {
   const container = tab === 'notes' ? ui.pads : tab === 'chords' ? ui.chordPads : null;
   if (!container) return; // fliken Inställningar: inget att placera
   const pads = container === ui.pads ? notePads : chordPads;
-  pads.forEach((p) => p.el.removeAttribute('style'));
+  pads.forEach((p) => {
+    p.el.removeAttribute('style');
+    if (p.chord) paintChordPad(p); // färgen ligger också i style
+  });
 
   if (f === 'grid') {
     container.style.height = '';
@@ -1078,6 +1119,8 @@ showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
 [ui.root, ui.octave, ui.scale].forEach((el) => el.addEventListener('change', updateNotes));
 ui.chordCount.addEventListener('change', buildChordPads);
+$('chord-colors-preset').addEventListener('click', () => setChordColors(CHORD_PALETTE));
+$('chord-colors-none').addEventListener('click', () => setChordColors(CHORD_PALETTE.map(() => '')));
 ui.noteCount.addEventListener('change', buildNotePads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
 ui.padGap.addEventListener('input', applyGap);

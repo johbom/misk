@@ -120,6 +120,14 @@
         <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
         <label title="Visar voicing och oktavläge per ackord"><input type="checkbox" id="chord-advanced" /> Avancerat (voicing)</label>
       </div>
+      <div class="row" id="chord-colors">
+        <span>Färger</span>
+        <button type="button" id="chord-colors-preset" title="1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos">
+          <span class="swatches"><i style="background:#e5484d"></i><i style="background:#f5c518"></i><i style="background:#3fb950"></i><i style="background:#3b82f6"></i><i style="background:#f97316"></i><i style="background:#a855f7"></i><i style="background:#ec4899"></i><i style="background:#14b8a6"></i></span>
+          Standardfärger
+        </button>
+        <button type="button" id="chord-colors-none">Ingen färg</button>
+      </div>
       <!-- Ett ackordval per ruta (byggs av app.js) -->
       <div id="chord-editor"></div>
     </fieldset>
