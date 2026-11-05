@@ -4,12 +4,14 @@ En webbsida med rutor som spelar ljud och/eller skickar MIDI när man för musen
 
 **Prova:** https://johbom.github.io/misk/
 
-## Två sidor
+## Flikar
+
+I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt annat finns under fliken **Inställningar**.
 
 - **Toner** – 16 rutor, en ton per ruta. Välj grundton, oktav och skala (dur, moll, pentatonisk, blues, kromatisk). Dra en ljudfil (wav/mp3) till en ruta för att byta dess ljud; högerklicka för att ta bort den.
-- **Ackord** – 2 till 8 rutor där du väljer ackord i varje ruta (grundton + typ: dur, moll, 7, maj7, m7, 6, m6, 9, add9, sus2, sus4, dim, dim7, m7b5, aug). Valfri bas en oktav ner.
+- **Ackord** – 2 till 8 rutor; vilket ackord varje ruta har väljs under Inställningar (grundton + typ: dur, moll, 7, maj7, m7, 6, m6, 9, add9, sus2, sus4, dim, dim7, m7b5, aug). Valfri bas en oktav ner.
 
-## Inställningar
+## Inställningar (fliken)
 
 - **Utgång:** ljud i webbläsaren, MIDI, eller båda.
 - **Spelsätt:** håll tonen så länge musen är över, eller en kort ton.
@@ -20,7 +22,7 @@ Inställningar och ackordval sparas i webbläsaren.
 
 ## Ljudmotor
 
-Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip eller Enkel – eller öppna **Ljudmotor ▸** och skruva själv:
+Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip eller Enkel – eller gå till **Inställningar → Ljudmotor** och skruva själv:
 
 - **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.
 - **Oscillator 2:** blandas in eller frekvensmodulerar osc 1 (FM), transponering, fininställning, brus.

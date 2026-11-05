@@ -40,11 +40,27 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
 .status.ok { color: #7be3a0; border-color: #2f6b47; }
 .status.flash { background: #2f6b47; }
 
+/* Spelraden: preset + volym (det enda som syns i spelläge) */
+#play-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 24px 6px;
+}
+#play-bar select { min-width: 160px; }
+
+/* Fliken Inställningar */
+#settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 24px 16px;
+}
 #controls {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  padding: 16px 24px;
 }
 
 fieldset {
@@ -150,51 +166,40 @@ footer p { margin: 0; font-family: ui-monospace, Menlo, monospace; }
   color: white;
 }
 
-/* Flikar: Toner / Ackord */
+/* Flikar: Toner / Ackord / Inställningar */
 #tabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
 #tabs button { border: none; background: transparent; color: var(--muted); padding: 6px 16px; }
 #tabs button.on { background: var(--accent); color: white; }
-body[data-tab="notes"] .only-chords,
-body[data-tab="chords"] .only-notes { display: none; }
+body:not([data-tab="notes"]) .only-notes,
+body:not([data-tab="chords"]) .only-chords,
+body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
-/* Ackordrutor: stor hover-yta + väljare under */
-.chord-pad {
-  display: flex;
-  flex-direction: column;
-  min-height: 160px;
-  padding: 0;
-  overflow: hidden;
+/* Ackordrutor */
+.chord-pad { min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.chord-pad .chord-name { font-size: 2rem; }
+.chord-pad small { position: static; }
+
+/* Ackordval under Inställningar */
+#chord-settings { display: block; }
+#chord-settings .row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
+#chord-editor {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 8px 16px;
 }
-.pad-hit {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.chord-row {
+  display: grid;
+  grid-template-columns: 56px 1fr 1fr 56px;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  cursor: crosshair;
+  font-size: 0.85rem;
 }
-.pad-hit .chord-name { font-size: 2rem; }
-.pad-hit small { position: static; }
-.pad-edit {
-  display: flex;
-  gap: 6px;
-  padding: 8px;
-  background: rgba(0, 0, 0, 0.25);
-  border-top: 1px solid var(--border);
-}
-.pad-edit select { flex: 1; min-width: 0; font-size: 0.85rem; }
-.chord-pad.active .pad-edit { background: rgba(0, 0, 0, 0.12); }
+.chord-row span { color: var(--muted); }
+.chord-row select { min-width: 0; }
+.chord-row output { font-weight: 600; text-align: right; }
 
 /* Ljudmotor-panelen */
-#synth {
-  margin: 0 24px 12px;
-  padding: 12px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-#synth[hidden] { display: none; }
+#synth { display: block; }
 #synth-groups {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -214,7 +219,6 @@ body[data-tab="chords"] .only-notes { display: none; }
 .knob output { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
 .knob.off { opacity: 0.35; }
 #synth-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
-#synth-toggle[aria-expanded="true"] { border-color: var(--accent); }
 
 #gap-value { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
 

@@ -303,6 +303,7 @@ function chordNotes(c) {
   return notes.map(clampNote);
 }
 
+// Rutorna på sidan Ackord: bara namn och toner, hela rutan spelar.
 function buildChordPads() {
   chordPads.forEach(release);
   chordPads.length = 0;
@@ -314,29 +315,42 @@ function buildChordPads() {
 
   for (let i = 0; i < count; i++) {
     const chord = chords[i];
-    const el = document.createElement('div');
+    const el = document.createElement('button');
+    el.type = 'button';
     el.className = 'pad chord-pad';
-    el.innerHTML = `
-      <div class="pad-hit"><span class="chord-name"></span><small></small></div>
-      <div class="pad-edit">
-        <select class="sel-root" title="Grundton"></select>
-        <select class="sel-type" title="Ackordtyp"></select>
-      </div>`;
-    const hit = el.querySelector('.pad-hit');
-    const selRoot = el.querySelector('.sel-root');
-    const selType = el.querySelector('.sel-type');
-    CHORD_ROOTS.forEach((n, r) => selRoot.append(new Option(n, r)));
-    CHORD_TYPES.forEach(([s, label]) => selType.append(new Option(label, s)));
-    selRoot.value = chord.root;
-    selType.value = chord.type;
-
+    el.innerHTML = '<span class="chord-name"></span><small></small>';
     const pad = {
       el, release: null, sample: null,
       notes: () => chordNotes(chord),
       label: () => chordName(chord),
     };
     chordPads.push(pad);
-    attachHover(pad, hit); // bara den stora ytan spelar, inte väljarna
+    attachHover(pad, el);
+    renderChordPad(pad);
+    ui.chordPads.append(el);
+  }
+  buildChordEditor();
+}
+
+// Ackordvalen ligger under fliken Inställningar: en rad per ruta.
+function buildChordEditor() {
+  const box = $('chord-editor');
+  box.innerHTML = '';
+  chordPads.forEach((pad, i) => {
+    const chord = chords[i];
+    const row = document.createElement('div');
+    row.className = 'chord-row';
+    row.innerHTML = `<span>Ruta ${i + 1}</span>
+      <select title="Grundton"></select>
+      <select title="Ackordtyp"></select>
+      <output></output>`;
+    const [selRoot, selType] = row.querySelectorAll('select');
+    const name = row.querySelector('output');
+    CHORD_ROOTS.forEach((n, r) => selRoot.append(new Option(n, r)));
+    CHORD_TYPES.forEach(([suffix, label]) => selType.append(new Option(label, suffix)));
+    selRoot.value = chord.root;
+    selType.value = chord.type;
+    name.textContent = chordName(chord);
 
     const onPick = () => {
       release(pad);
@@ -344,13 +358,12 @@ function buildChordPads() {
       chord.type = selType.value;
       saveChords();
       renderChordPad(pad);
+      name.textContent = chordName(chord);
     };
     selRoot.addEventListener('change', onPick);
     selType.addEventListener('change', onPick);
-
-    renderChordPad(pad);
-    ui.chordPads.append(el);
-  }
+    box.append(row);
+  });
 }
 
 function renderChordPad(pad) {
@@ -492,16 +505,6 @@ function setupSynthUi() {
     applySynth(presetParams(ui.preset.value), ui.preset.value);
     log(`Preset: ${ui.preset.value}`);
   });
-
-  const toggle = $('synth-toggle');
-  const showPanel = (open) => {
-    $('synth').hidden = !open;
-    toggle.setAttribute('aria-expanded', open);
-    toggle.textContent = open ? 'Ljudmotor ▾' : 'Ljudmotor ▸';
-    localStorage.setItem('hoverPadsSynthOpen', open ? '1' : '');
-  };
-  toggle.addEventListener('click', () => showPanel($('synth').hidden));
-  showPanel(!!localStorage.getItem('hoverPadsSynthOpen'));
 
   // "Återställ" går tillbaka till senast valda preset (eller standard om ljudet är eget)
   let lastPreset = synthPreset === CUSTOM ? DEFAULT_PRESET : synthPreset;
