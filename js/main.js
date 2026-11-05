@@ -1,0 +1,49 @@
+// Uppstart: fyller menyer, läser sparade inställningar och kopplar alla händelser.
+
+// ---------- Uppstart ----------
+document.documentElement.classList.toggle('fixed-screen', FIXED_SCREEN);
+NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
+for (let n = NOTE_COUNT_MIN; n <= NOTE_COUNT_MAX; n++) ui.noteCount.append(new Option(n, n));
+ui.noteCount.value = 16;
+loadSettings();
+buildFormationButtons();
+document.body.classList.toggle('advanced', isAdvanced());
+applyGap();
+setupSynthUi();
+buildNotePads();
+buildChordPicker();
+buildChordPads();
+setupStrum();
+setupTouch();
+showTab(localStorage.getItem('hoverPadsTab') || 'notes');
+
+for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
+[ui.root, ui.octave, ui.scale].forEach((el) => el.addEventListener('change', updateNotes));
+ui.chordCount.addEventListener('change', buildChordPads);
+$('chord-colors-preset').addEventListener('click', () => setChordColors(CHORD_PALETTE));
+$('chord-colors-none').addEventListener('click', () => setChordColors(CHORD_PALETTE.map(() => '')));
+ui.noteCount.addEventListener('change', buildNotePads);
+[ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
+ui.padGap.addEventListener('input', applyGap);
+ui.formation.addEventListener('change', layoutPads);
+ui.chordAdvanced.addEventListener('change', onAdvancedChange);
+let resizeFrame = 0;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(layoutPads);
+});
+ui.volume.addEventListener('input', () => engine && engine.setVolume(Number(ui.volume.value)));
+ui.midiOut.addEventListener('change', () => { panic(); updateMidiStatus(); saveSettings(); });
+ui.outMidi.addEventListener('change', () => { if (!ui.outMidi.checked) panic(); });
+ui.midiCh.addEventListener('change', panic);
+ui.panic.addEventListener('click', panic);
+document.querySelectorAll('#tabs button').forEach((b) =>
+  b.addEventListener('click', () => showTab(b.dataset.tab))
+);
+window.addEventListener('blur', () => { fingers.clear(); allPads().forEach(release); });
+
+$('start-btn').addEventListener('click', async () => {
+  initAudio();
+  $('start-overlay').classList.add('hidden');
+  await initMidi();
+});
