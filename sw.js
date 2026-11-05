@@ -2,7 +2,7 @@
 // Strategi: svara direkt från cachen och hämta en färsk version i bakgrunden
 // (nästa start får den nya). Höj VERSION när filistan ändras.
 
-const VERSION = 'hover-pads-v1';
+const VERSION = 'hover-pads-v2';
 const ASSETS = [
   './',
   'index.html',

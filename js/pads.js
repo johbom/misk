@@ -29,7 +29,7 @@ const fingers = new Map(); // pointerId -> ruta under fingret (eller null i ett 
 
 // Spelytan = allt utom reglage, flikar, inställningar och menyer – även bakgrunden runt rutorna,
 // så att man kan börja dra var som helst och glida in på rutorna.
-const CONTROLS = 'header, #play-bar, #settings, #chord-picker, #start-overlay, input, select, label, button:not(.pad)';
+const CONTROLS = 'header, #play-bar, #settings, #chord-picker, #start-overlay, dialog, input, select, label, a, button:not(.pad)';
 const inPlayArea = (target) => target instanceof Element && !target.closest(CONTROLS);
 
 function padAt(x, y) {

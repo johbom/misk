@@ -12,6 +12,21 @@ function showTab(tab) {
   layoutPads();
 }
 
+// ---------- Om-rutan ----------
+function setupAbout() {
+  const dlg = $('about');
+  $('about-btn').addEventListener('click', () => {
+    allPads().forEach(release);
+    dlg.showModal();
+  });
+  // Klick utanför rutan stänger den
+  dlg.addEventListener('click', (e) => {
+    const r = dlg.getBoundingClientRect();
+    const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    if (!inside) dlg.close();
+  });
+}
+
 // ---------- Underflikar i Inställningar ----------
 function showSettingsPanel(panel) {
   if (!document.querySelector(`#settings .panel[data-panel="${panel}"]`)) panel = 'play';

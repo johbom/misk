@@ -595,3 +595,33 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 .header-right { display: flex; align-items: center; gap: 8px; }
 #install-btn { border-radius: 999px; font-size: 0.8rem; padding: 4px 12px; border-color: var(--accent); }
 #install-btn[hidden] { display: none; }
+
+/* Om-rutan */
+#about-btn { border-radius: 999px; font-size: 0.8rem; padding: 4px 12px; }
+#about {
+  width: min(600px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 26px 18px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  line-height: 1.5;
+  -webkit-user-select: text;
+  user-select: text;
+}
+#about::backdrop { background: rgba(8, 9, 14, 0.7); backdrop-filter: blur(3px); }
+#about h2 { margin: 0 0 12px; font-size: 1.3rem; }
+#about h3 {
+  margin: 18px 0 6px; font-size: 0.75rem; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+#about p { margin: 0 0 10px; font-size: 0.95rem; }
+#about a { color: #8fb0ff; }
+.about-motto { font-weight: 600; color: var(--hit); }
+.about-close { position: absolute; top: 12px; right: 12px; margin: 0; }
+.about-close button { background: none; border: none; color: var(--muted); font-size: 1.1rem; padding: 4px 8px; }
+.about-close button:hover { color: var(--text); }

@@ -32,6 +32,7 @@
     </nav>
     <div class="header-right">
       <button type="button" id="install-btn" hidden title="Installera Hover Pads som app">Installera</button>
+      <button type="button" id="about-btn" title="Om appen" aria-haspopup="dialog">Om</button>
       <span id="midi-status" class="status">MIDI: ej ansluten</span>
     </div>
   </header>
@@ -207,6 +208,34 @@
       </fieldset>
     </div>
   </section>
+
+  <!-- ===== Om-rutan ===== -->
+  <dialog id="about" aria-labelledby="about-title">
+    <form method="dialog" class="about-close"><button type="submit" aria-label="Stäng">✕</button></form>
+    <h2 id="about-title">Om Hover Pads</h2>
+    <p>
+      Skapat av John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, utifrån erfarenheterna
+      från <strong>MISK</strong> – ett projekt med stöd av Allmänna Arvsfonden. MISK drevs av Eldorado
+      Resurscenter Göteborg Stad, Furuboda Folkhögskola och Certec.
+    </p>
+    <h3>TFH Sensory</h3>
+    <p>
+      Appen har idag utvecklats med stöd av TFH Sensory,
+      <a href="https://tfhsensory.se" target="_blank" rel="noopener">tfhsensory.se</a>.
+    </p>
+    <p class="about-motto">Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.</p>
+    <p>
+      Sedan 1983 har TFH utvecklat sinnesstimulerande produkter som skapar möjligheter till lärande,
+      utveckling, trygghet och glädje. Vi levererar till vård, skola, omsorg, äldreomsorg och privatpersoner,
+      med produkter som gör det lättare att övervinna hinder – på varje människas egna villkor. Vår expertis
+      inom utformning av Sinnesrum delar vi med er och kontakta oss gärna för tips och råd.
+    </p>
+    <h3>Tips</h3>
+    <p>
+      Vill också tipsa om <strong>Lyssna till mitt öga</strong>, vårt systerprojekt drivet av
+      Studieförbundet Vuxenskolan.
+    </p>
+  </dialog>
 
   <!-- ===== Spelflikarna ===== -->
   <main id="pads" class="pad-grid only-notes"></main>

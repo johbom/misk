@@ -4,6 +4,8 @@ En webbsida med rutor som spelar ljud och/eller skickar MIDI när man för musen
 
 **Prova:** https://johbom.github.io/misk/
 
+Knappen **Om** uppe till höger berättar vem som skapat appen och om MISK och TFH Sensory.
+
 ## Flikar
 
 I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt annat finns under fliken **Inställningar**.
