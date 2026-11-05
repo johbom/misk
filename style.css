@@ -177,7 +177,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 /* Ackordrutor */
 .chord-pad { min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
 .chord-pad .chord-name { font-size: 1.7em; }
-.chord-pad small { position: static; }
+
 
 /* Formationer: allt utom rutnät placeras med absoluta positioner av layout.js */
 .pad-grid:not([data-formation="grid"]) {
@@ -298,3 +298,37 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 .cp-grid button { padding: 4px 0; font-size: 0.8rem; }
 .cp-grid button.on { background: var(--accent); border-color: var(--accent); color: white; }
 .pad.editing { outline: 2px solid var(--accent); outline-offset: 4px; }
+
+/* Formationsknappar */
+#formation-buttons { display: flex; gap: 8px; }
+.formation-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 78px;
+  padding: 8px 4px 6px;
+  border-radius: 10px;
+  background: linear-gradient(160deg, #262a3a, #1b1d29);
+  color: var(--muted);
+  font-size: 0.78rem;
+  transition: color 120ms, border-color 120ms, box-shadow 120ms, transform 60ms;
+}
+.formation-btn svg { width: 44px; height: 33px; }
+.formation-btn:hover { color: var(--text); }
+.formation-btn:active { transform: scale(0.96); }
+.formation-btn.on {
+  color: white;
+  border-color: var(--accent);
+  background: linear-gradient(160deg, #304274, #1f2a4d);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 18px rgba(91, 140, 255, 0.35);
+}
+
+/* Avancerat läge (voicing) */
+body:not(.advanced) .adv-only { display: none; }
+#chord-editor.adv { grid-template-columns: repeat(auto-fill, minmax(470px, 1fr)); }
+#chord-editor.adv .chord-row { grid-template-columns: 56px 0.7fr 1fr 1.3fr 1fr 64px; }
+#cp-voicings { grid-template-columns: repeat(3, 1fr); }
+#cp-shifts { grid-template-columns: repeat(3, 1fr); }
+#cp-notes { margin-top: 8px; color: var(--muted); font-size: 0.75rem; text-align: center; font-variant-numeric: tabular-nums; }
+.cp-grid button:disabled { opacity: 0.3; cursor: default; }

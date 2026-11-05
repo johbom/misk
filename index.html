@@ -50,13 +50,16 @@
             <option value="oneshot">Kort ton vid mouseover</option>
           </select>
         </label>
-        <label>Formation
-          <select id="formation"></select>
-        </label>
         <label title="Tomrum mellan rutorna, så att musen kan flyttas utan att trigga dem">Mellanrum
           <input type="range" id="pad-gap" min="0" max="160" step="4" value="48" />
           <span id="gap-value">48 px</span>
         </label>
+      </fieldset>
+
+      <fieldset id="formation-set">
+        <legend>Formation</legend>
+        <input type="hidden" id="formation" value="grid" />
+        <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
       </fieldset>
 
       <fieldset>
@@ -106,6 +109,7 @@
           <input type="number" id="chord-octave" min="1" max="7" value="4" />
         </label>
         <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
+        <label title="Visar voicing och oktavläge per ackord"><input type="checkbox" id="chord-advanced" /> Avancerat (voicing)</label>
       </div>
       <!-- Ett ackordval per ruta (byggs av app.js) -->
       <div id="chord-editor"></div>
@@ -136,6 +140,13 @@
     <div id="cp-roots" class="cp-grid"></div>
     <div class="cp-label">Typ</div>
     <div id="cp-types" class="cp-grid"></div>
+    <div class="adv-only">
+      <div class="cp-label">Voicing</div>
+      <div id="cp-voicings" class="cp-grid"></div>
+      <div class="cp-label">Oktavläge</div>
+      <div id="cp-shifts" class="cp-grid"></div>
+      <div id="cp-notes"></div>
+    </div>
   </div>
 
   <footer>

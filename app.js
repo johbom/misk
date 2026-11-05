@@ -50,6 +50,7 @@ const ui = {
   chordCount: $('chord-count'),
   chordOctave: $('chord-octave'),
   chordBass: $('chord-bass'),
+  chordAdvanced: $('chord-advanced'),
   preset: $('preset'),
   volume: $('volume'),
   midiOut: $('midi-out'),
@@ -284,29 +285,73 @@ async function onDropSample(e, pad) {
 }
 
 // ---------- Sidan "Ackord" ----------
+// Voicing (avancerat läge): hur ackordets toner läggs ut. [id, namn i listan, kort namn i menyn]
+const VOICINGS = [
+  ['root', 'Grundläge', 'Grund'],
+  ['inv1', '1:a omvändning', '1:a omv'],
+  ['inv2', '2:a omvändning', '2:a omv'],
+  ['inv3', '3:e omvändning', '3:e omv'],
+  ['open', 'Öppen', 'Öppen'],
+  ['drop2', 'Drop 2', 'Drop 2'],
+];
+const CHORD_SHIFTS = [[-1, 'Oktav −1'], [0, 'Oktav ±0'], [1, 'Oktav +1']];
+
 // Alla 8 ackordval sparas, även de som inte syns när antalet är lägre.
 let chords = loadChords();
 
 function loadChords() {
+  const fill = (c) => ({ voicing: 'root', shift: 0, ...c });
   try {
     const saved = JSON.parse(localStorage.getItem('hoverPadsChords'));
-    if (Array.isArray(saved) && saved.length === MAX_CHORDS) return saved;
+    if (Array.isArray(saved) && saved.length === MAX_CHORDS) return saved.map(fill);
   } catch {}
-  return DEFAULT_CHORDS.map((c) => ({ ...c }));
+  return DEFAULT_CHORDS.map(fill);
 }
 
 const saveChords = () => localStorage.setItem('hoverPadsChords', JSON.stringify(chords));
 const chordName = (c) => CHORD_ROOTS[c.root] + c.type;
+const isAdvanced = () => ui.chordAdvanced.checked;
+const chordSize = (c) => CHORD_INTERVALS[c.type].length;
+// 3:e omvändningen finns bara för ackord med minst fyra toner
+const voicingAllowed = (v, c) => v !== 'inv3' || chordSize(c) >= 4;
+
+// Lägger om tonerna (stigande ordning in, stigande ordning ut).
+function voice(notes, v) {
+  const up = (i) => { notes[i] += 12; };
+  const sort = () => notes.sort((a, b) => a - b);
+  const inv = { inv1: 1, inv2: 2, inv3: 3 }[v];
+  if (inv) {
+    // Flytta den lägsta tonen upp en oktav, en gång per omvändning
+    for (let k = 0; k < Math.min(inv, notes.length - 1); k++) { up(0); sort(); }
+  } else if (v === 'open') {
+    // Varannan ton upp en oktav: t.ex. C E G -> C G E
+    notes.forEach((_, i) => { if (i % 2 === 1) up(i); });
+    sort();
+  } else if (v === 'drop2') {
+    // Näst högsta tonen ner en oktav
+    notes[notes.length - 2] -= 12;
+    sort();
+  }
+  return notes;
+}
 
 function chordNotes(c) {
-  const base = 12 * (Number(ui.chordOctave.value) + 1) + Number(c.root);
-  const notes = CHORD_INTERVALS[c.type].map((i) => base + i);
-  if (ui.chordBass.checked) notes.unshift(base - 12); // grundton en oktav ner
+  const adv = isAdvanced();
+  const base = 12 * (Number(ui.chordOctave.value) + 1 + (adv ? c.shift : 0)) + Number(c.root);
+  let notes = CHORD_INTERVALS[c.type].map((i) => base + i);
+  if (adv) notes = voice(notes, voicingAllowed(c.voicing, c) ? c.voicing : 'root');
+  if (ui.chordBass.checked) {
+    // Grundtonen i basen, alltid under resten av ackordet
+    let bass = base - 12;
+    while (bass >= notes[0]) bass -= 12;
+    notes.unshift(bass);
+  }
   return notes.map(clampNote);
 }
 
-// Rutorna på sidan Ackord: bara namn och toner, hela rutan spelar.
+// Rutorna på sidan Ackord: bara ackordnamnet, hela rutan spelar.
 function buildChordPads() {
+  closeChordPicker();
   chordPads.forEach(release);
   chordPads.length = 0;
   ui.chordPads.innerHTML = '';
@@ -317,7 +362,7 @@ function buildChordPads() {
     const el = document.createElement('button');
     el.type = 'button';
     el.className = 'pad chord-pad';
-    el.innerHTML = '<span class="chord-name"></span><small></small>';
+    el.innerHTML = '<span class="chord-name"></span>';
     const pad = {
       el, release: null, sample: null,
       notes: () => chordNotes(chord),
@@ -336,80 +381,102 @@ function buildChordPads() {
   layoutPads();
 }
 
-// Ackordvalen ligger under fliken Inställningar: en rad per ruta.
+// Ackordvalen under fliken Inställningar: en rad per ruta (+ voicing i avancerat läge).
 function buildChordEditor() {
   const box = $('chord-editor');
+  const adv = isAdvanced();
   box.innerHTML = '';
+  box.classList.toggle('adv', adv);
   chordPads.forEach((pad, i) => {
     const chord = chords[i];
     const row = document.createElement('div');
     row.className = 'chord-row';
-    row.innerHTML = `<span>Ruta ${i + 1}</span>
-      <select title="Grundton"></select>
-      <select title="Ackordtyp"></select>
-      <output></output>`;
-    const [selRoot, selType] = row.querySelectorAll('select');
-    const name = row.querySelector('output');
-    CHORD_ROOTS.forEach((n, r) => selRoot.append(new Option(n, r)));
-    CHORD_TYPES.forEach(([suffix, label]) => selType.append(new Option(label, suffix)));
-    selRoot.value = chord.root;
-    selType.value = chord.type;
-    name.textContent = chordName(chord);
-
-    const onPick = () => {
-      setChord(i, Number(selRoot.value), selType.value);
-      name.textContent = chordName(chord);
+    const select = (title, options, value, key, parse = (x) => x) => {
+      const sel = document.createElement('select');
+      sel.title = title;
+      options.forEach(([v, text]) => {
+        const o = new Option(text, v);
+        if (key === 'voicing') o.disabled = !voicingAllowed(v, chord);
+        sel.append(o);
+      });
+      sel.value = value;
+      sel.addEventListener('change', () => {
+        setChord(i, { [key]: parse(sel.value) });
+        if (key === 'type') buildChordEditor(); // 3:e omvändning kan bli (o)tillgänglig
+        else name.textContent = chordName(chord);
+      });
+      return sel;
     };
-    selRoot.addEventListener('change', onPick);
-    selType.addEventListener('change', onPick);
+    const label = document.createElement('span');
+    label.textContent = `Ruta ${i + 1}`;
+    const name = document.createElement('output');
+    name.textContent = chordName(chord);
+    row.append(
+      label,
+      select('Grundton', CHORD_ROOTS.map((n, r) => [r, n]), chord.root, 'root', Number),
+      select('Ackordtyp', CHORD_TYPES.map(([s, l]) => [s, l]), chord.type, 'type'),
+    );
+    if (adv) {
+      row.append(
+        select('Voicing', VOICINGS, chord.voicing, 'voicing'),
+        select('Oktavläge', CHORD_SHIFTS, chord.shift, 'shift', Number),
+      );
+    }
+    row.append(name);
     box.append(row);
   });
 }
 
 function renderChordPad(pad) {
   pad.el.querySelector('.chord-name').textContent = pad.label();
-  pad.el.querySelector('small').textContent = pad.notes().map(noteName).join(' ');
 }
 
 const updateChordLabels = () => { chordPads.forEach(release); chordPads.forEach(renderChordPad); };
 
 // Byt ackord på ruta i – används av både Inställningar och högerklicksmenyn.
-function setChord(i, root, type) {
+function setChord(i, patch) {
   const pad = chordPads[i];
   if (pad) release(pad);
-  chords[i].root = root;
-  chords[i].type = type;
+  Object.assign(chords[i], patch);
+  if (!voicingAllowed(chords[i].voicing, chords[i])) chords[i].voicing = 'root';
   saveChords();
   if (pad) renderChordPad(pad);
+}
+
+function onAdvancedChange() {
+  document.body.classList.toggle('advanced', isAdvanced());
+  closeChordPicker();
+  updateChordLabels();
+  buildChordEditor();
 }
 
 // ---------- Högerklicksmeny: byt ackord direkt på rutan ----------
 const picker = {
   el: $('chord-picker'),
   title: $('cp-title'),
-  roots: [],
-  types: [],
+  notes: $('cp-notes'),
+  groups: [], // { key, buttons: [{ b, value }] }
   index: -1,
   get open() { return !this.el.hidden; },
 };
 
 function buildChordPicker() {
-  CHORD_ROOTS.forEach((n, r) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = n;
-    b.addEventListener('click', () => pickChord(r, chords[picker.index].type));
-    $('cp-roots').append(b);
-    picker.roots.push(b);
-  });
-  CHORD_TYPES.forEach(([suffix, label]) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = label;
-    b.addEventListener('click', () => pickChord(chords[picker.index].root, suffix));
-    $('cp-types').append(b);
-    picker.types.push(b);
-  });
+  const group = (boxId, key, options) => {
+    const buttons = options.map(([value, text]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = text;
+      b.addEventListener('click', () => pickChord({ [key]: value }));
+      $(boxId).append(b);
+      return { b, value };
+    });
+    picker.groups.push({ key, buttons });
+  };
+  group('cp-roots', 'root', CHORD_ROOTS.map((n, r) => [r, n]));
+  group('cp-types', 'type', CHORD_TYPES.map(([s, l]) => [s, l]));
+  group('cp-voicings', 'voicing', VOICINGS.map(([v, , short]) => [v, short]));
+  group('cp-shifts', 'shift', CHORD_SHIFTS.map(([v]) => [v, v === 0 ? '±0' : v > 0 ? `+${v}` : `−${-v}`]));
+
   $('cp-close').addEventListener('click', closeChordPicker);
   // Klick utanför eller Esc stänger
   document.addEventListener('pointerdown', (e) => {
@@ -439,12 +506,17 @@ function closeChordPicker() {
 function renderChordPicker() {
   const c = chords[picker.index];
   picker.title.textContent = `Ruta ${picker.index + 1}: ${chordName(c)}`;
-  picker.roots.forEach((b, r) => b.classList.toggle('on', r === Number(c.root)));
-  picker.types.forEach((b, t) => b.classList.toggle('on', CHORD_TYPES[t][0] === c.type));
+  picker.notes.textContent = chordNotes(c).map(noteName).join(' ');
+  for (const { key, buttons } of picker.groups) {
+    for (const { b, value } of buttons) {
+      b.classList.toggle('on', String(value) === String(c[key]));
+      if (key === 'voicing') b.disabled = !voicingAllowed(value, c);
+    }
+  }
 }
 
-function pickChord(root, type) {
-  setChord(picker.index, root, type);
+function pickChord(patch) {
+  setChord(picker.index, patch);
   renderChordPicker();
   buildChordEditor(); // håll listan under Inställningar i synk
 }
@@ -602,6 +674,37 @@ function showTab(tab) {
 }
 
 // ---------- Formation (layout.js räknar ut positionerna) ----------
+// Knappar med en liten bild per formation; valet sparas i det dolda fältet #formation.
+function buildFormationButtons() {
+  const box = $('formation-buttons');
+  const valid = ui.formation.value in FORMATIONS;
+  if (!valid) ui.formation.value = 'grid';
+  Object.entries(FORMATIONS).forEach(([value, text]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'formation-btn';
+    b.dataset.value = value;
+    b.setAttribute('role', 'radio');
+    b.innerHTML = `${FORMATION_ICONS[value]}<span>${text}</span>`;
+    b.addEventListener('click', () => {
+      if (ui.formation.value === value) return;
+      ui.formation.value = value;
+      ui.formation.dispatchEvent(new Event('change')); // sparar och placerar om
+      syncFormationButtons();
+    });
+    box.append(b);
+  });
+  syncFormationButtons();
+}
+
+function syncFormationButtons() {
+  document.querySelectorAll('.formation-btn').forEach((b) => {
+    const on = b.dataset.value === ui.formation.value;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-checked', on);
+  });
+}
+
 function layoutPads() {
   const f = ui.formation.value;
   ui.pads.dataset.formation = f;
@@ -650,7 +753,7 @@ function log(msg) { ui.log.textContent = msg; }
 
 // ---------- Inställningar ----------
 const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'formation', 'root', 'octave', 'scale',
-  'chordCount', 'chordOctave', 'chordBass', 'volume', 'midiCh', 'velocity'];
+  'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity'];
 
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('hoverPads') || '{}');
@@ -677,8 +780,9 @@ function applyGap() {
 
 // ---------- Uppstart ----------
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
-Object.entries(FORMATIONS).forEach(([v, text]) => ui.formation.append(new Option(text, v)));
 loadSettings();
+buildFormationButtons();
+document.body.classList.toggle('advanced', isAdvanced());
 applyGap();
 setupSynthUi();
 buildNotePads();
@@ -692,6 +796,7 @@ ui.chordCount.addEventListener('change', buildChordPads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
 ui.padGap.addEventListener('input', applyGap);
 ui.formation.addEventListener('change', layoutPads);
+ui.chordAdvanced.addEventListener('change', onAdvancedChange);
 let resizeFrame = 0;
 window.addEventListener('resize', () => {
   cancelAnimationFrame(resizeFrame);

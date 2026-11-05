@@ -6,9 +6,25 @@
 
 const FORMATIONS = {
   grid: 'Rutnät',
-  circle: 'Cirkel (bollar)',
-  hex: 'Bikupa (bollar)',
+  circle: 'Cirkel',
+  hex: 'Bikupa',
   strings: 'Strängar',
+};
+
+// Små bilder till formationsknapparna (ritas med currentColor)
+const svgIcon = (body) =>
+  `<svg viewBox="0 0 48 36" aria-hidden="true" fill="currentColor" stroke="currentColor">${body}</svg>`;
+const FORMATION_ICONS = {
+  grid: svgIcon([0, 1].flatMap((r) => [0, 1, 2, 3].map((c) =>
+    `<rect x="${3 + c * 11.5}" y="${5 + r * 14}" width="7.5" height="10" rx="2" stroke="none"/>`)).join('')),
+  circle: svgIcon(Array.from({ length: 8 }, (_, i) => {
+    const a = -Math.PI / 2 + (i * Math.PI) / 4;
+    return `<circle cx="${(24 + 13 * Math.cos(a)).toFixed(1)}" cy="${(18 + 13 * Math.sin(a)).toFixed(1)}" r="3.6" stroke="none"/>`;
+  }).join('')),
+  hex: svgIcon([0, 1, 2].flatMap((r) => [0, 1, 2].map((c) =>
+    `<circle cx="${12 + c * 10 + (r % 2) * 5}" cy="${8 + r * 10}" r="4.2" stroke="none"/>`)).join('')),
+  strings: svgIcon([0, 1, 2, 3, 4].map((i) =>
+    `<line x1="${8 + i * 8}" y1="4" x2="${8 + i * 8}" y2="32" stroke-width="2" stroke-linecap="round"/>`).join('')),
 };
 
 const MIN_BALL = 60; // minsta bollstorlek innan mellanrummet krymps
