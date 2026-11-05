@@ -8,6 +8,14 @@ function initAudio() {
   // iPhone: spela även när ljudlös-knappen är på (Safari 16.4+)
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // iOS: väck ljudet i samma tryck genom att spela en kort tyst buffert
+  try {
+    const silent = audioCtx.createBufferSource();
+    silent.buffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
+    silent.connect(audioCtx.destination);
+    silent.start(0);
+    if (audioCtx.state !== 'running') audioCtx.resume();
+  } catch {}
   engine = new SynthEngine(audioCtx, synthParams);
   engine.setVolume(Number(ui.volume.value));
 }

@@ -10,7 +10,17 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/style.css?v=3" />
+  <script>
+    // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
+    window.addEventListener('error', (e) => {
+      const msg = `Fel: ${e.message} (${(e.filename || '').split('/').pop()}:${e.lineno})`;
+      const overlay = document.getElementById('start-overlay');
+      const onStart = overlay && !overlay.classList.contains('hidden');
+      const el = document.getElementById(onStart ? 'start-msg' : 'log');
+      if (el) el.textContent = msg;
+    });
+  </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
@@ -20,7 +30,7 @@
   <!-- Webbläsare kräver ett klick innan ljud får spelas -->
   <div id="start-overlay">
     <button id="start-btn">Klicka för att starta</button>
-    <p>Ljud och MIDI kräver ett klick först (webbläsarens regel).</p>
+    <p id="start-msg">Ljud och MIDI kräver ett klick först (webbläsarens regel).</p>
   </div>
 
   <header>
@@ -264,19 +274,19 @@
     <p id="log">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js"></script>
-  <script src="js/sound-library.js"></script>
-  <script src="js/layout.js"></script>
-  <script src="js/core.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/pads.js"></script>
-  <script src="js/notes.js"></script>
-  <script src="js/chords.js"></script>
-  <script src="js/sound.js"></script>
-  <script src="js/view.js"></script>
-  <script src="js/settings.js"></script>
-  <script src="js/user-presets.js"></script>
-  <script src="js/pwa.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/synth.js?v=3"></script>
+  <script src="js/sound-library.js?v=3"></script>
+  <script src="js/layout.js?v=3"></script>
+  <script src="js/core.js?v=3"></script>
+  <script src="js/audio.js?v=3"></script>
+  <script src="js/pads.js?v=3"></script>
+  <script src="js/notes.js?v=3"></script>
+  <script src="js/chords.js?v=3"></script>
+  <script src="js/sound.js?v=3"></script>
+  <script src="js/view.js?v=3"></script>
+  <script src="js/settings.js?v=3"></script>
+  <script src="js/user-presets.js?v=3"></script>
+  <script src="js/pwa.js?v=3"></script>
+  <script src="js/main.js?v=3"></script>
 </body>
 </html>

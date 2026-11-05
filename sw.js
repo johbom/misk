@@ -1,8 +1,9 @@
 // Service worker: gör att appen kan installeras och fungerar offline.
-// Strategi: svara direkt från cachen och hämta en färsk version i bakgrunden
-// (nästa start får den nya). Höj VERSION när filistan ändras.
+// Strategi: hämta från nätet först (så att man alltid får senaste versionen när man är uppkopplad);
+// svarar nätet inte inom några sekunder, eller är man offline, används cachen.
+// Kör tools/bump_version.py vid varje ny version (höjer VERSION här och ?v= i index.html).
 
-const VERSION = 'hover-pads-v2';
+const VERSION = 'hover-pads-v3';
 const ASSETS = [
   './',
   'index.html',
@@ -29,9 +30,15 @@ const ASSETS = [
   'icons/icon-512.png',
   'icons/icon-maskable-512.png',
 ];
+const NETWORK_TIMEOUT_MS = 4000;
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' = förbi webbläsarens vanliga cache, så att det verkligen är senaste filerna
+  event.waitUntil(
+    caches.open(VERSION)
+      .then((cache) => cache.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' }))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
@@ -45,22 +52,22 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  const key = req.mode === 'navigate' ? './' : req.url;
 
   event.respondWith((async () => {
     const cache = await caches.open(VERSION);
-    // Sidan själv (även med ?fast osv.) hämtas som index
-    const key = req.mode === 'navigate' ? './' : req;
-    const cached = await cache.match(key, { ignoreSearch: true });
-    const fresh = fetch(req)
-      .then((res) => {
-        if (res.ok) cache.put(key, res.clone());
-        return res;
-      })
-      .catch(() => null);
-    if (cached) {
-      event.waitUntil(fresh);
-      return cached;
+    const cached = cache.match(key, { ignoreSearch: true });
+    const network = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then((res) => {
+      if (res.ok) cache.put(key, res.clone());
+      return res;
+    });
+    network.catch(() => {}); // hanteras nedan; undvik "unhandled rejection" när cachen hann först
+    const slow = new Promise((resolve) => setTimeout(resolve, NETWORK_TIMEOUT_MS))
+      .then(async () => (await cached) || network);
+    try {
+      return await Promise.race([network, slow]);
+    } catch {
+      return (await cached) || new Response('Offline', { status: 503, statusText: 'Offline' });
     }
-    return (await fresh) || new Response('Offline', { status: 503, statusText: 'Offline' });
   })());
 });

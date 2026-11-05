@@ -50,8 +50,13 @@ document.querySelectorAll('#tabs button').forEach((b) =>
 );
 window.addEventListener('blur', () => { fingers.clear(); allPads().forEach(release); });
 
+// Start: släpp alltid förbi, även om ljudet inte går att starta (då syns felet i loggen)
 $('start-btn').addEventListener('click', async () => {
-  initAudio();
   $('start-overlay').classList.add('hidden');
+  try {
+    initAudio();
+  } catch (err) {
+    log(`Kunde inte starta ljudet: ${err.message}`);
+  }
   await initMidi();
 });

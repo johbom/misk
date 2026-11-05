@@ -57,7 +57,8 @@ Hover Pads är en installerbar webbapp som fungerar **offline** efter första be
 
 - **iPhone/iPad:** öppna sidan i Safari → *Dela* → *Lägg till på hemskärmen*. Appen öppnas i helskärm utan webbläsarlist.
 - **Android, Chrome och Edge på dator:** tryck på *Installera* uppe till höger (eller i webbläsarens meny).
-- Nya versioner hämtas i bakgrunden och används nästa gång appen startas.
+- När du är uppkopplad hämtas alltid senaste versionen; offline används den sparade.
+- Fastnar något kan felet visas direkt på skärmen (på startrutan eller längst ner) – skicka gärna texten om det händer.
 
 På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymper för att få plats i alla formationer, stående som liggande. Bara fliken *Inställningar* scrollar inuti sig själv. På en dator kan samma läge slås på med `?fast` i adressen.
 
@@ -77,7 +78,8 @@ python3 -m http.server 8080
 ## Filer
 
 - `index.html` – sidan
-- `manifest.webmanifest`, `sw.js` – PWA: appinformation och offline-cache (höj `VERSION` i `sw.js` när filistan ändras)
+- `manifest.webmanifest`, `sw.js` – PWA: appinformation och offline-cache. Kör `python3 tools/bump_version.py` före varje ny version (höjer cacheversionen och `?v=` på filerna så att telefoner hämtar det nya)
+- `app.js` – ersättning för gamla cachade sidor: laddar om dem till den nya versionen
 - `css/style.css` – utseende
 - `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`)
 - `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
