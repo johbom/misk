@@ -1005,7 +1005,24 @@ function layoutPads() {
       height: `${r.h}px`,
       fontSize: `${Math.max(11, r.font)}px`,
     });
+    if (r.clip) {
+      // Formen (t.ex. en ringsektor) – klippningen styr också var man träffar rutan
+      p.el.style.clipPath = r.clip;
+      p.el.style.webkitClipPath = r.clip;
+    }
+    if (r.label) {
+      // Flytta texten till punkten label genom att lägga padding på rätt sidor
+      const { x, y } = r.label;
+      p.el.style.padding = `${Math.max(0, 2 * y - r.h)}px ${Math.max(0, r.w - 2 * x)}px `
+        + `${Math.max(0, r.h - 2 * y)}px ${Math.max(0, 2 * x - r.w)}px`;
+    }
   });
+  // Viloplatsen i mitten av ringen markeras med en svag cirkel
+  if (rects.hole) {
+    container.style.setProperty('--hole-x', `${left + rects.hole.x}px`);
+    container.style.setProperty('--hole-y', `${topPad + rects.hole.y}px`);
+    container.style.setProperty('--hole-r', `${rects.hole.r}px`);
+  }
 }
 
 function log(msg) { ui.log.textContent = msg; }

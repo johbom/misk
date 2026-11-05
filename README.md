@@ -17,7 +17,7 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt
 
 - **Utgång:** ljud i webbläsaren, MIDI, eller båda.
 - **Spelsätt:** håll tonen så länge musen är över, eller en kort ton.
-- **Formation:** klicka på en av bildknapparna för hur knapparna ska ligga – *Rutnät*, *Cirkel* (bollar i ring), *Bikupa* (bollar i förskjutna rader) eller *Strängar* (långa lodräta strängar). Gäller båda spelflikarna.
+- **Formation:** klicka på en av bildknapparna för hur knapparna ska ligga – *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* (bollar i förskjutna rader) eller *Strängar* (långa lodräta strängar). Gäller båda spelflikarna.
 - **Mellanrum:** tomrum mellan rutorna (0–160 px), så att musen kan flyttas mellan dem utan att något spelas.
 - **MIDI:** välj enhet, kanal och velocity. *Panik* skickar All Notes Off.
 

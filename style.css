@@ -451,3 +451,28 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #play-bar select { max-width: 42vw; }
   html.fixed-screen #volume { width: 100%; min-width: 60px; }
 }
+
+/* Ring: sektorer runt ett tomt hål där muspekaren kan vila */
+.pad-grid[data-formation="ring"] .pad {
+  border: none;
+  border-radius: 0;
+  background: radial-gradient(circle closest-side, #1b1d29 40%, #2b2f45 72%, #22253a 100%);
+}
+.pad-grid[data-formation="ring"] .pad.active {
+  background: radial-gradient(circle closest-side, #ff7a45 40%, var(--hit) 78%, #ffd08a 100%);
+  box-shadow: none;
+}
+.pad-grid[data-formation="ring"] .pad.editing {
+  background: radial-gradient(circle closest-side, #1f2a4d 40%, #304274 100%);
+}
+.pad-grid[data-formation="ring"]::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--hole-x) - var(--hole-r) * 0.55);
+  top: calc(var(--hole-y) - var(--hole-r) * 0.55);
+  width: calc(var(--hole-r) * 1.1);
+  height: calc(var(--hole-r) * 1.1);
+  border-radius: 50%;
+  border: 1px dashed #343850;
+  pointer-events: none;
+}

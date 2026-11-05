@@ -3,13 +3,30 @@
 //
 // Varje funktion får: n (antal rutor), W och H (ytan i px), gap (mellanrum i px)
 // och returnerar en lista med { x, y, w, h, font } – en per ruta, i spelordning.
+// Ringen lägger dessutom till clip (formen) och label (var texten ska stå).
 
 const FORMATIONS = {
   grid: 'Rutnät',
   circle: 'Cirkel',
+  ring: 'Ring',
   hex: 'Bikupa',
   strings: 'Strängar',
 };
+
+// Hörn för en ringsektor (tårtbit med hål i mitten) runt (cx, cy), från vinkel a0 till a1.
+// Kanterna dras in så att mellanrummet g blir lika brett hela vägen ut.
+function sectorPoints(cx, cy, r0, r1, a0, a1, g) {
+  const half = (a1 - a0) / 2;
+  const inset = (r) => Math.min(Math.asin(Math.min(1, g / 2 / r)), half * 0.95);
+  const arc = (r, from, to) => {
+    const steps = Math.max(3, Math.min(64, Math.ceil((Math.abs(to - from) * r) / 6)));
+    return Array.from({ length: steps + 1 }, (_, k) => {
+      const a = from + ((to - from) * k) / steps;
+      return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+    });
+  };
+  return [...arc(r1, a0 + inset(r1), a1 - inset(r1)), ...arc(r0, a1 - inset(r0), a0 + inset(r0))];
+}
 
 // Små bilder till formationsknapparna (ritas med currentColor)
 const svgIcon = (body) =>
@@ -21,12 +38,18 @@ const FORMATION_ICONS = {
     const a = -Math.PI / 2 + (i * Math.PI) / 4;
     return `<circle cx="${(24 + 13 * Math.cos(a)).toFixed(1)}" cy="${(18 + 13 * Math.sin(a)).toFixed(1)}" r="3.6" stroke="none"/>`;
   }).join('')),
+  ring: svgIcon(Array.from({ length: 6 }, (_, i) => {
+    const a0 = -Math.PI / 2 + ((i - 0.5) * Math.PI) / 3;
+    const pts = sectorPoints(24, 18, 7, 16, a0, a0 + Math.PI / 3, 2.2);
+    return `<polygon points="${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' ')}" stroke="none"/>`;
+  }).join('')),
   hex: svgIcon([0, 1, 2].flatMap((r) => [0, 1, 2].map((c) =>
     `<circle cx="${12 + c * 10 + (r % 2) * 5}" cy="${8 + r * 10}" r="4.2" stroke="none"/>`)).join('')),
   strings: svgIcon([0, 1, 2, 3, 4].map((i) =>
     `<line x1="${8 + i * 8}" y1="4" x2="${8 + i * 8}" y2="32" stroke-width="2" stroke-linecap="round"/>`).join('')),
 };
 
+const RING_HOLE = 0.4; // hålets storlek i ringen, andel av radien
 const MIN_BALL = 60; // minsta bollstorlek innan mellanrummet krymps
 const MIN_STRING = 40; // minsta strängbredd innan mellanrummet krymps
 
@@ -54,6 +77,29 @@ const LAYOUTS = {
       const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
       return { x: W / 2 + R * Math.cos(a) - s / 2, y: H / 2 + R * Math.sin(a) - s / 2, w: s, h: s, font: s * 0.2 };
     });
+  },
+
+  // Ring delad i sektorer, med ett tomt hål i mitten där muspekaren kan vila.
+  // Första rutan högst upp, sedan medurs.
+  ring(n, W, H, gap) {
+    const R = Math.min(W, H) / 2;
+    const r = R * RING_HOLE;
+    const step = (2 * Math.PI) / n;
+    const mid = (R + r) / 2;
+    // Mellanrummet får ta högst knappt halva bågen – vila kan man ju i mitten
+    const g = Math.min(gap, mid * step * 0.45);
+    const font = Math.min(28, (R - r) * 0.28, (mid * step - g) * 0.3);
+    const rects = Array.from({ length: n }, (_, i) => {
+      const a = -Math.PI / 2 + i * step; // sektorns mitt
+      const pts = sectorPoints(R, R, r, R, a - step / 2, a + step / 2, g);
+      return {
+        x: W / 2 - R, y: H / 2 - R, w: 2 * R, h: 2 * R, font,
+        clip: `polygon(${pts.map(([x, y]) => `${x.toFixed(1)}px ${y.toFixed(1)}px`).join(', ')})`,
+        label: { x: R + mid * Math.cos(a), y: R + mid * Math.sin(a) },
+      };
+    });
+    rects.hole = { x: W / 2, y: H / 2, r };
+    return rects;
   },
 
   // Bollar i bikupemönster: varannan rad förskjuten en halv boll.
