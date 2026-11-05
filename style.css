@@ -6,6 +6,7 @@
   --muted: #8a8fa3;
   --accent: #5b8cff;
   --hit: #ffb547;
+  --pad-gap: 48px; /* tomrum mellan rutorna, ändras med reglaget "Mellanrum" */
 }
 
 * { box-sizing: border-box; }
@@ -84,7 +85,7 @@ button:hover { border-color: var(--accent); }
   flex: 1;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  gap: var(--pad-gap);
   padding: 8px 24px 16px;
   touch-action: none; /* låt fingret glida mellan pads */
 }
@@ -184,6 +185,8 @@ body[data-tab="chords"] .only-notes { display: none; }
 }
 .pad-edit select { flex: 1; min-width: 0; font-size: 0.85rem; }
 .chord-pad.active .pad-edit { background: rgba(0, 0, 0, 0.12); }
+
+#gap-value { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 600px) {
   .pad-grid { grid-template-columns: repeat(2, 1fr) !important; }

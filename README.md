@@ -13,6 +13,7 @@ En webbsida med rutor som spelar ljud och/eller skickar MIDI när man för musen
 
 - **Utgång:** ljud i webbläsaren, MIDI, eller båda.
 - **Spelsätt:** håll tonen så länge musen är över, eller en kort ton.
+- **Mellanrum:** tomrum mellan rutorna (0–160 px), så att musen kan flyttas mellan dem utan att något spelas.
 - **MIDI:** välj enhet, kanal och velocity. *Panik* skickar All Notes Off.
 
 Inställningar och ackordval sparas i webbläsaren.

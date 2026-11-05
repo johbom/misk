@@ -42,6 +42,7 @@ const ui = {
   outAudio: $('out-audio'),
   outMidi: $('out-midi'),
   playMode: $('play-mode'),
+  padGap: $('pad-gap'),
   root: $('root'),
   octave: $('octave'),
   scale: $('scale'),
@@ -398,7 +399,7 @@ function showTab(tab) {
 function log(msg) { ui.log.textContent = msg; }
 
 // ---------- Inställningar ----------
-const SAVED = ['outAudio', 'outMidi', 'playMode', 'root', 'octave', 'scale',
+const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'wave', 'volume', 'midiCh', 'velocity'];
 
 function loadSettings() {
@@ -417,9 +418,16 @@ function saveSettings() {
   localStorage.setItem('midiOut', ui.midiOut.value);
 }
 
+// Tomrum mellan rutorna – där kan musen röra sig utan att något spelas.
+function applyGap() {
+  document.documentElement.style.setProperty('--pad-gap', `${ui.padGap.value}px`);
+  $('gap-value').textContent = `${ui.padGap.value} px`;
+}
+
 // ---------- Uppstart ----------
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
 loadSettings();
+applyGap();
 buildNotePads();
 buildChordPads();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
@@ -428,6 +436,7 @@ for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
 [ui.root, ui.octave, ui.scale].forEach((el) => el.addEventListener('change', updateNotes));
 ui.chordCount.addEventListener('change', buildChordPads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
+ui.padGap.addEventListener('input', applyGap);
 ui.volume.addEventListener('input', () => master && (master.gain.value = Number(ui.volume.value)));
 ui.midiOut.addEventListener('change', () => { panic(); updateMidiStatus(); saveSettings(); });
 ui.outMidi.addEventListener('change', () => { if (!ui.outMidi.checked) panic(); });
