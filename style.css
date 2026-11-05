@@ -1,0 +1,190 @@
+:root {
+  --bg: #12131a;
+  --panel: #1c1e28;
+  --border: #2e3140;
+  --text: #e6e7ee;
+  --muted: #8a8fa3;
+  --accent: #5b8cff;
+  --hit: #ffb547;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px 0;
+}
+
+h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
+
+.status {
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.status.ok { color: #7be3a0; border-color: #2f6b47; }
+.status.flash { background: #2f6b47; }
+
+#controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 16px 24px;
+}
+
+fieldset {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 12px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+}
+
+legend {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0 4px;
+}
+
+label { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; }
+
+select, input[type="number"], button {
+  background: #262938;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+}
+input[type="number"] { width: 4em; }
+button { cursor: pointer; }
+button:hover { border-color: var(--accent); }
+
+.pad-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 8px 24px 16px;
+  touch-action: none; /* låt fingret glida mellan pads */
+}
+
+.pad {
+  position: relative;
+  min-height: 110px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(160deg, #262a3a, #1b1d29);
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: 600;
+  user-select: none;
+  transition: transform 60ms, background 120ms, box-shadow 120ms;
+}
+
+.pad small {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.pad.sample { border-color: var(--accent); }
+
+.pad.active {
+  background: linear-gradient(160deg, var(--hit), #ff7a45);
+  color: #1a1206;
+  box-shadow: 0 0 24px rgba(255, 181, 71, 0.55);
+  transform: scale(0.97);
+}
+.pad.active small { color: #3a2a10; }
+
+.pad.dragover { outline: 2px dashed var(--accent); outline-offset: 3px; }
+
+footer { padding: 0 24px 16px; color: var(--muted); font-size: 0.85rem; }
+footer p { margin: 0; font-family: ui-monospace, Menlo, monospace; }
+
+#start-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: rgba(10, 11, 16, 0.92);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+}
+#start-overlay.hidden { display: none; }
+#start-btn {
+  font-size: 1.3rem;
+  padding: 16px 32px;
+  border-radius: 12px;
+  background: var(--accent);
+  border: none;
+  color: white;
+}
+
+/* Flikar: Toner / Ackord */
+#tabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
+#tabs button { border: none; background: transparent; color: var(--muted); padding: 6px 16px; }
+#tabs button.on { background: var(--accent); color: white; }
+body[data-tab="notes"] .only-chords,
+body[data-tab="chords"] .only-notes { display: none; }
+
+/* Ackordrutor: stor hover-yta + väljare under */
+.chord-pad {
+  display: flex;
+  flex-direction: column;
+  min-height: 160px;
+  padding: 0;
+  overflow: hidden;
+}
+.pad-hit {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: crosshair;
+}
+.pad-hit .chord-name { font-size: 2rem; }
+.pad-hit small { position: static; }
+.pad-edit {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid var(--border);
+}
+.pad-edit select { flex: 1; min-width: 0; font-size: 0.85rem; }
+.chord-pad.active .pad-edit { background: rgba(0, 0, 0, 0.12); }
+
+@media (max-width: 600px) {
+  .pad-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hover Pads – ljud &amp; MIDI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-tab="notes">
+  <!-- Webbläsare kräver ett klick innan ljud får spelas -->
+  <div id="start-overlay">
+    <button id="start-btn">Klicka för att starta</button>
+    <p>Ljud och MIDI kräver ett klick först (webbläsarens regel).</p>
+  </div>
+
+  <header>
+    <h1>Hover Pads</h1>
+    <nav id="tabs">
+      <button type="button" data-tab="notes">Toner</button>
+      <button type="button" data-tab="chords">Ackord</button>
+    </nav>
+    <span id="midi-status" class="status">MIDI: ej ansluten</span>
+  </header>
+
+  <section id="controls">
+    <fieldset>
+      <legend>Utgång</legend>
+      <label><input type="checkbox" id="out-audio" checked /> Ljud</label>
+      <label><input type="checkbox" id="out-midi" /> MIDI</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Spelsätt</legend>
+      <label>
+        <select id="play-mode">
+          <option value="hold">Håll – ton så länge musen är över</option>
+          <option value="oneshot">Kort ton vid mouseover</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <!-- Bara på sidan Toner -->
+    <fieldset class="only-notes">
+      <legend>Toner</legend>
+      <label>Grundton
+        <select id="root"></select>
+      </label>
+      <label>Oktav
+        <input type="number" id="octave" min="0" max="8" value="4" />
+      </label>
+      <label>Skala
+        <select id="scale">
+          <option value="major">Dur</option>
+          <option value="minor">Moll</option>
+          <option value="pentatonic">Pentatonisk</option>
+          <option value="blues">Blues</option>
+          <option value="chromatic">Kromatisk</option>
+        </select>
+      </label>
+    </fieldset>
+
+    <!-- Bara på sidan Ackord -->
+    <fieldset class="only-chords">
+      <legend>Ackord</legend>
+      <label>Antal
+        <select id="chord-count">
+          <option>2</option><option>3</option><option selected>4</option><option>5</option>
+          <option>6</option><option>7</option><option>8</option>
+        </select>
+      </label>
+      <label>Oktav
+        <input type="number" id="chord-octave" min="1" max="7" value="4" />
+      </label>
+      <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
+    </fieldset>
+
+    <fieldset>
+      <legend>Ljud</legend>
+      <label>Vågform
+        <select id="wave">
+          <option value="triangle">Triangel</option>
+          <option value="sine">Sinus</option>
+          <option value="square">Fyrkant</option>
+          <option value="sawtooth">Sågtand</option>
+        </select>
+      </label>
+      <label>Volym
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" />
+      </label>
+    </fieldset>
+
+    <fieldset>
+      <legend>MIDI</legend>
+      <label>Enhet
+        <select id="midi-out"><option value="">– ingen –</option></select>
+      </label>
+      <label>Kanal
+        <input type="number" id="midi-ch" min="1" max="16" value="1" />
+      </label>
+      <label>Velocity
+        <input type="range" id="velocity" min="1" max="127" value="100" />
+      </label>
+      <button id="panic" type="button" title="Skicka 'All Notes Off'">Panik</button>
+    </fieldset>
+  </section>
+
+  <main id="pads" class="pad-grid only-notes"></main>
+  <main id="chord-pads" class="pad-grid only-chords"></main>
+
+  <footer>
+    <p id="log">Dra en ljudfil (wav/mp3) till en pad för att byta dess ljud.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
