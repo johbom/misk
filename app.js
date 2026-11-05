@@ -49,7 +49,7 @@ const ui = {
   chordCount: $('chord-count'),
   chordOctave: $('chord-octave'),
   chordBass: $('chord-bass'),
-  wave: $('wave'),
+  preset: $('preset'),
   volume: $('volume'),
   midiOut: $('midi-out'),
   midiCh: $('midi-ch'),
@@ -61,47 +61,21 @@ const ui = {
   log: $('log'),
 };
 
-// ---------- Ljud (Web Audio) ----------
+// ---------- Ljud (Web Audio + ljudmotorn i synth.js) ----------
 let audioCtx = null;
-let master = null;
+let engine = null;
 
 function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  master = audioCtx.createGain();
-  master.gain.value = Number(ui.volume.value);
-  master.connect(audioCtx.destination);
+  engine = new SynthEngine(audioCtx, synthParams);
+  engine.setVolume(Number(ui.volume.value));
 }
 
-const midiToFreq = (n) => 440 * Math.pow(2, (n - 69) / 12);
-
-// Startar en synth-ton och returnerar en funktion som släpper den.
-// level < 1 används för ackord så att flera toner inte blir för starka.
-function startTone(note, level = 1) {
-  const t = audioCtx.currentTime;
-  const osc = audioCtx.createOscillator();
-  const env = audioCtx.createGain();
-  osc.type = ui.wave.value;
-  osc.frequency.value = midiToFreq(note);
-  env.gain.setValueAtTime(0, t);
-  env.gain.linearRampToValueAtTime(0.4 * level, t + 0.01); // attack
-  env.gain.linearRampToValueAtTime(0.28 * level, t + 0.15); // decay -> sustain
-  osc.connect(env).connect(master);
-  osc.start(t);
-
-  return () => {
-    const r = audioCtx.currentTime;
-    env.gain.cancelScheduledValues(r);
-    env.gain.setValueAtTime(env.gain.value, r);
-    env.gain.linearRampToValueAtTime(0, r + 0.25); // release
-    osc.stop(r + 0.3);
-  };
-}
-
-// Spelar en uppladdad ljudfil (spelar alltid klart).
+// Spelar en uppladdad ljudfil genom effekterna (spelar alltid klart).
 function playSample(buffer) {
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
-  src.connect(master);
+  src.connect(engine.input);
   src.start();
 }
 
@@ -217,7 +191,7 @@ function trigger(pad) {
     if (pad.sample) playSample(pad.sample);
     else {
       const level = 1 / Math.sqrt(notes.length);
-      notes.forEach((n) => stops.push(startTone(n, level)));
+      notes.forEach((n) => stops.push(engine.noteOn(n, level)));
     }
   }
   if (ui.outMidi.checked) {
@@ -386,6 +360,156 @@ function renderChordPad(pad) {
 
 const updateChordLabels = () => { chordPads.forEach(release); chordPads.forEach(renderChordPad); };
 
+// ---------- Ljudmotor: presets och reglage ----------
+const CUSTOM = '__custom';
+let synthParams;
+let synthPreset;
+const synthInputs = {}; // key -> { row, input, output, def }
+
+(function loadSynth() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('hoverPadsSynth'));
+    if (saved && saved.params) {
+      synthPreset = saved.preset in SYNTH_PRESETS || saved.preset === CUSTOM ? saved.preset : CUSTOM;
+      synthParams = { ...SYNTH_DEFAULTS, ...saved.params };
+      return;
+    }
+  } catch {}
+  synthPreset = DEFAULT_PRESET;
+  synthParams = presetParams(DEFAULT_PRESET);
+})();
+
+const saveSynth = () =>
+  localStorage.setItem('hoverPadsSynth', JSON.stringify({ preset: synthPreset, params: synthParams }));
+
+// Logaritmiska reglage går 0..1000 och räknas om till t.ex. 40 Hz..18 kHz.
+const toSlider = (d, v) => (d.log ? Math.round(1000 * Math.log(v / d.min) / Math.log(d.max / d.min)) : v);
+const fromSlider = (d, s) => {
+  if (!d.log) return Number(s);
+  const v = d.min * Math.pow(d.max / d.min, Number(s) / 1000);
+  return v < 1 ? Number(v.toFixed(3)) : v < 100 ? Number(v.toFixed(2)) : Math.round(v);
+};
+
+function buildSynthPanel() {
+  const root = $('synth-groups');
+  let box;
+  for (const d of SYNTH_PARAMS) {
+    if (d.group) {
+      box = document.createElement('fieldset');
+      box.innerHTML = `<legend>${d.group}</legend>`;
+      root.append(box);
+    }
+    const row = document.createElement('label');
+    row.className = 'knob';
+    row.append(d.label);
+    let input;
+    const output = document.createElement('output');
+    if (d.options) {
+      input = document.createElement('select');
+      d.options.forEach(([v, text]) => input.append(new Option(text, v)));
+    } else {
+      input = document.createElement('input');
+      input.type = 'range';
+      input.min = d.log ? 0 : d.min;
+      input.max = d.log ? 1000 : d.max;
+      input.step = d.log ? 1 : d.step;
+    }
+    row.append(input);
+    if (!d.options) row.append(output);
+    box.append(row);
+    synthInputs[d.key] = { row, input, output, def: d };
+
+    input.addEventListener('input', () => {
+      const v = d.options ? input.value : fromSlider(d, input.value);
+      synthParams[d.key] = v;
+      if (!d.options) output.textContent = d.fmt(v);
+      engine && engine.set(d.key, v);
+      synthPreset = CUSTOM;
+      ui.preset.value = CUSTOM;
+      refreshSynthDisabled();
+      saveSynth();
+    });
+  }
+}
+
+function syncSynthPanel() {
+  for (const { input, output, def } of Object.values(synthInputs)) {
+    const v = synthParams[def.key];
+    input.value = def.options ? v : toSlider(def, v);
+    if (!def.options) output.textContent = def.fmt(v);
+  }
+  refreshSynthDisabled();
+}
+
+function refreshSynthDisabled() {
+  for (const [key, isOff] of Object.entries(SYNTH_DISABLED_WHEN)) {
+    synthInputs[key].row.classList.toggle('off', isOff(synthParams));
+  }
+}
+
+function applySynth(params, preset) {
+  allPads().forEach(release);
+  synthParams = params;
+  synthPreset = preset;
+  ui.preset.value = preset;
+  syncSynthPanel();
+  engine && engine.setParams(synthParams);
+  saveSynth();
+}
+
+function randomSynth() {
+  const p = { ...SYNTH_DEFAULTS };
+  for (const d of SYNTH_PARAMS) {
+    if (d.options) p[d.key] = d.options[Math.floor(Math.random() * d.options.length)][0];
+    else p[d.key] = fromSlider(d, d.log ? Math.random() * 1000
+      : Math.round((d.min + Math.random() * (d.max - d.min)) / d.step) * d.step);
+  }
+  // Håll slumpen spelbar: hörbar nivå, inte för lång attack, inte för mycket effekter.
+  Object.assign(p, {
+    osc1Level: Math.max(p.osc1Level, 0.6),
+    attack: Math.min(p.attack, 0.5),
+    sustain: Math.max(p.sustain, 0.3),
+    cutoff: Math.max(p.cutoff, 300),
+    q: Math.min(p.q, 10),
+    delayFeedback: Math.min(p.delayFeedback, 0.6),
+    reverbMix: Math.min(p.reverbMix, 0.6),
+    drive: Math.min(p.drive, 0.6),
+    unison: Math.min(p.unison, 5),
+  });
+  applySynth(p, CUSTOM);
+  log('Slumpade ett nytt ljud');
+}
+
+function setupSynthUi() {
+  Object.keys(SYNTH_PRESETS).forEach((name) => ui.preset.append(new Option(name, name)));
+  ui.preset.append(new Option('Eget (ändrat)', CUSTOM));
+  buildSynthPanel();
+  ui.preset.value = synthPreset;
+  syncSynthPanel();
+
+  ui.preset.addEventListener('change', () => {
+    if (ui.preset.value === CUSTOM) return;
+    applySynth(presetParams(ui.preset.value), ui.preset.value);
+    log(`Preset: ${ui.preset.value}`);
+  });
+
+  const toggle = $('synth-toggle');
+  const showPanel = (open) => {
+    $('synth').hidden = !open;
+    toggle.setAttribute('aria-expanded', open);
+    toggle.textContent = open ? 'Ljudmotor ▾' : 'Ljudmotor ▸';
+    localStorage.setItem('hoverPadsSynthOpen', open ? '1' : '');
+  };
+  toggle.addEventListener('click', () => showPanel($('synth').hidden));
+  showPanel(!!localStorage.getItem('hoverPadsSynthOpen'));
+
+  // "Återställ" går tillbaka till senast valda preset (eller standard om ljudet är eget)
+  let lastPreset = synthPreset === CUSTOM ? DEFAULT_PRESET : synthPreset;
+  ui.preset.addEventListener('change', () => { if (ui.preset.value !== CUSTOM) lastPreset = ui.preset.value; });
+  $('synth-reset').addEventListener('click', () => applySynth(presetParams(lastPreset), lastPreset));
+  $('synth-random').addEventListener('click', randomSynth);
+}
+
 // ---------- Flikar ----------
 function showTab(tab) {
   allPads().forEach(release);
@@ -400,7 +524,7 @@ function log(msg) { ui.log.textContent = msg; }
 
 // ---------- Inställningar ----------
 const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'root', 'octave', 'scale',
-  'chordCount', 'chordOctave', 'chordBass', 'wave', 'volume', 'midiCh', 'velocity'];
+  'chordCount', 'chordOctave', 'chordBass', 'volume', 'midiCh', 'velocity'];
 
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('hoverPads') || '{}');
@@ -428,6 +552,7 @@ function applyGap() {
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
 loadSettings();
 applyGap();
+setupSynthUi();
 buildNotePads();
 buildChordPads();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
@@ -437,7 +562,7 @@ for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
 ui.chordCount.addEventListener('change', buildChordPads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
 ui.padGap.addEventListener('input', applyGap);
-ui.volume.addEventListener('input', () => master && (master.gain.value = Number(ui.volume.value)));
+ui.volume.addEventListener('input', () => engine && engine.setVolume(Number(ui.volume.value)));
 ui.midiOut.addEventListener('change', () => { panic(); updateMidiStatus(); saveSettings(); });
 ui.outMidi.addEventListener('change', () => { if (!ui.outMidi.checked) panic(); });
 ui.midiCh.addEventListener('change', panic);

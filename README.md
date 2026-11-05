@@ -18,6 +18,20 @@ En webbsida med rutor som spelar ljud och/eller skickar MIDI när man för musen
 
 Inställningar och ackordval sparas i webbläsaren.
 
+## Ljudmotor
+
+Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip eller Enkel – eller öppna **Ljudmotor ▸** och skruva själv:
+
+- **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.
+- **Oscillator 2:** blandas in eller frekvensmodulerar osc 1 (FM), transponering, fininställning, brus.
+- **Filter:** lågpass/högpass/bandpass med resonans och egen envelope.
+- **Volymkurva:** attack, decay, sustain, release.
+- **LFO:** vibrato, filter-wah eller tremolo.
+- **Effekter:** drive, chorus, delay och reverb.
+
+Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ preset* går tillbaka, *Slumpa ljud* hittar på något nytt.
+Uppladdade ljudfiler går också genom effekterna.
+
 ## MIDI
 
 Web MIDI fungerar i Chrome, Edge och Firefox (inte Safari) och kräver https eller localhost.
@@ -35,4 +49,5 @@ python3 -m http.server 8080
 
 - `index.html` – sidan
 - `style.css` – utseende
-- `app.js` – ljud (Web Audio), MIDI (Web MIDI) och hover-logik
+- `synth.js` – ljudmotorn (Web Audio), reglage och presets
+- `app.js` – rutor, hover-logik, MIDI (Web MIDI) och inställningar

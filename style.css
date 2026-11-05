@@ -186,6 +186,36 @@ body[data-tab="chords"] .only-notes { display: none; }
 .pad-edit select { flex: 1; min-width: 0; font-size: 0.85rem; }
 .chord-pad.active .pad-edit { background: rgba(0, 0, 0, 0.12); }
 
+/* Ljudmotor-panelen */
+#synth {
+  margin: 0 24px 12px;
+  padding: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+#synth[hidden] { display: none; }
+#synth-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+#synth fieldset { display: block; background: #181a23; }
+.knob {
+  display: grid;
+  grid-template-columns: 78px 1fr 70px;
+  align-items: center;
+  gap: 8px;
+  margin: 6px 0;
+  font-size: 0.85rem;
+}
+.knob select, .knob input { width: 100%; min-width: 0; }
+.knob select { grid-column: 2 / 4; }
+.knob output { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
+.knob.off { opacity: 0.35; }
+#synth-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+#synth-toggle[aria-expanded="true"] { border-color: var(--accent); }
+
 #gap-value { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 600px) {
