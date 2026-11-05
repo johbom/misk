@@ -236,7 +236,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 #chord-settings .row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
 #chord-editor {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
   gap: 8px 16px;
 }
 .chord-row {
@@ -275,7 +275,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 #gap-value { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 600px) {
-  .pad-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  html:not(.fixed-screen) .pad-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
 
 /* Högerklicksmenyn på sidan Ackord */
@@ -326,7 +326,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Avancerat läge (voicing) */
 body:not(.advanced) .adv-only { display: none; }
-#chord-editor.adv { grid-template-columns: repeat(auto-fill, minmax(470px, 1fr)); }
+#chord-editor.adv { grid-template-columns: repeat(auto-fill, minmax(min(470px, 100%), 1fr)); }
 #chord-editor.adv .chord-row { grid-template-columns: 56px 0.7fr 1fr 1.3fr 1fr 64px; }
 #cp-voicings { grid-template-columns: repeat(3, 1fr); }
 #cp-shifts { grid-template-columns: repeat(3, 1fr); }
@@ -355,3 +355,100 @@ body:not(.advanced) .adv-only { display: none; }
   transform: translate(-50%, 50%);
 }
 .pad-grid[data-formation="strings"] .pad.active .strum i { background: var(--hit); }
+
+/* Presetbibliotek */
+#library { margin-bottom: 14px; }
+.lib-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
+.lib-head span { color: var(--muted); font-size: 0.8rem; }
+#lib-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.lib-cat { border-radius: 999px; padding: 3px 12px; font-size: 0.8rem; color: var(--muted); }
+.lib-cat.on { background: var(--accent); border-color: var(--accent); color: white; }
+#lib-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.lib-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 6px 10px;
+  text-align: left;
+  border-radius: 8px;
+  background: linear-gradient(160deg, #262a3a, #1b1d29);
+}
+.lib-preset[hidden] { display: none; }
+.lib-preset span { font-size: 0.85rem; }
+.lib-preset small { font-size: 0.68rem; color: var(--muted); }
+.lib-preset.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 14px rgba(91, 140, 255, 0.3);
+  background: linear-gradient(160deg, #304274, #1f2a4d);
+}
+.lib-preset.on small { color: #b9c8f5; }
+
+/* ===== Fast skärm (mobil och iPad): inget scrollar, allt ryms ===== */
+html.fixed-screen,
+html.fixed-screen body {
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+html.fixed-screen body {
+  height: 100dvh;
+  min-height: 0;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+html.fixed-screen header { padding: 10px 14px 0; gap: 8px; }
+html.fixed-screen h1 { font-size: 1.1rem; white-space: nowrap; }
+html.fixed-screen #play-bar { padding: 8px 14px 4px; gap: 6px 16px; }
+html.fixed-screen #play-bar select { min-width: 0; }
+html.fixed-screen .pad-grid {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 8px 14px 10px;
+  grid-auto-rows: 1fr;
+  gap: min(var(--pad-gap), 6vw, 6vh);
+}
+html.fixed-screen .pad-grid:not([data-formation="grid"]) { flex: 1 1 0; min-height: 0; }
+html.fixed-screen .pad { min-height: 0; }
+html.fixed-screen #settings {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 10px 14px 16px;
+  -webkit-user-select: text;
+  user-select: text;
+}
+html.fixed-screen footer { padding: 0 14px calc(6px + env(safe-area-inset-bottom)); font-size: 0.72rem; }
+html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Mobil på bredden (liggande): tonerna i två rader om åtta */
+@media (orientation: landscape) and (max-height: 520px) {
+  html.fixed-screen #pads[data-formation="grid"] { grid-template-columns: repeat(8, 1fr); }
+  html.fixed-screen header { padding-top: 6px; }
+  html.fixed-screen #play-bar { padding: 4px 14px 2px; }
+}
+/* Smal mobil: göm rubriken så flikarna får plats */
+@media (max-width: 480px) {
+  html.fixed-screen h1 { display: none; }
+  html.fixed-screen #midi-status {
+    font-size: 0.7rem; padding: 3px 8px; max-width: 26vw;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  html.fixed-screen #tabs button { padding: 4px 8px; }
+  html.fixed-screen #play-bar { flex-wrap: nowrap; }
+  html.fixed-screen #play-bar label { min-width: 0; }
+  html.fixed-screen #play-bar select { max-width: 42vw; }
+  html.fixed-screen #volume { width: 100%; min-width: 60px; }
+}

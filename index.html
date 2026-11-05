@@ -2,7 +2,13 @@
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- Lägg till på hemskärmen: öppnas i helskärm utan webbläsarlist -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Hover Pads" />
+  <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -118,6 +124,14 @@
     <!-- Alla reglage för ljudmotorn (byggs av app.js från SYNTH_PARAMS i synth.js) -->
     <fieldset id="synth">
       <legend>Ljudmotor</legend>
+      <div id="library">
+        <div class="lib-head">
+          <strong>Presetbibliotek</strong>
+          <span>100 färdiga ljud – klicka för att ladda in i <em>Eget</em> och provlyssna. Skruva sedan vidare om du vill.</span>
+        </div>
+        <div id="lib-cats"></div>
+        <div id="lib-list"></div>
+      </div>
       <div id="synth-groups"></div>
       <div id="synth-actions">
         <button id="synth-reset" type="button">Återställ preset</button>
@@ -154,6 +168,7 @@
   </footer>
 
   <script src="synth.js"></script>
+  <script src="presets.js"></script>
   <script src="layout.js"></script>
   <script src="app.js"></script>
 </body>

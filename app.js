@@ -185,7 +185,6 @@ function attachHover(pad, hitEl) {
 function trigger(pad) {
   if (!audioCtx) return; // inte startat än
   if (picker.open) return; // tyst medan högerklicksmenyn är öppen
-  if (strum.active && chordPads.includes(pad)) return; // harpan spelar i stället
   release(pad);
   pad.el.classList.add('active');
 
@@ -449,7 +448,8 @@ function strumNotes(c) {
 
 const PLUCK_MS = 450; // hur länge en knäppt ton hålls innan den klingar ut
 const PLUCK_LEVEL = 0.5;
-const strum = { active: false, pad: null, idx: -1 };
+// pad: strängen man är på, idx: senaste höjd, harp: har harpläget börjat på den här strängen?
+const strum = { active: false, pad: null, idx: -1, harp: false };
 
 // Vilken ton (prick) på strängen som ligger närmast höjden y
 function strumIndex(pad, y) {
@@ -485,8 +485,13 @@ function strumMove(e) {
   const pad = chordPads.find((p) => p.el === el);
   if (!pad) { strum.pad = null; return; } // i mellanrummet mellan strängarna
   const idx = strumIndex(pad, e.clientY);
-  if (pad !== strum.pad) pluck(pad, idx);
-  else if (idx !== strum.idx) {
+  if (pad !== strum.pad) {
+    // Första anslaget på en sträng spelar hela ackordet (det sköter hover);
+    // här noteras bara var på strängen man kom in.
+    strum.harp = false;
+  } else if (idx !== strum.idx) {
+    // Man stannar på strängen och rör sig upp/ner: nu blir det harpa.
+    if (!strum.harp) { release(pad); strum.harp = true; }
     // Snabb dragning: knäpp alla toner man passerat, som ett glissando
     const dir = Math.sign(idx - strum.idx);
     for (let k = strum.idx + dir, t = 0; ; k += dir, t++) {
@@ -503,13 +508,12 @@ function setupStrum() {
     if (ui.formation.value !== 'strings' || picker.open) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault(); // ingen textmarkering när man drar
-    chordPads.forEach(release); // ackordet från hover tystnar, nu är det harpa
     strum.active = true;
     strum.pad = null;
     strumMove(e);
   });
   window.addEventListener('pointermove', strumMove);
-  const stop = () => { strum.active = false; strum.pad = null; };
+  const stop = () => { strum.active = false; strum.pad = null; strum.harp = false; };
   window.addEventListener('pointerup', stop);
   window.addEventListener('pointercancel', stop);
   window.addEventListener('blur', stop);
@@ -610,6 +614,8 @@ const CUSTOM = '__custom';
 let synthParams;
 let synthPreset;
 const synthInputs = {}; // key -> { row, input, output, def }
+// Ljud från presetbiblioteket laddas in i "Eget": namn + om man har skruvat efteråt
+let synthLib = { name: '', edited: false };
 
 (function loadSynth() {
   try {
@@ -617,6 +623,7 @@ const synthInputs = {}; // key -> { row, input, output, def }
     if (saved && saved.params) {
       synthPreset = saved.preset in SYNTH_PRESETS || saved.preset === CUSTOM ? saved.preset : CUSTOM;
       synthParams = { ...SYNTH_DEFAULTS, ...saved.params };
+      if (saved.lib && synthPreset === CUSTOM) synthLib = saved.lib;
       return;
     }
   } catch {}
@@ -625,7 +632,7 @@ const synthInputs = {}; // key -> { row, input, output, def }
 })();
 
 const saveSynth = () =>
-  localStorage.setItem('hoverPadsSynth', JSON.stringify({ preset: synthPreset, params: synthParams }));
+  localStorage.setItem('hoverPadsSynth', JSON.stringify({ preset: synthPreset, params: synthParams, lib: synthLib }));
 
 // Logaritmiska reglage går 0..1000 och räknas om till t.ex. 40 Hz..18 kHz.
 const toSlider = (d, v) => (d.log ? Math.round(1000 * Math.log(v / d.min) / Math.log(d.max / d.min)) : v);
@@ -669,7 +676,10 @@ function buildSynthPanel() {
       synthParams[d.key] = v;
       if (!d.options) output.textContent = d.fmt(v);
       engine && engine.set(d.key, v);
+      if (synthPreset === CUSTOM && synthLib.name) synthLib.edited = true;
+      else if (synthPreset !== CUSTOM) synthLib = { name: '', edited: false };
       synthPreset = CUSTOM;
+      updateCustomLabel();
       ui.preset.value = CUSTOM;
       refreshSynthDisabled();
       saveSynth();
@@ -694,8 +704,9 @@ function refreshSynthDisabled() {
 
 function applySynth(params, preset) {
   allPads().forEach(release);
-  synthParams = params;
+  synthParams = { ...params };
   synthPreset = preset;
+  updateCustomLabel();
   ui.preset.value = preset;
   syncSynthPanel();
   engine && engine.setParams(synthParams);
@@ -721,19 +732,83 @@ function randomSynth() {
     drive: Math.min(p.drive, 0.6),
     unison: Math.min(p.unison, 5),
   });
+  synthLib = { name: '', edited: false };
   applySynth(p, CUSTOM);
   log('Slumpade ett nytt ljud');
+}
+
+// "Eget" i presetmenyn visar vilket biblioteksljud som är inladdat
+function updateCustomLabel() {
+  const opt = [...ui.preset.options].find((o) => o.value === CUSTOM);
+  if (opt) {
+    opt.textContent = !synthLib.name ? 'Eget (ändrat)'
+      : `Eget: ${synthLib.name}${synthLib.edited ? ' (ändrat)' : ''}`;
+  }
+  const current = synthPreset === CUSTOM ? synthLib.name : '';
+  document.querySelectorAll('.lib-preset').forEach((b) =>
+    b.classList.toggle('on', b.dataset.name === current));
+}
+
+// ---------- Presetbibliotek (100 ljud, presets.js) ----------
+let libCategory = 'Alla';
+
+function buildPresetLibrary() {
+  const cats = $('lib-cats');
+  ['Alla', ...PRESET_CATEGORIES.map((c) => c.name)].forEach((cat) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lib-cat';
+    b.textContent = cat;
+    b.addEventListener('click', () => { libCategory = cat; renderPresetLibrary(); });
+    cats.append(b);
+  });
+  const list = $('lib-list');
+  PRESET_LIBRARY.forEach((entry) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lib-preset';
+    b.dataset.name = entry.name;
+    b.dataset.cat = entry.cat;
+    b.innerHTML = `<span>${entry.name}</span><small>${entry.cat}</small>`;
+    b.addEventListener('click', () => loadLibraryPreset(entry, true));
+    list.append(b);
+  });
+  // Visa kategorin för ljudet som är inladdat, annars alla
+  const cur = PRESET_LIBRARY.find((e) => e.name === synthLib.name);
+  if (cur && synthPreset === CUSTOM) libCategory = cur.cat;
+  renderPresetLibrary();
+}
+
+function renderPresetLibrary() {
+  document.querySelectorAll('.lib-cat').forEach((b) => b.classList.toggle('on', b.textContent === libCategory));
+  document.querySelectorAll('.lib-preset').forEach((b) => {
+    b.hidden = libCategory !== 'Alla' && b.dataset.cat !== libCategory;
+  });
+}
+
+function loadLibraryPreset(entry, preview) {
+  synthLib = { name: entry.name, edited: false };
+  applySynth(entry.params, CUSTOM);
+  log(`Eget: ${entry.name} (${entry.cat})`);
+  // Provlyssna: en kort ton (C4) om ljudet är igång
+  if (preview && audioCtx && ui.outAudio.checked) {
+    const stop = engine.noteOn(60, 0.7);
+    setTimeout(stop, 450);
+  }
 }
 
 function setupSynthUi() {
   Object.keys(SYNTH_PRESETS).forEach((name) => ui.preset.append(new Option(name, name)));
   ui.preset.append(new Option('Eget (ändrat)', CUSTOM));
   buildSynthPanel();
+  buildPresetLibrary();
+  updateCustomLabel();
   ui.preset.value = synthPreset;
   syncSynthPanel();
 
   ui.preset.addEventListener('change', () => {
     if (ui.preset.value === CUSTOM) return;
+    synthLib = { name: '', edited: false };
     applySynth(presetParams(ui.preset.value), ui.preset.value);
     log(`Preset: ${ui.preset.value}`);
   });
@@ -741,7 +816,12 @@ function setupSynthUi() {
   // "Återställ" går tillbaka till senast valda preset (eller standard om ljudet är eget)
   let lastPreset = synthPreset === CUSTOM ? DEFAULT_PRESET : synthPreset;
   ui.preset.addEventListener('change', () => { if (ui.preset.value !== CUSTOM) lastPreset = ui.preset.value; });
-  $('synth-reset').addEventListener('click', () => applySynth(presetParams(lastPreset), lastPreset));
+  $('synth-reset').addEventListener('click', () => {
+    // Laddat från biblioteket? Då går "Återställ" tillbaka till det biblioteksljudet.
+    const lib = synthPreset === CUSTOM && PRESET_LIBRARY.find((e) => e.name === synthLib.name);
+    if (lib) loadLibraryPreset(lib, false);
+    else { synthLib = { name: '', edited: false }; applySynth(presetParams(lastPreset), lastPreset); }
+  });
   $('synth-random').addEventListener('click', randomSynth);
 }
 
@@ -808,11 +888,18 @@ function layoutPads() {
     return;
   }
 
-  // Fyll höjden ner till sidfoten
-  const top = container.getBoundingClientRect().top + window.scrollY;
-  const footer = document.querySelector('footer').offsetHeight;
-  const height = Math.max(360, window.innerHeight - top - footer - 8);
-  container.style.height = `${height}px`;
+  let height;
+  if (FIXED_SCREEN) {
+    // Fast skärm: ytan får den höjd som blir över (CSS flex), ingen scroll
+    container.style.height = '';
+    height = container.clientHeight;
+  } else {
+    // Fyll höjden ner till sidfoten
+    const top = container.getBoundingClientRect().top + window.scrollY;
+    const footer = document.querySelector('footer').offsetHeight;
+    height = Math.max(360, window.innerHeight - top - footer - 8);
+    container.style.height = `${height}px`;
+  }
   container.style.gridTemplateColumns = '';
 
   const cs = getComputedStyle(container);
@@ -863,6 +950,11 @@ function applyGap() {
 }
 
 // ---------- Uppstart ----------
+// Mobil och iPad: hela sidan ryms på skärmen och scrollar inte (bara Inställningar scrollar inuti).
+// (?fast i adressen slår på det även på dator.)
+const FIXED_SCREEN = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 1
+  || new URLSearchParams(location.search).has('fast');
+document.documentElement.classList.toggle('fixed-screen', FIXED_SCREEN);
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
 loadSettings();
 buildFormationButtons();
