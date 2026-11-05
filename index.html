@@ -11,6 +11,10 @@
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
 </head>
 <body data-tab="notes">
   <!-- Webbläsare kräver ett klick innan ljud får spelas -->
@@ -26,7 +30,10 @@
       <button type="button" data-tab="chords">Ackord</button>
       <button type="button" data-tab="settings">Inställningar</button>
     </nav>
-    <span id="midi-status" class="status">MIDI: ej ansluten</span>
+    <div class="header-right">
+      <button type="button" id="install-btn" hidden title="Installera Hover Pads som app">Installera</button>
+      <span id="midi-status" class="status">MIDI: ej ansluten</span>
+    </div>
   </header>
 
   <!-- Det enda som syns i spelläge: preset och volym -->
@@ -39,15 +46,18 @@
     </label>
   </section>
 
-  <!-- ===== Fliken Inställningar ===== -->
+  <!-- ===== Fliken Inställningar (underflikar) ===== -->
   <section id="settings" class="only-settings">
-    <div id="controls">
-      <fieldset>
-        <legend>Utgång</legend>
-        <label><input type="checkbox" id="out-audio" checked /> Ljud</label>
-        <label><input type="checkbox" id="out-midi" /> MIDI</label>
-      </fieldset>
+    <nav id="settings-nav">
+      <button type="button" data-panel="play">Spel</button>
+      <button type="button" data-panel="notes">Toner</button>
+      <button type="button" data-panel="chords">Ackord</button>
+      <button type="button" data-panel="sound">Ljud</button>
+      <button type="button" data-panel="io">Ut &amp; MIDI</button>
+      <button type="button" data-panel="mine">Mina presets</button>
+    </nav>
 
+    <div class="panel" data-panel="play">
       <fieldset>
         <legend>Spelsätt</legend>
         <label>
@@ -56,32 +66,34 @@
             <option value="oneshot">Kort ton vid mouseover</option>
           </select>
         </label>
-        <label title="Tomrum mellan rutorna, så att musen kan flyttas utan att trigga dem">Mellanrum
-          <input type="range" id="pad-gap" min="0" max="160" step="4" value="48" />
-          <span id="gap-value">48 px</span>
-        </label>
       </fieldset>
 
       <fieldset id="formation-set">
         <legend>Formation</legend>
         <input type="hidden" id="formation" value="grid" />
         <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
+        <div class="formation-opts">
+          <label class="not-ring" title="Tomrum mellan rutorna, så att musen kan flyttas utan att trigga dem">Mellanrum
+            <input type="range" id="pad-gap" min="0" max="160" step="4" value="48" />
+            <span id="gap-value" class="val">48 px</span>
+          </label>
+          <label class="only-strings">Stränglängd
+            <input type="range" id="string-length" min="20" max="100" step="5" value="100" />
+            <span id="string-length-value" class="val">100 %</span>
+          </label>
+          <label class="only-ring" title="Hur tätt sektorerna ligger">Mellanrum mellan sektorer
+            <input type="range" id="ring-gap" min="0" max="60" step="1" value="12" />
+            <span id="ring-gap-value" class="val">12 px</span>
+          </label>
+          <label class="only-ring" title="Den tomma vilytan i mitten">Hålets storlek
+            <input type="range" id="ring-hole" min="15" max="70" step="1" value="40" />
+            <span id="ring-hole-value" class="val">40 %</span>
+          </label>
+        </div>
       </fieldset>
+    </div>
 
-      <fieldset>
-        <legend>MIDI</legend>
-        <label>Enhet
-          <select id="midi-out"><option value="">– ingen –</option></select>
-        </label>
-        <label>Kanal
-          <input type="number" id="midi-ch" min="1" max="16" value="1" />
-        </label>
-        <label>Velocity
-          <input type="range" id="velocity" min="1" max="127" value="100" />
-        </label>
-        <button id="panic" type="button" title="Skicka 'All Notes Off'">Panik</button>
-      </fieldset>
-
+    <div class="panel" data-panel="notes">
       <fieldset>
         <legend>Sidan Toner</legend>
         <label>Antal
@@ -105,50 +117,95 @@
       </fieldset>
     </div>
 
-    <fieldset id="chord-settings">
-      <legend>Sidan Ackord</legend>
-      <div class="row">
-        <label>Antal
-          <select id="chord-count">
-            <option>2</option><option>3</option><option selected>4</option><option>5</option>
-            <option>6</option><option>7</option><option>8</option>
-          </select>
-        </label>
-        <label>Oktav
-          <input type="number" id="chord-octave" min="1" max="7" value="4" />
-        </label>
-        <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
-        <label title="Visar voicing och oktavläge per ackord"><input type="checkbox" id="chord-advanced" /> Avancerat (voicing)</label>
-      </div>
-      <div class="row" id="chord-colors">
-        <span>Färger</span>
-        <button type="button" id="chord-colors-preset" title="1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos">
-          <span class="swatches"><i style="background:#e5484d"></i><i style="background:#f5c518"></i><i style="background:#3fb950"></i><i style="background:#3b82f6"></i><i style="background:#f97316"></i><i style="background:#a855f7"></i><i style="background:#ec4899"></i><i style="background:#14b8a6"></i></span>
-          Standardfärger
-        </button>
-        <button type="button" id="chord-colors-none">Ingen färg</button>
-      </div>
-      <!-- Ett ackordval per ruta (byggs av app.js) -->
-      <div id="chord-editor"></div>
-    </fieldset>
-
-    <!-- Alla reglage för ljudmotorn (byggs av app.js från SYNTH_PARAMS i synth.js) -->
-    <fieldset id="synth">
-      <legend>Ljudmotor</legend>
-      <div id="library">
-        <div class="lib-head">
-          <strong>Presetbibliotek</strong>
-          <span>100 färdiga ljud – klicka för att ladda in i <em>Eget</em> och provlyssna. Skruva sedan vidare om du vill.</span>
+    <div class="panel" data-panel="chords">
+      <fieldset id="chord-settings">
+        <legend>Sidan Ackord</legend>
+        <div class="row">
+          <label>Antal
+            <select id="chord-count">
+              <option>2</option><option>3</option><option selected>4</option><option>5</option>
+              <option>6</option><option>7</option><option>8</option>
+            </select>
+          </label>
+          <label>Oktav
+            <input type="number" id="chord-octave" min="1" max="7" value="4" />
+          </label>
+          <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
+          <label title="Visar voicing och oktavläge per ackord"><input type="checkbox" id="chord-advanced" /> Avancerat (voicing)</label>
         </div>
-        <div id="lib-cats"></div>
-        <div id="lib-list"></div>
-      </div>
-      <div id="synth-groups"></div>
-      <div id="synth-actions">
-        <button id="synth-reset" type="button">Återställ preset</button>
-        <button id="synth-random" type="button">Slumpa ljud</button>
-      </div>
-    </fieldset>
+        <div class="row" id="chord-colors">
+          <span>Färger</span>
+          <button type="button" id="chord-colors-preset" title="1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos">
+            <span class="swatches"><i style="background:#e5484d"></i><i style="background:#f5c518"></i><i style="background:#3fb950"></i><i style="background:#3b82f6"></i><i style="background:#f97316"></i><i style="background:#a855f7"></i><i style="background:#ec4899"></i><i style="background:#14b8a6"></i></span>
+            Standardfärger
+          </button>
+          <button type="button" id="chord-colors-none">Ingen färg</button>
+        </div>
+        <!-- Ett ackordval per ruta (byggs av js/chords.js) -->
+        <div id="chord-editor"></div>
+      </fieldset>
+    </div>
+
+    <div class="panel" data-panel="sound">
+      <!-- Alla reglage för ljudmotorn (byggs av js/sound.js från SYNTH_PARAMS i js/synth.js) -->
+      <fieldset id="synth">
+        <legend>Ljudmotor</legend>
+        <div id="library">
+          <div class="lib-head">
+            <strong>Presetbibliotek</strong>
+            <span>100 färdiga ljud – klicka för att ladda in i <em>Eget</em> och provlyssna. Skruva sedan vidare om du vill.</span>
+          </div>
+          <div id="lib-cats"></div>
+          <div id="lib-list"></div>
+        </div>
+        <div id="synth-groups"></div>
+        <div id="synth-actions">
+          <button id="synth-reset" type="button">Återställ preset</button>
+          <button id="synth-random" type="button">Slumpa ljud</button>
+        </div>
+      </fieldset>
+    </div>
+
+    <div class="panel" data-panel="io">
+      <fieldset>
+        <legend>Utgång</legend>
+        <label><input type="checkbox" id="out-audio" checked /> Ljud</label>
+        <label><input type="checkbox" id="out-midi" /> MIDI</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>MIDI</legend>
+        <label>Enhet
+          <select id="midi-out"><option value="">– ingen –</option></select>
+        </label>
+        <label>Kanal
+          <input type="number" id="midi-ch" min="1" max="16" value="1" />
+        </label>
+        <label>Velocity
+          <input type="range" id="velocity" min="1" max="127" value="100" />
+        </label>
+        <button id="panic" type="button" title="Skicka 'All Notes Off'">Panik</button>
+      </fieldset>
+    </div>
+
+    <!-- Användarens egna presets: sparar ALLT (ljud, ackord, färger, formation, inställningar) -->
+    <div class="panel" data-panel="mine">
+      <fieldset id="user-presets">
+        <legend>Mina presets</legend>
+        <p class="hint">Spara hela uppsättningen – ljud, ackord, färger, voicing, toner, formation och mellanrum – under ett namn, och ladda den igen med ett klick.</p>
+        <form id="up-save" class="row">
+          <input type="text" id="up-name" placeholder="Namn, t.ex. Kvällsjam" maxlength="40" autocomplete="off" />
+          <button type="submit">Spara</button>
+        </form>
+        <div id="up-list"></div>
+        <div class="row up-file">
+          <button type="button" id="up-export">Exportera alla till fil</button>
+          <label class="file-btn">Importera från fil
+            <input type="file" id="up-import" accept="application/json,.json" hidden />
+          </label>
+        </div>
+      </fieldset>
+    </div>
   </section>
 
   <!-- ===== Spelflikarna ===== -->
@@ -189,6 +246,8 @@
   <script src="js/sound.js"></script>
   <script src="js/view.js"></script>
   <script src="js/settings.js"></script>
+  <script src="js/user-presets.js"></script>
+  <script src="js/pwa.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

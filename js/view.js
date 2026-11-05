@@ -12,6 +12,16 @@ function showTab(tab) {
   layoutPads();
 }
 
+// ---------- Underflikar i Inställningar ----------
+function showSettingsPanel(panel) {
+  if (!document.querySelector(`#settings .panel[data-panel="${panel}"]`)) panel = 'play';
+  document.querySelectorAll('#settings-nav button').forEach((b) =>
+    b.classList.toggle('on', b.dataset.panel === panel));
+  document.querySelectorAll('#settings .panel').forEach((p) =>
+    p.classList.toggle('on', p.dataset.panel === panel));
+  localStorage.setItem('hoverPadsSettingsTab', panel);
+}
+
 // ---------- Formation (layout.js räknar ut positionerna) ----------
 // Antal kolumner i rutnätet.
 function gridColumns(container, n) {
@@ -69,8 +79,25 @@ function syncFormationButtons() {
   });
 }
 
+function formationOpts() {
+  return {
+    stringLength: Number(ui.stringLength.value) / 100,
+    ringGap: Number(ui.ringGap.value),
+    ringHole: Number(ui.ringHole.value) / 100,
+  };
+}
+
+// Visar värdena bredvid reglagen och placerar om
+function applyFormationOpts() {
+  $('string-length-value').textContent = `${ui.stringLength.value} %`;
+  $('ring-gap-value').textContent = `${ui.ringGap.value} px`;
+  $('ring-hole-value').textContent = `${ui.ringHole.value} %`;
+  layoutPads();
+}
+
 function layoutPads() {
   const f = ui.formation.value;
+  document.body.dataset.formation = f; // styr vilka formationsreglage som syns
   ui.pads.dataset.formation = f;
   ui.chordPads.dataset.formation = f;
 
@@ -108,7 +135,7 @@ function layoutPads() {
   const topPad = parseFloat(cs.paddingTop);
   const W = container.clientWidth - left - parseFloat(cs.paddingRight);
   const H = height - topPad - parseFloat(cs.paddingBottom);
-  const rects = LAYOUTS[f](pads.length, W, H, Number(ui.padGap.value));
+  const rects = LAYOUTS[f](pads.length, W, H, Number(ui.padGap.value), formationOpts());
   pads.forEach((p, i) => {
     const r = rects[i];
     Object.assign(p.el.style, {

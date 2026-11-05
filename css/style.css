@@ -57,11 +57,35 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
   gap: 12px;
   padding: 10px 24px 16px;
 }
-#controls {
+/* Underflikar */
+#settings-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 4px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
 }
+#settings-nav button {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 5px 14px;
+  color: var(--muted);
+}
+#settings-nav button:hover { color: var(--text); border-color: var(--border); }
+#settings-nav button.on { background: var(--panel); border-color: var(--accent); color: var(--text); }
+#settings .panel { display: none; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
+#settings .panel.on { display: flex; }
+#settings .panel > fieldset { flex: 1 1 auto; }
+.hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; }
+.val { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+
+/* Formationsreglage: bara de som gäller vald formation syns */
+#formation-set { display: block; }
+.formation-opts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 12px; }
+body:not([data-formation="strings"]) .only-strings,
+body:not([data-formation="ring"]) .only-ring,
+body[data-formation="ring"] .not-ring { display: none; }
 
 fieldset {
   background: var(--panel);
@@ -272,7 +296,6 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 .knob.off { opacity: 0.35; }
 #synth-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
 
-#gap-value { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 @media (max-width: 600px) {
   html:not(.fixed-screen) .pad-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -300,7 +323,12 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 .pad.editing { outline: 2px solid var(--accent); outline-offset: 4px; }
 
 /* Formationsknappar */
-#formation-buttons { display: flex; gap: 8px; }
+#formation-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 480px) {
+  #formation-buttons { gap: 5px; }
+  .formation-btn { width: 60px; padding: 6px 2px 5px; font-size: 0.7rem; }
+  .formation-btn svg { width: 36px; height: 27px; }
+}
 .formation-btn {
   display: flex;
   flex-direction: column;
@@ -538,3 +566,32 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   box-shadow: 0 0 24px rgba(var(--c-rgb), 0.4);
 }
 .pad-grid[data-formation="strings"] .pad.colored .strum i { background: rgba(var(--c-rgb), 0.8); }
+
+/* Mina presets */
+#user-presets { display: block; max-width: 720px; }
+#up-save { display: flex; gap: 8px; margin-bottom: 12px; }
+#up-name {
+  flex: 1; min-width: 0; background: #262938; color: var(--text);
+  border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font: inherit;
+}
+#up-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.up-empty { color: var(--muted); font-size: 0.85rem; }
+.up-item {
+  display: grid; grid-template-columns: auto 1fr auto auto auto; align-items: center; gap: 10px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: #20222e;
+}
+.up-item.on { border-color: var(--accent); }
+.up-item .swatches i { width: 6px; height: 18px; }
+.up-item strong { font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.up-item small { color: var(--muted); font-size: 0.75rem; }
+.up-item .up-del { color: #ff8a8a; }
+.up-file { display: flex; flex-wrap: wrap; gap: 8px; }
+.file-btn {
+  background: #262938; border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer;
+}
+.file-btn:hover { border-color: var(--accent); }
+
+/* Installera-knappen (visas bara när webbläsaren erbjuder installation) */
+.header-right { display: flex; align-items: center; gap: 8px; }
+#install-btn { border-radius: 999px; font-size: 0.8rem; padding: 4px 12px; border-color: var(--accent); }
+#install-btn[hidden] { display: none; }

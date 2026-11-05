@@ -9,12 +9,16 @@ loadSettings();
 buildFormationButtons();
 document.body.classList.toggle('advanced', isAdvanced());
 applyGap();
+applyFormationOpts();
+showSettingsPanel(localStorage.getItem('hoverPadsSettingsTab') || 'play');
 setupSynthUi();
 buildNotePads();
 buildChordPicker();
 buildChordPads();
 setupStrum();
 setupTouch();
+setupUserPresets();
+setupPwa();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
@@ -25,6 +29,9 @@ $('chord-colors-none').addEventListener('click', () => setChordColors(CHORD_PALE
 ui.noteCount.addEventListener('change', buildNotePads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
 ui.padGap.addEventListener('input', applyGap);
+[ui.stringLength, ui.ringGap, ui.ringHole].forEach((el) => el.addEventListener('input', applyFormationOpts));
+document.querySelectorAll('#settings-nav button').forEach((b) =>
+  b.addEventListener('click', () => showSettingsPanel(b.dataset.panel)));
 ui.formation.addEventListener('change', layoutPads);
 ui.chordAdvanced.addEventListener('change', onAdvancedChange);
 let resizeFrame = 0;

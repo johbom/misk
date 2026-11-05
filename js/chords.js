@@ -15,13 +15,17 @@ const CHORD_SHIFTS = [[-1, 'Oktav −1'], [0, 'Oktav ±0'], [1, 'Oktav +1']];
 // Alla 8 ackordval sparas, även de som inte syns när antalet är lägre.
 let chords = loadChords();
 
+// Fyller i det som saknas i äldre sparade ackord
+function normalizeChord(c, i) {
+  return { voicing: 'root', shift: 0, color: CHORD_PALETTE[i], ...c };
+}
+
 function loadChords() {
-  const fill = (c, i) => ({ voicing: 'root', shift: 0, color: CHORD_PALETTE[i], ...c });
   try {
     const saved = JSON.parse(localStorage.getItem('hoverPadsChords'));
-    if (Array.isArray(saved) && saved.length === MAX_CHORDS) return saved.map(fill);
+    if (Array.isArray(saved) && saved.length === MAX_CHORDS) return saved.map(normalizeChord);
   } catch {}
-  return DEFAULT_CHORDS.map(fill);
+  return DEFAULT_CHORDS.map(normalizeChord);
 }
 
 const saveChords = () => localStorage.setItem('hoverPadsChords', JSON.stringify(chords));

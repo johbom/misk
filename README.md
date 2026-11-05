@@ -16,13 +16,22 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt
 
 ## Inställningar (fliken)
 
-- **Utgång:** ljud i webbläsaren, MIDI, eller båda.
-- **Spelsätt:** håll tonen så länge musen är över, eller en kort ton.
-- **Formation:** klicka på en av bildknapparna för hur knapparna ska ligga – *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* (bollar i förskjutna rader) eller *Strängar* (långa lodräta strängar). Gäller båda spelflikarna.
-- **Mellanrum:** tomrum mellan rutorna (0–160 px), så att musen kan flyttas mellan dem utan att något spelas.
-- **MIDI:** välj enhet, kanal och velocity. *Panik* skickar All Notes Off.
+Inställningarna är uppdelade i underflikar:
 
-Inställningar och ackordval sparas i webbläsaren.
+- **Spel** – spelsätt (håll tonen eller kort ton) och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
+- **Toner** – antal toner (2–32), grundton, oktav och skala.
+- **Ackord** – antal ackord, oktav, bas, avancerat läge (voicing), färger och ackordlistan.
+- **Ljud** – presetbiblioteket och alla reglage för ljudmotorn.
+- **Ut & MIDI** – ljud och/eller MIDI, MIDI-enhet, kanal och velocity. *Panik* skickar All Notes Off.
+- **Mina presets** – se nedan.
+
+Allt sparas i webbläsaren.
+
+## Mina presets
+
+Under *Inställningar → Mina presets* sparar du **hela uppsättningen** under ett eget namn: ljud, ackord, färger, voicing, toner, formation, mellanrum, stränglängd, ringens inställningar och utgångar. Ett klick på *Ladda* ställer tillbaka allt. *Skriv över* uppdaterar ett sparat preset med det du har nu.
+
+Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som backup eller för att flytta dem till en annan dator/telefon); *Importera från fil* läser in dem igen.
 
 ## Ljudmotor
 
@@ -40,9 +49,15 @@ Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, 
 Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ preset* går tillbaka, *Slumpa ljud* hittar på något nytt.
 Uppladdade ljudfiler går också genom effekterna.
 
-## Mobil och iPad
+## App (PWA), mobil och iPad
 
-På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymper för att få plats i alla formationer, stående som liggande. Bara fliken *Inställningar* scrollar inuti sig själv. Lägg gärna sidan på hemskärmen (*Dela → Lägg till på hemskärmen*) så öppnas den i helskärm utan webbläsarlist. På en dator kan samma läge slås på med `?fast` i adressen.
+Hover Pads är en installerbar webbapp som fungerar **offline** efter första besöket.
+
+- **iPhone/iPad:** öppna sidan i Safari → *Dela* → *Lägg till på hemskärmen*. Appen öppnas i helskärm utan webbläsarlist.
+- **Android, Chrome och Edge på dator:** tryck på *Installera* uppe till höger (eller i webbläsarens meny).
+- Nya versioner hämtas i bakgrunden och används nästa gång appen startas.
+
+På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymper för att få plats i alla formationer, stående som liggande. Bara fliken *Inställningar* scrollar inuti sig själv. På en dator kan samma läge slås på med `?fast` i adressen.
 
 ## MIDI
 
@@ -55,13 +70,25 @@ På Mac kan du skicka till t.ex. Logic/Ableton via en virtuell port: *Ljud-MIDI-
 python3 -m http.server 8080
 ```
 
-Öppna sedan http://localhost:8080.
+Öppna sedan http://localhost:8080. Lokalt används ingen offline-cache (så att ändringar syns direkt); lägg till `?pwa` i adressen för att prova service workern.
 
 ## Filer
 
 - `index.html` – sidan
-- `style.css` – utseende
-- `layout.js` – formationerna (cirkel, bikupa, strängar)
-- `synth.js` – ljudmotorn (Web Audio), reglage och presets
-- `presets.js` – presetbiblioteket med 100 ljud
-- `app.js` – rutor, hover-logik, MIDI (Web MIDI) och inställningar
+- `manifest.webmanifest`, `sw.js` – PWA: appinformation och offline-cache (höj `VERSION` i `sw.js` när filistan ändras)
+- `css/style.css` – utseende
+- `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`)
+- `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
+- `js/sound-library.js` – presetbiblioteket med 100 ljud
+- `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
+- `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
+- `js/audio.js` – ljud- och MIDI-utgång
+- `js/pads.js` – spela/släppa rutor, mus och pekskärm
+- `js/notes.js` – sidan Toner
+- `js/chords.js` – sidan Ackord: ackord, voicing, färger, harpa och högerklicksmeny
+- `js/sound.js` – ljudreglagen och presetbiblioteket i Inställningar
+- `js/view.js` – flikar, underflikar och formationer
+- `js/settings.js` – sparade inställningar
+- `js/user-presets.js` – Mina presets (spara/ladda/exportera)
+- `js/pwa.js` – service worker och Installera-knapp
+- `js/main.js` – uppstart

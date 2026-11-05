@@ -1,7 +1,8 @@
 // Formationer för rutorna. Rutnät sköts av CSS grid; de andra räknas ut här
 // och placeras med absoluta positioner inne i sin behållare.
 //
-// Varje funktion får: n (antal rutor), W och H (ytan i px), gap (mellanrum i px)
+// Varje funktion får: n (antal rutor), W och H (ytan i px), gap (mellanrum i px),
+// opts ({ stringLength, ringGap, ringHole } från inställningarna)
 // och returnerar en lista med { x, y, w, h, font } – en per ruta, i spelordning.
 // Ringen lägger dessutom till clip (formen) och label (var texten ska stå).
 
@@ -49,7 +50,6 @@ const FORMATION_ICONS = {
     `<line x1="${8 + i * 8}" y1="4" x2="${8 + i * 8}" y2="32" stroke-width="2" stroke-linecap="round"/>`).join('')),
 };
 
-const RING_HOLE = 0.4; // hålets storlek i ringen, andel av radien
 const MIN_BALL = 60; // minsta bollstorlek innan mellanrummet krymps
 const MIN_STRING = 40; // minsta strängbredd innan mellanrummet krymps
 
@@ -81,13 +81,14 @@ const LAYOUTS = {
 
   // Ring delad i sektorer, med ett tomt hål i mitten där muspekaren kan vila.
   // Första rutan högst upp, sedan medurs.
-  ring(n, W, H, gap) {
+  // opts.ringGap = mellanrum mellan sektorerna (px), opts.ringHole = hålets radie (andel av ringens).
+  ring(n, W, H, gap, opts) {
     const R = Math.min(W, H) / 2;
-    const r = R * RING_HOLE;
+    const r = R * opts.ringHole;
     const step = (2 * Math.PI) / n;
     const mid = (R + r) / 2;
-    // Mellanrummet får ta högst knappt halva bågen – vila kan man ju i mitten
-    const g = Math.min(gap, mid * step * 0.45);
+    // Mellanrummet får ta högst knappt halva bågen, annars försvinner sektorerna
+    const g = Math.min(opts.ringGap, mid * step * 0.45);
     const font = Math.min(28, (R - r) * 0.28, (mid * step - g) * 0.3);
     const rects = Array.from({ length: n }, (_, i) => {
       const a = -Math.PI / 2 + i * step; // sektorns mitt
@@ -133,7 +134,8 @@ const LAYOUTS = {
   },
 
   // Långa lodräta strängar sida vid sida, från vänster (lägst) till höger.
-  strings(n, W, H, gap) {
+  // opts.stringLength = strängarnas längd som andel av höjden (centrerade lodrätt).
+  strings(n, W, H, gap, opts) {
     const MAX = 120;
     const { g, s: fitted } = fitGap(gap, MIN_STRING, (g) => (W - g * (n - 1)) / n);
     let s = Math.max(12, Math.min(fitted, MAX));
@@ -144,6 +146,9 @@ const LAYOUTS = {
       s = (W - gg * (n - 1)) / n;
     }
     const x0 = (W - (n * s + (n - 1) * gg)) / 2;
-    return Array.from({ length: n }, (_, i) => ({ x: x0 + i * (s + gg), y: 0, w: s, h: H, font: Math.min(14, s * 0.6) }));
+    const h = H * opts.stringLength;
+    return Array.from({ length: n }, (_, i) => ({
+      x: x0 + i * (s + gg), y: (H - h) / 2, w: s, h, font: Math.min(14, s * 0.6),
+    }));
   },
 };
