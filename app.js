@@ -43,6 +43,7 @@ const ui = {
   outMidi: $('out-midi'),
   playMode: $('play-mode'),
   padGap: $('pad-gap'),
+  formation: $('formation'),
   root: $('root'),
   octave: $('octave'),
   scale: $('scale'),
@@ -310,9 +311,6 @@ function buildChordPads() {
   ui.chordPads.innerHTML = '';
 
   const count = Number(ui.chordCount.value);
-  const cols = count <= 4 ? count : Math.ceil(count / 2);
-  ui.chordPads.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-
   for (let i = 0; i < count; i++) {
     const chord = chords[i];
     const el = document.createElement('button');
@@ -330,6 +328,7 @@ function buildChordPads() {
     ui.chordPads.append(el);
   }
   buildChordEditor();
+  layoutPads();
 }
 
 // Ackordvalen ligger under fliken Inställningar: en rad per ruta.
@@ -521,12 +520,58 @@ function showTab(tab) {
     b.classList.toggle('on', b.dataset.tab === tab)
   );
   localStorage.setItem('hoverPadsTab', tab);
+  layoutPads();
+}
+
+// ---------- Formation (layout.js räknar ut positionerna) ----------
+function layoutPads() {
+  const f = ui.formation.value;
+  ui.pads.dataset.formation = f;
+  ui.chordPads.dataset.formation = f;
+
+  const tab = document.body.dataset.tab;
+  const container = tab === 'notes' ? ui.pads : tab === 'chords' ? ui.chordPads : null;
+  if (!container) return; // fliken Inställningar: inget att placera
+  const pads = container === ui.pads ? notePads : chordPads;
+  pads.forEach((p) => p.el.removeAttribute('style'));
+
+  if (f === 'grid') {
+    container.style.height = '';
+    const count = pads.length;
+    container.style.gridTemplateColumns =
+      container === ui.pads ? '' : `repeat(${count <= 4 ? count : Math.ceil(count / 2)}, 1fr)`;
+    return;
+  }
+
+  // Fyll höjden ner till sidfoten
+  const top = container.getBoundingClientRect().top + window.scrollY;
+  const footer = document.querySelector('footer').offsetHeight;
+  const height = Math.max(360, window.innerHeight - top - footer - 8);
+  container.style.height = `${height}px`;
+  container.style.gridTemplateColumns = '';
+
+  const cs = getComputedStyle(container);
+  const left = parseFloat(cs.paddingLeft);
+  const topPad = parseFloat(cs.paddingTop);
+  const W = container.clientWidth - left - parseFloat(cs.paddingRight);
+  const H = height - topPad - parseFloat(cs.paddingBottom);
+  const rects = LAYOUTS[f](pads.length, W, H, Number(ui.padGap.value));
+  pads.forEach((p, i) => {
+    const r = rects[i];
+    Object.assign(p.el.style, {
+      left: `${left + r.x}px`,
+      top: `${topPad + r.y}px`,
+      width: `${r.w}px`,
+      height: `${r.h}px`,
+      fontSize: `${Math.max(11, r.font)}px`,
+    });
+  });
 }
 
 function log(msg) { ui.log.textContent = msg; }
 
 // ---------- Inställningar ----------
-const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'root', 'octave', 'scale',
+const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'formation', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'volume', 'midiCh', 'velocity'];
 
 function loadSettings() {
@@ -549,10 +594,12 @@ function saveSettings() {
 function applyGap() {
   document.documentElement.style.setProperty('--pad-gap', `${ui.padGap.value}px`);
   $('gap-value').textContent = `${ui.padGap.value} px`;
+  layoutPads();
 }
 
 // ---------- Uppstart ----------
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
+Object.entries(FORMATIONS).forEach(([v, text]) => ui.formation.append(new Option(text, v)));
 loadSettings();
 applyGap();
 setupSynthUi();
@@ -565,6 +612,12 @@ for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
 ui.chordCount.addEventListener('change', buildChordPads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
 ui.padGap.addEventListener('input', applyGap);
+ui.formation.addEventListener('change', layoutPads);
+let resizeFrame = 0;
+window.addEventListener('resize', () => {
+  cancelAnimationFrame(resizeFrame);
+  resizeFrame = requestAnimationFrame(layoutPads);
+});
 ui.volume.addEventListener('input', () => engine && engine.setVolume(Number(ui.volume.value)));
 ui.midiOut.addEventListener('change', () => { panic(); updateMidiStatus(); saveSettings(); });
 ui.outMidi.addEventListener('change', () => { if (!ui.outMidi.checked) panic(); });

@@ -176,8 +176,60 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Ackordrutor */
 .chord-pad { min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
-.chord-pad .chord-name { font-size: 2rem; }
+.chord-pad .chord-name { font-size: 1.7em; }
 .chord-pad small { position: static; }
+
+/* Formationer: allt utom rutnät placeras med absoluta positioner av layout.js */
+.pad-grid:not([data-formation="grid"]) {
+  display: block;
+  position: relative;
+  flex: none;
+}
+.pad-grid:not([data-formation="grid"]) .pad {
+  position: absolute;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2em;
+}
+.pad-grid:not([data-formation="grid"]) .pad small { position: static; font-size: 0.55em; }
+
+/* Bollar */
+.pad-grid[data-formation="circle"] .pad,
+.pad-grid[data-formation="hex"] .pad {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #343a52, #1b1d29 70%);
+}
+.pad-grid[data-formation="circle"] .pad.active,
+.pad-grid[data-formation="hex"] .pad.active {
+  background: radial-gradient(circle at 35% 30%, #ffd08a, var(--hit) 45%, #ff7a45);
+}
+
+/* Strängar: en tunn lysande sträng mitt i en hel klickbar yta */
+.pad-grid[data-formation="strings"] .pad {
+  justify-content: flex-end;
+  padding-bottom: 14px;
+  border-radius: 999px;
+  border-color: transparent;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1.5px), #8d93ad calc(50% - 1.5px),
+      #8d93ad calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+}
+.pad-grid[data-formation="strings"] .pad small { display: none; }
+.pad-grid[data-formation="strings"] .pad .chord-name { font-size: 1.2em; }
+.pad-grid[data-formation="strings"] .pad.active {
+  transform: none;
+  color: var(--hit);
+  background:
+    linear-gradient(90deg, transparent calc(50% - 3px), var(--hit) calc(50% - 3px),
+      var(--hit) calc(50% + 3px), transparent calc(50% + 3px)),
+    linear-gradient(180deg, rgba(255, 181, 71, 0.18), rgba(255, 122, 69, 0.06));
+  box-shadow: 0 0 24px rgba(255, 181, 71, 0.35);
+}
 
 /* Ackordval under Inställningar */
 #chord-settings { display: block; }

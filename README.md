@@ -15,6 +15,7 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt
 
 - **Utgång:** ljud i webbläsaren, MIDI, eller båda.
 - **Spelsätt:** håll tonen så länge musen är över, eller en kort ton.
+- **Formation:** hur knapparna ligger – *Rutnät*, *Cirkel* (bollar i ring), *Bikupa* (bollar i förskjutna rader) eller *Strängar* (långa lodräta strängar). Gäller båda spelflikarna.
 - **Mellanrum:** tomrum mellan rutorna (0–160 px), så att musen kan flyttas mellan dem utan att något spelas.
 - **MIDI:** välj enhet, kanal och velocity. *Panik* skickar All Notes Off.
 
@@ -51,5 +52,6 @@ python3 -m http.server 8080
 
 - `index.html` – sidan
 - `style.css` – utseende
+- `layout.js` – formationerna (cirkel, bikupa, strängar)
 - `synth.js` – ljudmotorn (Web Audio), reglage och presets
 - `app.js` – rutor, hover-logik, MIDI (Web MIDI) och inställningar
