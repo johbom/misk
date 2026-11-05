@@ -277,3 +277,24 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 @media (max-width: 600px) {
   .pad-grid { grid-template-columns: repeat(2, 1fr) !important; }
 }
+
+/* Högerklicksmenyn på sidan Ackord */
+#chord-picker {
+  position: fixed;
+  z-index: 50;
+  width: 300px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+#chord-picker[hidden] { display: none; }
+.cp-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.cp-head button { padding: 2px 8px; }
+.cp-label { color: var(--muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; margin: 8px 0 4px; }
+.cp-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+#cp-types { grid-template-columns: repeat(5, 1fr); }
+.cp-grid button { padding: 4px 0; font-size: 0.8rem; }
+.cp-grid button.on { background: var(--accent); border-color: var(--accent); color: white; }
+.pad.editing { outline: 2px solid var(--accent); outline-offset: 4px; }

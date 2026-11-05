@@ -183,6 +183,7 @@ function attachHover(pad, hitEl) {
 
 function trigger(pad) {
   if (!audioCtx) return; // inte startat än
+  if (picker.open) return; // tyst medan högerklicksmenyn är öppen
   release(pad);
   pad.el.classList.add('active');
 
@@ -324,6 +325,10 @@ function buildChordPads() {
     };
     chordPads.push(pad);
     attachHover(pad, el);
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      openChordPicker(i, e.clientX, e.clientY);
+    });
     renderChordPad(pad);
     ui.chordPads.append(el);
   }
@@ -352,11 +357,7 @@ function buildChordEditor() {
     name.textContent = chordName(chord);
 
     const onPick = () => {
-      release(pad);
-      chord.root = Number(selRoot.value);
-      chord.type = selType.value;
-      saveChords();
-      renderChordPad(pad);
+      setChord(i, Number(selRoot.value), selType.value);
       name.textContent = chordName(chord);
     };
     selRoot.addEventListener('change', onPick);
@@ -371,6 +372,82 @@ function renderChordPad(pad) {
 }
 
 const updateChordLabels = () => { chordPads.forEach(release); chordPads.forEach(renderChordPad); };
+
+// Byt ackord på ruta i – används av både Inställningar och högerklicksmenyn.
+function setChord(i, root, type) {
+  const pad = chordPads[i];
+  if (pad) release(pad);
+  chords[i].root = root;
+  chords[i].type = type;
+  saveChords();
+  if (pad) renderChordPad(pad);
+}
+
+// ---------- Högerklicksmeny: byt ackord direkt på rutan ----------
+const picker = {
+  el: $('chord-picker'),
+  title: $('cp-title'),
+  roots: [],
+  types: [],
+  index: -1,
+  get open() { return !this.el.hidden; },
+};
+
+function buildChordPicker() {
+  CHORD_ROOTS.forEach((n, r) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = n;
+    b.addEventListener('click', () => pickChord(r, chords[picker.index].type));
+    $('cp-roots').append(b);
+    picker.roots.push(b);
+  });
+  CHORD_TYPES.forEach(([suffix, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = label;
+    b.addEventListener('click', () => pickChord(chords[picker.index].root, suffix));
+    $('cp-types').append(b);
+    picker.types.push(b);
+  });
+  $('cp-close').addEventListener('click', closeChordPicker);
+  // Klick utanför eller Esc stänger
+  document.addEventListener('pointerdown', (e) => {
+    if (picker.open && !picker.el.contains(e.target)) closeChordPicker();
+  }, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeChordPicker(); });
+}
+
+function openChordPicker(i, x, y) {
+  chordPads.forEach(release);
+  chordPads.forEach((p, j) => p.el.classList.toggle('editing', j === i));
+  picker.index = i;
+  renderChordPicker();
+  picker.el.hidden = false;
+  // Lägg menyn vid muspekaren, men håll den inom fönstret
+  const { offsetWidth: w, offsetHeight: h } = picker.el;
+  picker.el.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`;
+  picker.el.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`;
+}
+
+function closeChordPicker() {
+  if (!picker.open) return;
+  picker.el.hidden = true;
+  chordPads.forEach((p) => p.el.classList.remove('editing'));
+}
+
+function renderChordPicker() {
+  const c = chords[picker.index];
+  picker.title.textContent = `Ruta ${picker.index + 1}: ${chordName(c)}`;
+  picker.roots.forEach((b, r) => b.classList.toggle('on', r === Number(c.root)));
+  picker.types.forEach((b, t) => b.classList.toggle('on', CHORD_TYPES[t][0] === c.type));
+}
+
+function pickChord(root, type) {
+  setChord(picker.index, root, type);
+  renderChordPicker();
+  buildChordEditor(); // håll listan under Inställningar i synk
+}
 
 // ---------- Ljudmotor: presets och reglage ----------
 const CUSTOM = '__custom';
@@ -514,6 +591,7 @@ function setupSynthUi() {
 
 // ---------- Flikar ----------
 function showTab(tab) {
+  closeChordPicker();
   allPads().forEach(release);
   document.body.dataset.tab = tab;
   document.querySelectorAll('#tabs button').forEach((b) =>
@@ -604,6 +682,7 @@ loadSettings();
 applyGap();
 setupSynthUi();
 buildNotePads();
+buildChordPicker();
 buildChordPads();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 

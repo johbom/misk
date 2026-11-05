@@ -126,6 +126,18 @@
   <main id="pads" class="pad-grid only-notes"></main>
   <main id="chord-pads" class="pad-grid only-chords"></main>
 
+  <!-- Högerklicksmeny på sidan Ackord: byt ackord direkt på rutan/bollen -->
+  <div id="chord-picker" hidden>
+    <div class="cp-head">
+      <strong id="cp-title"></strong>
+      <button type="button" id="cp-close" title="Stäng (Esc)">✕</button>
+    </div>
+    <div class="cp-label">Grundton</div>
+    <div id="cp-roots" class="cp-grid"></div>
+    <div class="cp-label">Typ</div>
+    <div id="cp-types" class="cp-grid"></div>
+  </div>
+
   <footer>
     <p id="log">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
