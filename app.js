@@ -70,6 +70,8 @@ let audioCtx = null;
 let engine = null;
 
 function initAudio() {
+  // iPhone: spela även när ljudlös-knappen är på (Safari 16.4+)
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   engine = new SynthEngine(audioCtx, synthParams);
   engine.setVolume(Number(ui.volume.value));
@@ -172,16 +174,68 @@ const noteName = (n) => `${NOTE_NAMES[n % 12]}${Math.floor(n / 12) - 1}`;
 const clampNote = (n) => Math.max(0, Math.min(127, n));
 
 // Kopplar mouseover/mouseout på hover-ytan till att spela/släppa rutan.
+// Gäller musen; fingrar sköts av setupTouch() nedan.
 function attachHover(pad, hitEl) {
-  hitEl.addEventListener('pointerenter', () => trigger(pad));
-  hitEl.addEventListener('pointerleave', () => {
+  hitEl.addEventListener('pointerenter', (e) => {
+    if (e.pointerType === 'mouse') trigger(pad);
+  });
+  hitEl.addEventListener('pointerleave', (e) => {
     // I "kort ton"-läget släpps tonen av en timer i stället
-    if (ui.playMode.value === 'hold') release(pad);
+    if (e.pointerType === 'mouse' && ui.playMode.value === 'hold') release(pad);
   });
-  // Pekskärm: släpp "pointer capture" så enter/leave fungerar när fingret glider
-  hitEl.addEventListener('pointerdown', (e) => {
-    if (e.pointerType !== 'mouse') hitEl.releasePointerCapture(e.pointerId);
+}
+
+// ---------- Pekskärm ----------
+// Ett finger "fångas" av elementet det landade på, så enter/leave på rutorna går inte att lita på
+// (särskilt i Safari på iPhone). I stället kollar vi vid varje rörelse vilken ruta som ligger under
+// fingret. Varje finger följs för sig, så flera fingrar kan spela samtidigt.
+const fingers = new Map(); // pointerId -> ruta under fingret (eller null i ett mellanrum)
+
+// Spelytan = allt utom reglage, flikar, inställningar och menyer – även bakgrunden runt rutorna,
+// så att man kan börja dra var som helst och glida in på rutorna.
+const CONTROLS = 'header, #play-bar, #settings, #chord-picker, #start-overlay, input, select, label, button:not(.pad)';
+const inPlayArea = (target) => target instanceof Element && !target.closest(CONTROLS);
+
+function padAt(x, y) {
+  const el = document.elementFromPoint(x, y)?.closest('.pad');
+  return el ? allPads().find((p) => p.el === el) || null : null;
+}
+
+function moveFinger(id, pad) {
+  const old = fingers.get(id) || null;
+  if (pad === old) return;
+  fingers.set(id, pad);
+  const stillHeld = old && [...fingers.values()].includes(old);
+  if (old && !stillHeld && ui.playMode.value === 'hold') release(old);
+  if (pad) trigger(pad);
+}
+
+function liftFinger(id) {
+  if (!fingers.has(id)) return;
+  moveFinger(id, null);
+  fingers.delete(id);
+}
+
+function setupTouch() {
+  document.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' || !inPlayArea(e.target)) return;
+    // iOS kan ha pausat ljudet (skärmlås, samtal) – väck det vid beröring
+    if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
+    try { e.target.releasePointerCapture(e.pointerId); } catch {}
+    fingers.set(e.pointerId, null);
+    moveFinger(e.pointerId, padAt(e.clientX, e.clientY));
   });
+  document.addEventListener('pointermove', (e) => {
+    if (e.pointerType === 'mouse' || !fingers.has(e.pointerId)) return;
+    moveFinger(e.pointerId, padAt(e.clientX, e.clientY));
+  });
+  document.addEventListener('pointerup', (e) => liftFinger(e.pointerId));
+  document.addEventListener('pointercancel', (e) => liftFinger(e.pointerId));
+
+  // Hindra iOS från att tolka dragningen som scroll/zoom (då avbryts fingret mitt i)
+  const block = (e) => { if (inPlayArea(e.target)) e.preventDefault(); };
+  document.addEventListener('touchstart', block, { passive: false });
+  document.addEventListener('touchmove', block, { passive: false });
 }
 
 function trigger(pad) {
@@ -513,7 +567,9 @@ function strumMove(e) {
 }
 
 function setupStrum() {
-  ui.chordPads.addEventListener('pointerdown', (e) => {
+  // Harpan kan också börja på bakgrunden – sedan drar man in på strängarna
+  document.addEventListener('pointerdown', (e) => {
+    if (document.body.dataset.tab !== 'chords' || !inPlayArea(e.target)) return;
     if (ui.formation.value !== 'strings' || picker.open) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault(); // ingen textmarkering när man drar
@@ -999,6 +1055,7 @@ buildNotePads();
 buildChordPicker();
 buildChordPads();
 setupStrum();
+setupTouch();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
@@ -1022,7 +1079,7 @@ ui.panic.addEventListener('click', panic);
 document.querySelectorAll('#tabs button').forEach((b) =>
   b.addEventListener('click', () => showTab(b.dataset.tab))
 );
-window.addEventListener('blur', () => allPads().forEach(release));
+window.addEventListener('blur', () => { fingers.clear(); allPads().forEach(release); });
 
 $('start-btn').addEventListener('click', async () => {
   initAudio();
