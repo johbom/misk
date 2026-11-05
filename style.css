@@ -332,3 +332,26 @@ body:not(.advanced) .adv-only { display: none; }
 #cp-shifts { grid-template-columns: repeat(3, 1fr); }
 #cp-notes { margin-top: 8px; color: var(--muted); font-size: 0.75rem; text-align: center; font-variant-numeric: tabular-nums; }
 .cp-grid button:disabled { opacity: 0.3; cursor: default; }
+
+/* Harpa: prickar längs strängarna, en per ton (håll inne och dra) */
+#chord-pads { user-select: none; -webkit-user-select: none; }
+.chord-pad .strum { display: none; }
+.pad-grid[data-formation="strings"] .chord-pad .strum {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 14px;
+  bottom: 48px;
+  pointer-events: none;
+}
+.strum i {
+  position: absolute;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8d93ad;
+  transform: translate(-50%, 50%);
+}
+.pad-grid[data-formation="strings"] .pad.active .strum i { background: var(--hit); }

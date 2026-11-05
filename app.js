@@ -185,6 +185,7 @@ function attachHover(pad, hitEl) {
 function trigger(pad) {
   if (!audioCtx) return; // inte startat än
   if (picker.open) return; // tyst medan högerklicksmenyn är öppen
+  if (strum.active && chordPads.includes(pad)) return; // harpan spelar i stället
   release(pad);
   pad.el.classList.add('active');
 
@@ -362,10 +363,11 @@ function buildChordPads() {
     const el = document.createElement('button');
     el.type = 'button';
     el.className = 'pad chord-pad';
-    el.innerHTML = '<span class="chord-name"></span>';
+    el.innerHTML = '<span class="strum"></span><span class="chord-name"></span>';
     const pad = {
       el, release: null, sample: null,
       notes: () => chordNotes(chord),
+      strumNotes: () => strumNotes(chord),
       label: () => chordName(chord),
     };
     chordPads.push(pad);
@@ -429,6 +431,88 @@ function buildChordEditor() {
 
 function renderChordPad(pad) {
   pad.el.querySelector('.chord-name').textContent = pad.label();
+  // En prick per ton längs strängen (syns bara i formationen Strängar)
+  const n = pad.strumNotes().length;
+  pad.el.querySelector('.strum').innerHTML = Array.from({ length: n }, (_, k) =>
+    `<i style="bottom:${((k + 0.5) / n) * 100}%"></i>`).join('');
+}
+
+// ---------- Harpa: håll inne och dra över strängarna ----------
+// Ackordets toner över två oktaver, nerifrån och upp, t.ex. C E G C E G C.
+function strumNotes(c) {
+  const base = 12 * (Number(ui.chordOctave.value) + 1 + (isAdvanced() ? c.shift : 0)) + Number(c.root);
+  const pcs = [...new Set(CHORD_INTERVALS[c.type].map((i) => i % 12))].sort((a, b) => a - b);
+  const notes = [0, 12].flatMap((o) => pcs.map((p) => base + o + p));
+  notes.push(base + 24);
+  return notes.map(clampNote);
+}
+
+const PLUCK_MS = 450; // hur länge en knäppt ton hålls innan den klingar ut
+const PLUCK_LEVEL = 0.5;
+const strum = { active: false, pad: null, idx: -1 };
+
+// Vilken ton (prick) på strängen som ligger närmast höjden y
+function strumIndex(pad, y) {
+  const r = pad.el.querySelector('.strum').getBoundingClientRect();
+  const n = pad.strumNotes().length;
+  return Math.max(0, Math.min(n - 1, Math.floor(((r.bottom - y) / r.height) * n)));
+}
+
+function pluck(pad, idx) {
+  if (!audioCtx) return;
+  const note = pad.strumNotes()[idx];
+  const stops = [];
+  if (ui.outAudio.checked) stops.push(engine.noteOn(note, PLUCK_LEVEL));
+  if (ui.outMidi.checked) {
+    const ch = midiChannel();
+    noteOn(note, ch);
+    stops.push(() => noteOff(note, ch));
+  }
+  setTimeout(() => stops.forEach((s) => s()), PLUCK_MS);
+  const dot = pad.el.querySelectorAll('.strum i')[idx];
+  if (dot) {
+    dot.animate([
+      { transform: 'translate(-50%, 50%) scale(2.8)', background: '#ffb547', boxShadow: '0 0 14px #ffb547' },
+      { transform: 'translate(-50%, 50%) scale(1)' },
+    ], { duration: 600, easing: 'ease-out' });
+  }
+  log(`♪ ${pad.label()}: ${noteName(note)}`);
+}
+
+function strumMove(e) {
+  if (!strum.active) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.chord-pad');
+  const pad = chordPads.find((p) => p.el === el);
+  if (!pad) { strum.pad = null; return; } // i mellanrummet mellan strängarna
+  const idx = strumIndex(pad, e.clientY);
+  if (pad !== strum.pad) pluck(pad, idx);
+  else if (idx !== strum.idx) {
+    // Snabb dragning: knäpp alla toner man passerat, som ett glissando
+    const dir = Math.sign(idx - strum.idx);
+    for (let k = strum.idx + dir, t = 0; ; k += dir, t++) {
+      setTimeout(() => pluck(pad, k), t * 12);
+      if (k === idx) break;
+    }
+  }
+  strum.pad = pad;
+  strum.idx = idx;
+}
+
+function setupStrum() {
+  ui.chordPads.addEventListener('pointerdown', (e) => {
+    if (ui.formation.value !== 'strings' || picker.open) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault(); // ingen textmarkering när man drar
+    chordPads.forEach(release); // ackordet från hover tystnar, nu är det harpa
+    strum.active = true;
+    strum.pad = null;
+    strumMove(e);
+  });
+  window.addEventListener('pointermove', strumMove);
+  const stop = () => { strum.active = false; strum.pad = null; };
+  window.addEventListener('pointerup', stop);
+  window.addEventListener('pointercancel', stop);
+  window.addEventListener('blur', stop);
 }
 
 const updateChordLabels = () => { chordPads.forEach(release); chordPads.forEach(renderChordPad); };
@@ -788,6 +872,7 @@ setupSynthUi();
 buildNotePads();
 buildChordPicker();
 buildChordPads();
+setupStrum();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
