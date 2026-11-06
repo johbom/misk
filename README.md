@@ -59,7 +59,8 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 **Visning** – *Hög kontrast* (svart, vita kanter, gul markering) och *Minska rörelse*. Båda följer datorns/telefonens inställning tills man själv väljer.
 
 **Kontakt och tangentbord**
-- Tangenterna <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt; håll inne för lång ton.
+- Tangenterna <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt (på sidan Ackord ackordruta 1–8); håll inne för lång ton. Flera tangenter kan hållas samtidigt, så **flera kontakter** – via ett kontaktinterface som skickar siffror – kan spela var sitt ackord. Både sifferraden och det numeriska tangentbordet fungerar, och siffrorna spelar även om preset-listan eller volymen nyss använts (listan byter inte värde).
+- *Visa tangentsiffror på rutorna* – en liten siffra på varje ruta visar vilken tangent/kontakt som spelar den.
 - *Stegning med en kontakt*: rutorna markeras en i taget i vald takt. <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick/tryck på spelytan spelar den markerade, och stegningen står still medan kontakten hålls in.
 - *Två kontakter*: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.
 - <kbd>Tab</kbd> flyttar mellan rutor och knappar med tydlig fokusram; <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.

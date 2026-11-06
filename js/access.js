@@ -12,7 +12,13 @@
 const isPlayTab = () => ['notes', 'chords'].includes(document.body.dataset.tab);
 const visiblePads = () => (document.body.dataset.tab === 'notes' ? notePads
   : document.body.dataset.tab === 'chords' ? chordPads : []);
-const inFormField = (el) => el instanceof Element && !!el.closest('input, select, textarea, dialog');
+// Där tangenterna ska skriva text i stället för att spela (listor och reglage på spelraden räknas inte:
+// siffrorna ska spela även om man nyss ändrat preset eller volym)
+const inFormField = (el) => el instanceof Element && !!el.closest(
+  'dialog, textarea, [contenteditable], input:not([type="range"]):not([type="checkbox"]):not([type="button"])');
+
+// Siffran för en tangent (1–9, 0 = 10), både sifferraden och det numeriska tangentbordet
+const keyDigit = (code) => (/^(Digit|Numpad)[0-9]$/.test(code) ? Number(code.slice(-1)) : null);
 
 // ---------- Etiketter bredvid reglagen ----------
 const secs = (v) => `${(v / 1000).toLocaleString('sv-SE', { maximumFractionDigits: 2 })} s`;
@@ -32,6 +38,7 @@ function refreshAccess() {
   root.classList.toggle('high-contrast', ui.highContrast.checked);
   root.classList.toggle('reduce-motion', ui.reduceMotion.checked);
   root.classList.toggle('steppers', ui.steppers.checked);
+  root.classList.toggle('show-keys', ui.showKeys.checked);
   root.dataset.pointer = ui.showPointer.value;
   document.body.dataset.playMode = ui.playMode.value;
   document.body.dataset.scan = ui.scanMode.value;
@@ -320,7 +327,14 @@ function setupLock() {
 const scan = { idx: 0, timer: 0, held: null };
 const scanning = () => ui.scanMode.value !== 'off' && isPlayTab();
 
+// Siffran som spelar rutan, visas på rutorna om "Visa tangentsiffror" är på
+function markKeys() {
+  allPads().forEach((p) => p.el.removeAttribute('data-key'));
+  visiblePads().slice(0, 10).forEach((p, i) => p.el.setAttribute('data-key', (i + 1) % 10));
+}
+
 function markScan() {
+  markKeys();
   const on = scanning();
   const current = visiblePads()[scan.idx];
   allPads().forEach((p) => p.el.classList.toggle('scan', on && p === current));
@@ -379,6 +393,7 @@ function setupKeys() {
     if (!isPlayTab() || e.metaKey || e.ctrlKey || e.altKey) return;
     if (inFormField(e.target) || e.target.id === 'unlock-btn' || picker.open) return;
     const isSwitch = e.key === ' ' || e.key === 'Enter';
+    if (isSwitch && e.target.matches?.('select')) return; // mellanslag öppnar listan
     if (scanning() && isSwitch) {
       e.preventDefault();
       if (e.repeat) return;
@@ -388,8 +403,9 @@ function setupKeys() {
     }
     if (e.repeat) { if (isSwitch) e.preventDefault(); return; }
     let pad = null;
-    if (/^Digit[0-9]$|^Numpad[0-9]$/.test(e.code)) {
-      const d = Number(e.code.slice(-1));
+    const d = keyDigit(e.code);
+    if (d !== null) {
+      e.preventDefault(); // t.ex. en fokuserad lista ska inte byta värde
       pad = visiblePads()[d === 0 ? 9 : d - 1];
     } else if (isSwitch && e.target.classList?.contains('pad')) {
       e.preventDefault();
@@ -457,7 +473,7 @@ function setupAccess() {
   setupLock();
   setupKeys();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
-    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode']
+    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));
   // Ljudet kan ha pausats (t.ex. om Start valdes med blicken): väck det vid första riktiga tryck
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => {

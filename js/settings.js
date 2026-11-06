@@ -5,7 +5,7 @@ const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'stringLength', 'rin
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
   'noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
-  'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed'];
+  'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'showKeys'];
 
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('hoverPads') || '{}');

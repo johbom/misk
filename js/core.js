@@ -58,6 +58,7 @@ const ui = {
   reduceMotion: $('reduce-motion'),
   scanMode: $('scan-mode'),
   scanSpeed: $('scan-speed'),
+  showKeys: $('show-keys'),
   padGap: $('pad-gap'),
   stringLength: $('string-length'),
   ringGap: $('ring-gap'),

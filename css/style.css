@@ -982,3 +982,20 @@ html.steppers .up-step { min-width: 46px; min-height: 46px; }
   body.up-bar-on #play-bar > label input[type="range"] { min-width: 0; width: 100%; }
 }
 html.high-contrast .up-step { background: #000; }
+
+/* Tangentsiffror på rutorna (Tillgänglighet → Visa tangentsiffror) */
+html.show-keys .pad[data-key]::before {
+  content: attr(data-key);
+  display: block;
+  margin: 0 auto 0.15em;
+  width: 1.7em;
+  height: 1.7em;
+  line-height: 1.55em;
+  border: 2px solid currentColor;
+  border-radius: 8px;
+  font-size: 0.6em;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0.85;
+}
+.pad-grid:not([data-formation="grid"]) .pad[data-key]::before { margin-bottom: 0; }

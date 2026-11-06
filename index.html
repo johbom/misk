@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=6" />
+  <link rel="stylesheet" href="css/style.css?v=7" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -195,8 +195,9 @@
           <input type="range" id="scan-speed" min="500" max="5000" step="100" value="1500" />
           <output id="scan-speed-value" class="val">1,5 s</output>
         </label>
+        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Bra när flera kontakter är kopplade till var sin siffra: man ser vilken kontakt som spelar vilken ruta.</small></span></label>
         <ul class="hint keys">
-          <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt (håll inne för lång ton).</li>
+          <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
           <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
           <li>Två kontakter: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.</li>
           <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
@@ -396,20 +397,20 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=6"></script>
-  <script src="js/sound-library.js?v=6"></script>
-  <script src="js/layout.js?v=6"></script>
-  <script src="js/core.js?v=6"></script>
-  <script src="js/audio.js?v=6"></script>
-  <script src="js/pads.js?v=6"></script>
-  <script src="js/notes.js?v=6"></script>
-  <script src="js/chords.js?v=6"></script>
-  <script src="js/sound.js?v=6"></script>
-  <script src="js/view.js?v=6"></script>
-  <script src="js/access.js?v=6"></script>
-  <script src="js/settings.js?v=6"></script>
-  <script src="js/user-presets.js?v=6"></script>
-  <script src="js/pwa.js?v=6"></script>
-  <script src="js/main.js?v=6"></script>
+  <script src="js/synth.js?v=7"></script>
+  <script src="js/sound-library.js?v=7"></script>
+  <script src="js/layout.js?v=7"></script>
+  <script src="js/core.js?v=7"></script>
+  <script src="js/audio.js?v=7"></script>
+  <script src="js/pads.js?v=7"></script>
+  <script src="js/notes.js?v=7"></script>
+  <script src="js/chords.js?v=7"></script>
+  <script src="js/sound.js?v=7"></script>
+  <script src="js/view.js?v=7"></script>
+  <script src="js/access.js?v=7"></script>
+  <script src="js/settings.js?v=7"></script>
+  <script src="js/user-presets.js?v=7"></script>
+  <script src="js/pwa.js?v=7"></script>
+  <script src="js/main.js?v=7"></script>
 </body>
 </html>
