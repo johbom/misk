@@ -3,8 +3,10 @@
 // ---------- Flikar ----------
 function showTab(tab) {
   closeChordPicker();
+  resetHover();
   allPads().forEach(release);
   document.body.dataset.tab = tab;
+  if (tab === 'settings') setLocked(false);
   document.querySelectorAll('#tabs button').forEach((b) =>
     b.classList.toggle('on', b.dataset.tab === tab)
   );
@@ -113,6 +115,7 @@ function applyFormationOpts() {
 function layoutPads() {
   const f = ui.formation.value;
   document.body.dataset.formation = f; // styr vilka formationsreglage som syns
+  syncScan(); // stegningen följer flik och antal rutor
   ui.pads.dataset.formation = f;
   ui.chordPads.dataset.formation = f;
 

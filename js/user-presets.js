@@ -59,6 +59,7 @@ function applySnapshot(data) {
   document.body.classList.toggle('advanced', isAdvanced());
   applyGap();
   applyFormationOpts();
+  refreshAccess();
   buildNotePads();
   buildChordPads();
 }
@@ -92,7 +93,7 @@ function renderUserPresets() {
       <div><strong></strong><br><small></small></div>
       <button type="button" class="up-load">Ladda</button>
       <button type="button" class="up-over" title="Spara nuvarande inställningar under det här namnet">Skriv över</button>
-      <button type="button" class="up-del" title="Ta bort">✕</button>`;
+      <button type="button" class="up-del" title="Ta bort" aria-label="Ta bort">✕</button>`;
     row.querySelector('strong').textContent = p.name;
     row.querySelector('small').textContent = describe(p.data);
     row.querySelector('.up-load').addEventListener('click', () => {
@@ -101,12 +102,12 @@ function renderUserPresets() {
       renderUserPresets();
       log(`Laddade presetet "${p.name}"`);
     });
-    row.querySelector('.up-over').addEventListener('click', () => {
-      if (!confirm(`Skriva över "${p.name}" med nuvarande inställningar?`)) return;
+    row.querySelector('.up-over').addEventListener('click', async () => {
+      if (!await askConfirm(`Skriva över "${p.name}" med nuvarande inställningar?`, 'Skriv över')) return;
       storeUserPreset(p.name);
     });
-    row.querySelector('.up-del').addEventListener('click', () => {
-      if (!confirm(`Ta bort presetet "${p.name}"?`)) return;
+    row.querySelector('.up-del').addEventListener('click', async () => {
+      if (!await askConfirm(`Ta bort presetet "${p.name}"?`, 'Ta bort')) return;
       saveUserPresets(loadUserPresets().filter((q) => q.name !== p.name));
       renderUserPresets();
       log(`Tog bort presetet "${p.name}"`);
@@ -159,12 +160,12 @@ async function importUserPresets(file) {
 }
 
 function setupUserPresets() {
-  $('up-save').addEventListener('submit', (e) => {
+  $('up-save').addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = $('up-name').value.trim();
     if (!name) { $('up-name').focus(); return; }
     if (loadUserPresets().some((p) => p.name === name)
-      && !confirm(`Det finns redan ett preset som heter "${name}". Skriva över det?`)) return;
+      && !await askConfirm(`Det finns redan ett preset som heter "${name}". Skriva över det?`, 'Skriv över')) return;
     storeUserPreset(name);
     $('up-name').value = '';
   });

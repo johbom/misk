@@ -20,7 +20,8 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt
 
 Inställningarna är uppdelade i underflikar:
 
-- **Spel** – spelsätt (håll tonen eller kort ton) och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
+- **Spel** – spelsätt (*Håll*, *Kort ton* med valbar tonlängd, eller *Ligg kvar* där tonen spelar tills nästa ruta) och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
+- **Tillgänglighet** – ögonstyrning, kontakt, tangentbord, storlek och kontrast, se nedan.
 - **Toner** – antal toner (2–32), grundton, oktav och skala.
 - **Ackord** – antal ackord, oktav, bas, avancerat läge (voicing), färger och ackordlistan.
 - **Ljud** – presetbiblioteket och alla reglage för ljudmotorn.
@@ -28,6 +29,46 @@ Inställningarna är uppdelade i underflikar:
 - **Mina presets** – se nedan.
 
 Allt sparas i webbläsaren.
+
+## Tillgänglighet och ögonstyrning
+
+Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så allt man tittar på "hovras". Inställningarna gör att man kan titta utan att allt låter, och använda hela appen utan att klicka.
+
+**Snabbval** – färdiga profiler att börja från:
+
+| Profil | För vem |
+|---|---|
+| *Standard* | Mus och pekskärm, spelar direkt |
+| *Ögon – utforska* | Första stegen, orsak och verkan: låter direkt där blicken landar, tål darr, stor pekare och stora mellanrum |
+| *Ögon – spela* | Van användare: kort aktiveringstid så man hinner sikta; ögonstyrningen sköter klicken |
+| *Ögon – bara titta* | Utan klick: knappar trycks genom att titta, tonen ligger kvar tills nästa ruta |
+| *Kontakt* | En kontakt med automatisk stegning |
+
+**Aktivering** (gäller blick, mus och finger)
+- *Aktiveringstid* – pekaren ska vila på rutan så här länge innan den spelar. Rutan och pekarringen fylls under tiden.
+- *Darrtolerans* – pekaren får glida ut över kanten en kort stund utan att tonen släpps eller spelas om.
+- *Spärrtid* – samma ruta kan inte spelas igen förrän tiden gått (mot stamning vid kanten).
+- *Synlig pekare* – en ring som följer blicken/musen och fylls medan man vilar på något.
+
+**Knappar och reglage**
+- *Klicka genom att titta* – knappar, flikar, kryssrutor och profiler trycks in när pekaren vilat på dem. En gul ram och stapel visar hur länge det är kvar. Tittar man kvar på − / + fortsätter den att stega. Klick startar bara när pekaren rör sig, inte om sidan flyttar sig under en stilla pekare. Låt stå på *Av* om ögonstyrningen redan klickar åt dig.
+- *Stora − och + knappar* – vid alla reglage och listor, så att allt kan ändras utan att dra eller öppna menyer. Långa reglage går från ena änden till den andra på högst ca 20 tryck.
+- *Storlek* – Normal, Stor eller Extra stor på flikar, knappar, text och reglage (spelytan påverkas inte).
+- Frågor som "Ta bort?" visas i en egen ruta med stora Ja/Nej-knappar (Nej är förval) som går att använda med blicken.
+
+**Visning** – *Hög kontrast* (svart, vita kanter, gul markering) och *Minska rörelse*. Båda följer datorns/telefonens inställning tills man själv väljer.
+
+**Kontakt och tangentbord**
+- Tangenterna <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt; håll inne för lång ton.
+- *Stegning med en kontakt*: rutorna markeras en i taget i vald takt. <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick/tryck på spelytan spelar den markerade, och stegningen står still medan kontakten hålls in.
+- *Två kontakter*: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.
+- <kbd>Tab</kbd> flyttar mellan rutor och knappar med tydlig fokusram; <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.
+
+**Lås spelytan** – knappen *🔒 Lås* (på Toner och Ackord) gömmer flikar, preset och volym så att bara rutorna syns. Lås upp genom att **hålla inne** knappen i hörnet i två sekunder. Ett vanligt klick, ett klick med ögonstyrning eller en blick räcker inte, så spelaren kan inte råka hamna i inställningarna. Låset finns kvar om sidan laddas om.
+
+Tillgänglighetsinställningarna följer med i *Mina presets*, så varje användare kan ha sitt eget.
+
+Ljud i webbläsare kräver ett riktigt klick eller tangenttryck en gång innan något får låta. Den som bara använder blicken behöver därför hjälp att trycka *Starta* en gång.
 
 ## Mina presets
 
@@ -87,11 +128,12 @@ python3 -m http.server 8080
 - `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
 - `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
 - `js/audio.js` – ljud- och MIDI-utgång
-- `js/pads.js` – spela/släppa rutor, mus och pekskärm
+- `js/pads.js` – spela/släppa rutor, mus, ögonstyrning och pekskärm (aktiveringstid, darrtolerans, spärrtid)
 - `js/notes.js` – sidan Toner
 - `js/chords.js` – sidan Ackord: ackord, voicing, färger, harpa och högerklicksmeny
 - `js/sound.js` – ljudreglagen och presetbiblioteket i Inställningar
 - `js/view.js` – flikar, underflikar och formationer
+- `js/access.js` – tillgänglighet: profiler, synlig pekare, klicka genom att titta, − / + knappar, lås, stegning och tangentbord
 - `js/settings.js` – sparade inställningar
 - `js/user-presets.js` – Mina presets (spara/ladda/exportera)
 - `js/pwa.js` – service worker och Installera-knapp

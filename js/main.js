@@ -5,6 +5,7 @@ document.documentElement.classList.toggle('fixed-screen', FIXED_SCREEN);
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
 for (let n = NOTE_COUNT_MIN; n <= NOTE_COUNT_MAX; n++) ui.noteCount.append(new Option(n, n));
 ui.noteCount.value = 16;
+accessDefaults();
 loadSettings();
 buildFormationButtons();
 document.body.classList.toggle('advanced', isAdvanced());
@@ -20,6 +21,7 @@ setupTouch();
 setupUserPresets();
 setupPwa();
 setupAbout();
+setupAccess();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
@@ -48,7 +50,7 @@ ui.panic.addEventListener('click', panic);
 document.querySelectorAll('#tabs button').forEach((b) =>
   b.addEventListener('click', () => showTab(b.dataset.tab))
 );
-window.addEventListener('blur', () => { fingers.clear(); allPads().forEach(release); });
+window.addEventListener('blur', () => { fingers.clear(); resetHover(); allPads().forEach(release); });
 
 // Start: släpp alltid förbi, även om ljudet inte går att starta (då syns felet i loggen)
 $('start-btn').addEventListener('click', async () => {

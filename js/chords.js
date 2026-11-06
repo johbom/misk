@@ -226,7 +226,7 @@ function pluck(pad, idx) {
   }
   setTimeout(() => stops.forEach((s) => s()), PLUCK_MS);
   const dot = pad.el.querySelectorAll('.strum i')[idx];
-  if (dot) {
+  if (dot && !ui.reduceMotion.checked) {
     dot.animate([
       { transform: 'translate(-50%, 50%) scale(2.8)', background: '#ffb547', boxShadow: '0 0 14px #ffb547' },
       { transform: 'translate(-50%, 50%) scale(1)' },
@@ -263,7 +263,7 @@ function setupStrum() {
   // Harpan kan också börja på bakgrunden – sedan drar man in på strängarna
   document.addEventListener('pointerdown', (e) => {
     if (document.body.dataset.tab !== 'chords' || !inPlayArea(e.target)) return;
-    if (ui.formation.value !== 'strings' || picker.open) return;
+    if (ui.formation.value !== 'strings' || picker.open || scanning()) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault(); // ingen textmarkering när man drar
     strum.active = true;
@@ -332,6 +332,7 @@ function buildChordPicker() {
 }
 
 function openChordPicker(i, x, y) {
+  if (document.body.classList.contains('locked')) return; // låst spelyta: ingen meny
   chordPads.forEach(release);
   chordPads.forEach((p, j) => p.el.classList.toggle('editing', j === i));
   picker.index = i;
@@ -339,8 +340,10 @@ function openChordPicker(i, x, y) {
   picker.el.hidden = false;
   // Lägg menyn vid muspekaren, men håll den inom fönstret
   const { offsetWidth: w, offsetHeight: h } = picker.el;
-  picker.el.style.left = `${Math.max(8, Math.min(x, innerWidth - w - 8))}px`;
-  picker.el.style.top = `${Math.max(8, Math.min(y, innerHeight - h - 8))}px`;
+  // (zoom = vald storlek på reglage; positionen räknas i menyns egen skala)
+  const z = parseFloat(getComputedStyle(picker.el).zoom) || 1;
+  picker.el.style.left = `${Math.max(8, Math.min(x, innerWidth - w * z - 8)) / z}px`;
+  picker.el.style.top = `${Math.max(8, Math.min(y, innerHeight - h * z - 8)) / z}px`;
 }
 
 function closeChordPicker() {

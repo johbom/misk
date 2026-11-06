@@ -9,15 +9,78 @@ const allPads = () => [...notePads, ...chordPads];
 const noteName = (n) => `${NOTE_NAMES[n % 12]}${Math.floor(n / 12) - 1}`;
 const clampNote = (n) => Math.max(0, Math.min(127, n));
 
-// Kopplar mouseover/mouseout på hover-ytan till att spela/släppa rutan.
-// Gäller musen; fingrar sköts av setupTouch() nedan.
+// ---------- Pekare över en ruta (mus, ögonstyrning, finger) ----------
+// Alla pekare går genom enterPad/leavePad, så att tillgänglighetsinställningarna gäller överallt:
+//  - aktiveringstid: pekaren måste vila på rutan en stund innan den spelar (mot "Midas touch")
+//  - släppfördröjning: pekaren får darra ut över kanten en kort stund utan att tonen släpps
+//  - spärrtid: samma ruta kan inte spelas igen direkt (mot stamning vid kanten)
+const ms = (el) => Number(el.value) || 0;
+
+function hoverState(pad) {
+  if (!pad.hover) pad.hover = { on: new Set(), dwell: 0, leave: 0, last: -Infinity };
+  return pad.hover;
+}
+
+function enterPad(pad, src) {
+  if (scanning()) return;
+  const h = hoverState(pad);
+  const wasEmpty = h.on.size === 0;
+  h.on.add(src);
+  if (h.leave) { clearTimeout(h.leave); h.leave = 0; return; } // tillbaka inom tålighetstiden
+  if (!wasEmpty) return;
+  const wait = ms(ui.dwell);
+  if (!wait) { activate(pad); return; }
+  pad.el.style.setProperty('--dwell-ms', `${wait}ms`);
+  pad.el.classList.add('dwelling');
+  gazeDwell(wait);
+  h.dwell = setTimeout(() => { h.dwell = 0; pad.el.classList.remove('dwelling'); gazeDwell(0); activate(pad); }, wait);
+}
+
+function leavePad(pad, src) {
+  const h = hoverState(pad);
+  if (!h.on.delete(src) || h.on.size) return;
+  const grace = ms(ui.releaseDelay);
+  const done = () => {
+    h.leave = 0;
+    cancelDwell(pad);
+    if (ui.playMode.value === 'hold') release(pad);
+  };
+  if (grace) h.leave = setTimeout(done, grace);
+  else done();
+}
+
+function cancelDwell(pad) {
+  const h = hoverState(pad);
+  if (h.dwell) { clearTimeout(h.dwell); h.dwell = 0; gazeDwell(0); }
+  pad.el.classList.remove('dwelling');
+}
+
+// Spela, om spärrtiden har gått ut
+function activate(pad) {
+  const h = hoverState(pad);
+  const now = performance.now();
+  if (now - h.last < ms(ui.lockout)) return;
+  h.last = now;
+  trigger(pad);
+}
+
+function resetHover() {
+  allPads().forEach((p) => {
+    const h = hoverState(p);
+    clearTimeout(h.leave);
+    h.leave = 0;
+    h.on.clear();
+    cancelDwell(p);
+  });
+}
+
+// Musen (och ögonstyrning, som styr muspekaren); fingrar sköts av setupTouch() nedan.
 function attachHover(pad, hitEl) {
   hitEl.addEventListener('pointerenter', (e) => {
-    if (e.pointerType === 'mouse') trigger(pad);
+    if (e.pointerType !== 'touch') enterPad(pad, 'mouse');
   });
   hitEl.addEventListener('pointerleave', (e) => {
-    // I "kort ton"-läget släpps tonen av en timer i stället
-    if (e.pointerType === 'mouse' && ui.playMode.value === 'hold') release(pad);
+    if (e.pointerType !== 'touch') leavePad(pad, 'mouse');
   });
 }
 
@@ -41,9 +104,8 @@ function moveFinger(id, pad) {
   const old = fingers.get(id) || null;
   if (pad === old) return;
   fingers.set(id, pad);
-  const stillHeld = old && [...fingers.values()].includes(old);
-  if (old && !stillHeld && ui.playMode.value === 'hold') release(old);
-  if (pad) trigger(pad);
+  if (old) leavePad(old, id);
+  if (pad) enterPad(pad, id);
 }
 
 function liftFinger(id) {
@@ -54,7 +116,7 @@ function liftFinger(id) {
 
 function setupTouch() {
   document.addEventListener('pointerdown', (e) => {
-    if (e.pointerType === 'mouse' || !inPlayArea(e.target)) return;
+    if (e.pointerType === 'mouse' || !inPlayArea(e.target) || scanning()) return;
     // iOS kan ha pausat ljudet (skärmlås, samtal) – väck det vid beröring
     if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
     try { e.target.releasePointerCapture(e.pointerId); } catch {}
@@ -77,6 +139,13 @@ function setupTouch() {
 function trigger(pad) {
   if (!audioCtx) return; // inte startat än
   if (picker.open) return; // tyst medan högerklicksmenyn är öppen
+  const mode = ui.playMode.value;
+  if (mode === 'latch') {
+    // Ligg kvar: samma ruta igen stänger av, en annan ruta tar över
+    const wasOn = !!pad.release;
+    allPads().forEach(release);
+    if (wasOn) { log(`■ ${pad.label()}`); return; }
+  }
   release(pad);
   pad.el.classList.add('active');
 
@@ -97,9 +166,9 @@ function trigger(pad) {
   pad.release = () => stops.forEach((s) => s());
   log(`▶ ${pad.label()}  (${notes.map(noteName).join(' ')})`);
 
-  if (ui.playMode.value === 'oneshot') {
+  if (mode === 'oneshot') {
     const r = pad.release;
-    setTimeout(() => { if (pad.release === r) release(pad); }, ONESHOT_MS);
+    setTimeout(() => { if (pad.release === r) release(pad); }, ms(ui.noteLength) || ONESHOT_MS);
   }
 }
 

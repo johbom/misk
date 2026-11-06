@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=3" />
+  <link rel="stylesheet" href="css/style.css?v=4" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -42,6 +42,7 @@
     </nav>
     <div class="header-right">
       <button type="button" id="install-btn" hidden title="Installera Hover Pads som app">Installera</button>
+      <button type="button" id="lock-btn" class="only-play" title="Lås spelytan: bara rutorna syns">🔒 Lås</button>
       <button type="button" id="about-btn" title="Om appen" aria-haspopup="dialog">Om</button>
       <span id="midi-status" class="status">MIDI: ej ansluten</span>
     </div>
@@ -61,6 +62,7 @@
   <section id="settings" class="only-settings">
     <nav id="settings-nav">
       <button type="button" data-panel="play">Spel</button>
+      <button type="button" data-panel="access">Tillgänglighet</button>
       <button type="button" data-panel="notes">Toner</button>
       <button type="button" data-panel="chords">Ackord</button>
       <button type="button" data-panel="sound">Ljud</button>
@@ -72,11 +74,17 @@
       <fieldset>
         <legend>Spelsätt</legend>
         <label>
-          <select id="play-mode">
-            <option value="hold">Håll – ton så länge musen är över</option>
-            <option value="oneshot">Kort ton vid mouseover</option>
+          <select id="play-mode" aria-label="Spelsätt">
+            <option value="hold">Håll – ton så länge pekaren är över</option>
+            <option value="oneshot">Kort ton när pekaren kommer in</option>
+            <option value="latch">Ligg kvar – tonen spelar tills nästa ruta</option>
           </select>
         </label>
+        <label class="only-oneshot">Tonlängd
+          <input type="range" id="note-length" min="100" max="3000" step="50" value="300" />
+          <span id="note-length-value" class="val">0,3 s</span>
+        </label>
+        <p class="hint only-latch">Titta eller peka på samma ruta igen för att tysta den.</p>
       </fieldset>
 
       <fieldset id="formation-set">
@@ -101,6 +109,95 @@
             <span id="ring-hole-value" class="val">40 %</span>
           </label>
         </div>
+      </fieldset>
+    </div>
+
+    <!-- Tillgänglighet: ögonstyrning, kontakt, tangentbord, storlek och kontrast (js/access.js) -->
+    <div class="panel" data-panel="access">
+      <fieldset id="access-quick">
+        <legend>Snabbval</legend>
+        <p class="hint">Börja med en profil och finjustera sedan nedan. Allt sparas, och följer med i <em>Mina presets</em>.</p>
+        <div id="access-profiles"></div>
+      </fieldset>
+
+      <fieldset class="access-set">
+        <legend>Aktivering – blick, mus och finger</legend>
+        <label class="slider">
+          <span class="lbl">Aktiveringstid<small>Hur länge pekaren ska vila på en ruta innan den spelar. Ger tid att titta utan att allt låter.</small></span>
+          <input type="range" id="dwell" min="0" max="2000" step="50" value="0" />
+          <output id="dwell-value" class="val">Direkt</output>
+        </label>
+        <label class="slider">
+          <span class="lbl">Darrtolerans<small>Pekaren får glida ut över kanten så här länge utan att tonen släpps eller spelas om.</small></span>
+          <input type="range" id="release-delay" min="0" max="1000" step="50" value="0" />
+          <output id="release-delay-value" class="val">Av</output>
+        </label>
+        <label class="slider">
+          <span class="lbl">Spärrtid<small>Samma ruta kan inte spelas igen förrän tiden gått. Hindrar stamning.</small></span>
+          <input type="range" id="lockout" min="0" max="2000" step="50" value="0" />
+          <output id="lockout-value" class="val">Av</output>
+        </label>
+        <label class="slider">
+          <span class="lbl">Synlig pekare<small>En ring som följer blicken/musen och fylls medan du vilar på något.</small></span>
+          <select id="show-pointer">
+            <option value="off">Av</option>
+            <option value="small">Liten</option>
+            <option value="large">Stor</option>
+            <option value="xlarge">Extra stor</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset class="access-set">
+        <legend>Knappar och reglage</legend>
+        <label class="slider">
+          <span class="lbl">Klicka genom att titta<small>Knappar trycks in när pekaren vilat på dem så här länge. Låt stå på Av om ögonstyrningen redan klickar åt dig.</small></span>
+          <input type="range" id="dwell-click" min="0" max="3000" step="100" value="0" />
+          <output id="dwell-click-value" class="val">Av</output>
+        </label>
+        <label class="slider">
+          <span class="lbl">Storlek<small>Gör flikar, knappar, text och reglage större.</small></span>
+          <select id="ui-size">
+            <option value="1">Normal</option>
+            <option value="1.25">Stor</option>
+            <option value="1.5">Extra stor</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar vid alla reglage och listor<small>Ändra värden utan att dra eller öppna menyer – bra med ögonstyrning och kontakt.</small></span></label>
+      </fieldset>
+
+      <fieldset class="access-set">
+        <legend>Visning</legend>
+        <label class="check"><input type="checkbox" id="high-contrast" /> <span>Hög kontrast<small>Svart bakgrund, vita kanter och gul markering.</small></span></label>
+        <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter. Fyllnaden som visar aktiveringstiden finns kvar.</small></span></label>
+      </fieldset>
+
+      <fieldset class="access-set">
+        <legend>Kontakt och tangentbord</legend>
+        <label class="slider">
+          <span class="lbl">Stegning<small>Rutorna markeras en i taget. Spela den markerade med en kontakt.</small></span>
+          <select id="scan-mode">
+            <option value="off">Av</option>
+            <option value="auto">En kontakt – automatisk stegning</option>
+            <option value="two">Två kontakter – stega och spela</option>
+          </select>
+        </label>
+        <label class="slider only-scan-auto">
+          <span class="lbl">Steghastighet<small>Tid på varje ruta.</small></span>
+          <input type="range" id="scan-speed" min="500" max="5000" step="100" value="1500" />
+          <output id="scan-speed-value" class="val">1,5 s</output>
+        </label>
+        <ul class="hint keys">
+          <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt (håll inne för lång ton).</li>
+          <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
+          <li>Två kontakter: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.</li>
+          <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
+        </ul>
+      </fieldset>
+
+      <fieldset class="access-set">
+        <legend>Lås spelytan</legend>
+        <p class="hint">Knappen <strong>Lås</strong> uppe till höger gömmer flikar och reglage så att bara rutorna syns – då kan ingen råka hamna i inställningarna. Lås upp genom att <strong>hålla inne</strong> knappen i hörnet i två sekunder (ett vanligt klick eller en blick räcker inte).</p>
       </fieldset>
     </div>
 
@@ -219,6 +316,22 @@
     </div>
   </section>
 
+  <!-- Låst spelyta: håll inne för att låsa upp -->
+  <button type="button" id="unlock-btn" aria-label="Lås upp – håll inne i två sekunder"><span>🔓 Håll inne för att låsa upp</span></button>
+
+  <!-- Synlig pekare (ring som följer blicken/musen) och markering när en knapp är på väg att klickas -->
+  <div id="gaze-dot" aria-hidden="true"></div>
+  <div id="dwell-box" aria-hidden="true"></div>
+
+  <!-- Egen bekräftelseruta (webbläsarens confirm() går inte att använda med ögonstyrning) -->
+  <dialog id="confirm" aria-labelledby="confirm-text">
+    <p id="confirm-text"></p>
+    <div class="confirm-actions">
+      <button type="button" id="confirm-no">Nej</button>
+      <button type="button" id="confirm-yes">Ja</button>
+    </div>
+  </dialog>
+
   <!-- ===== Om-rutan ===== -->
   <dialog id="about" aria-labelledby="about-title">
     <form method="dialog" class="about-close"><button type="submit" aria-label="Stäng">✕</button></form>
@@ -271,22 +384,23 @@
   </div>
 
   <footer>
-    <p id="log">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
+    <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=3"></script>
-  <script src="js/sound-library.js?v=3"></script>
-  <script src="js/layout.js?v=3"></script>
-  <script src="js/core.js?v=3"></script>
-  <script src="js/audio.js?v=3"></script>
-  <script src="js/pads.js?v=3"></script>
-  <script src="js/notes.js?v=3"></script>
-  <script src="js/chords.js?v=3"></script>
-  <script src="js/sound.js?v=3"></script>
-  <script src="js/view.js?v=3"></script>
-  <script src="js/settings.js?v=3"></script>
-  <script src="js/user-presets.js?v=3"></script>
-  <script src="js/pwa.js?v=3"></script>
-  <script src="js/main.js?v=3"></script>
+  <script src="js/synth.js?v=4"></script>
+  <script src="js/sound-library.js?v=4"></script>
+  <script src="js/layout.js?v=4"></script>
+  <script src="js/core.js?v=4"></script>
+  <script src="js/audio.js?v=4"></script>
+  <script src="js/pads.js?v=4"></script>
+  <script src="js/notes.js?v=4"></script>
+  <script src="js/chords.js?v=4"></script>
+  <script src="js/sound.js?v=4"></script>
+  <script src="js/view.js?v=4"></script>
+  <script src="js/access.js?v=4"></script>
+  <script src="js/settings.js?v=4"></script>
+  <script src="js/user-presets.js?v=4"></script>
+  <script src="js/pwa.js?v=4"></script>
+  <script src="js/main.js?v=4"></script>
 </body>
 </html>

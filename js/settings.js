@@ -2,7 +2,10 @@
 
 // ---------- Inställningar ----------
 const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'formation', 'noteCount', 'root', 'octave', 'scale',
-  'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity'];
+  'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
+  // Tillgänglighet
+  'noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
+  'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed'];
 
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('hoverPads') || '{}');
