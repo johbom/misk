@@ -4,7 +4,7 @@
 const SAVED = ['outAudio', 'outMidi', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'formation', 'noteCount', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
-  'noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
+  'noteLength', 'vibrato', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
   'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'showKeys'];
 
 // Äldre värden som bytt namn (sparade inställningar och presets)

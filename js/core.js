@@ -48,6 +48,7 @@ const ui = {
   outMidi: $('out-midi'),
   playMode: $('play-mode'),
   noteLength: $('note-length'),
+  vibrato: $('vibrato'),
   dwell: $('dwell'),
   releaseDelay: $('release-delay'),
   lockout: $('lockout'),

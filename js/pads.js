@@ -173,6 +173,8 @@ function trigger(pad) {
     stops.push(() => notes.forEach((n) => noteOff(n, ch)));
   }
   pad.release = () => stops.forEach((s) => s());
+  // Vibrato på allt som rutan spelar just nu (styrs av js/vibrato.js)
+  pad.vibrato = (cents, rate) => stops.forEach((s) => s.vibrato && s.vibrato(cents, rate));
   log(`▶ ${pad.label()}  (${notes.map(noteName).join(' ')})`);
 
   // One-shot och Bestämd längd: släpps av en timer, inte av pekaren
@@ -193,4 +195,5 @@ function naturalLength() {
 function release(pad) {
   pad.el.classList.remove('active');
   if (pad.release) { pad.release(); pad.release = null; }
+  pad.vibrato = null;
 }

@@ -24,6 +24,7 @@ const keyDigit = (code) => (/^(Digit|Numpad)[0-9]$/.test(code) ? Number(code.sli
 const secs = (v) => `${(v / 1000).toLocaleString('sv-SE', { maximumFractionDigits: 2 })} s`;
 const ACCESS_LABELS = {
   noteLength: secs,
+  vibrato: (v) => (v ? `${v} cent` : 'Av'),
   dwell: (v) => (v ? secs(v) : 'Direkt'),
   releaseDelay: (v) => (v ? secs(v) : 'Av'),
   lockout: (v) => (v ? secs(v) : 'Av'),
@@ -57,23 +58,23 @@ function refreshAccess() {
 const ACCESS_PROFILES = [
   {
     name: 'Standard', desc: 'Mus och pekskärm. Spelar direkt.',
-    set: { dwell: 0, releaseDelay: 0, lockout: 0, showPointer: 'off', dwellClick: 0, uiSize: '1', steppers: false, scanMode: 'off', playMode: 'hold' },
+    set: { dwell: 0, releaseDelay: 0, lockout: 0, showPointer: 'off', dwellClick: 0, uiSize: '1', steppers: false, scanMode: 'off', playMode: 'hold', vibrato: 20 },
   },
   {
     name: 'Ögon – utforska', desc: 'Första stegen, orsak och verkan. Låter direkt där blicken landar, tål darr och har stor pekare.',
-    set: { dwell: 0, releaseDelay: 400, lockout: 600, showPointer: 'xlarge', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', padGap: 96 },
+    set: { dwell: 0, releaseDelay: 400, lockout: 600, showPointer: 'xlarge', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', padGap: 96, vibrato: 0 },
   },
   {
     name: 'Ögon – spela', desc: 'Van användare. Kort vilotid så man hinner sikta. Ögonstyrningen sköter klicken.',
-    set: { dwell: 250, releaseDelay: 200, lockout: 250, showPointer: 'small', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold' },
+    set: { dwell: 250, releaseDelay: 200, lockout: 250, showPointer: 'small', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', vibrato: 0 },
   },
   {
     name: 'Ögon – bara titta', desc: 'Utan klick: knappar trycks genom att titta, tonen ligger kvar tills nästa ruta.',
-    set: { dwell: 600, releaseDelay: 250, lockout: 400, showPointer: 'large', dwellClick: 1200, uiSize: '1.5', steppers: true, scanMode: 'off', playMode: 'latch' },
+    set: { dwell: 600, releaseDelay: 250, lockout: 400, showPointer: 'large', dwellClick: 1200, uiSize: '1.5', steppers: true, scanMode: 'off', playMode: 'latch', vibrato: 0 },
   },
   {
     name: 'Kontakt', desc: 'En kontakt (eller mellanslag) med automatisk stegning. Håll in för lång ton.',
-    set: { dwell: 0, releaseDelay: 0, lockout: 0, showPointer: 'off', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'auto', scanSpeed: 1500, playMode: 'hold' },
+    set: { dwell: 0, releaseDelay: 0, lockout: 0, showPointer: 'off', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'auto', scanSpeed: 1500, playMode: 'hold', vibrato: 0 },
   },
 ];
 
@@ -474,7 +475,7 @@ function setupAccess() {
   setupLock();
   setupKeys();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
-    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys']
+    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));
   // Ljudet kan ha pausats (t.ex. om Start valdes med blicken): väck det vid första riktiga tryck
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => {

@@ -347,6 +347,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 /* Formationsknappar */
 #formation-buttons, #play-mode-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 #play-mode-set { display: block; }
+#vibrato-set .hint { margin: 0; flex-basis: 100%; }
 #play-mode-desc { margin: 8px 0 4px; }
 #play-mode-set .only-fixed { margin-top: 6px; }
 @media (max-width: 480px) { #play-mode-buttons { gap: 5px; } }

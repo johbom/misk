@@ -148,7 +148,9 @@ const SYNTH_PRESETS = {
     drive: 0.35, reverbMix: 0,
   },
   'Klocka': {
-    osc1Wave: 'sine', osc2Mode: 'fm', osc2Wave: 'sine', fmAmount: 2.5, osc2Semi: 22, osc2Fine: -31,
+    // FM-djup 1,5: grundtonen hörs i anslaget (vid 2,4–2,5 försvinner den helt och örat hör en
+    // ton en oktav under), deltonerna på 2,5× och 4,5× ger klockklangen.
+    osc1Wave: 'sine', osc2Mode: 'fm', osc2Wave: 'sine', fmAmount: 1.5, osc2Semi: 22, osc2Fine: -31,
     attack: 0.001, decay: 2.5, sustain: 0, release: 2.5,
     delayMix: 0.18, delayTime: 0.5, delayFeedback: 0.3, reverbMix: 0.45, reverbSize: 5,
   },
@@ -253,11 +255,18 @@ class SynthEngine {
     const makeup = ctx.createGain();
     makeup.gain.value = 0.82;
     this.volume.connect(comp).connect(limiter).connect(makeup).connect(ctx.destination);
+    Object.assign(this, { comp, limiter, makeup }); // (för mätning och felsökning)
 
     // Brus (en sekund som loopas)
     this.noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const nd = this.noiseBuffer.getChannelData(0);
     for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+
+    // Vibrato-LFO som alla röster delar. Varje röst har ett eget djup (0 = inget vibrato),
+    // som styrs av hur man vickar pekaren över rutan (js/vibrato.js).
+    this.vibLfo = ctx.createOscillator();
+    this.vibLfo.frequency.value = 5.5;
+    this.vibLfo.start();
 
     this.reverbBuiltSize = null;
     this.updateEffects();
@@ -363,6 +372,7 @@ class SynthEngine {
 
     // Oscillator 1, med unison (flera lätt ostämda kopior spridda i stereo)
     const carriers = [];
+    const pitched = []; // alla oscillatorer som ska få vibrato
     const osc1Gain = ctx.createGain();
     osc1Gain.gain.value = p.osc1Level / Math.sqrt(p.unison);
     for (let i = 0; i < p.unison; i++) {
@@ -385,6 +395,7 @@ class SynthEngine {
     const freq2 = freq * Math.pow(2, (p.osc2Semi + p.osc2Fine / 100) / 12);
     if (p.osc2Mode === 'fm' && p.fmAmount > 0) {
       const mod = this.makeOsc(p.osc2Wave, freq2);
+      pitched.push(mod);
       const fm = ctx.createGain();
       const full = p.fmAmount * freq2;
       // FM-djupet klingar av med volymkurvan -> ljust anslag, mjukare ton (piano, klocka)
@@ -395,6 +406,7 @@ class SynthEngine {
       sources.push(mod);
     } else if (p.osc2Mode === 'mix' && p.osc2Level > 0) {
       const o2 = this.makeOsc(p.osc2Wave, freq2);
+      pitched.push(o2);
       const g = ctx.createGain();
       g.gain.value = p.osc2Level;
       o2.connect(g).connect(mixer);
@@ -467,9 +479,15 @@ class SynthEngine {
       sources.push(lfo);
     }
 
+    // Vibrato: delad LFO -> rösten egen djupkontroll (cent) -> tonhöjden
+    const vib = ctx.createGain();
+    vib.gain.value = 0;
+    this.vibLfo.connect(vib);
+    [...carriers, ...pitched].forEach((o) => vib.connect(o.detune));
+
     sources.forEach((s) => s.start(t));
 
-    return () => {
+    const stop = () => {
       // Släpp mjukt från exakt där kurvan är just nu (även mitt i anslaget)
       const r = ctx.currentTime;
       if (amp.gain.cancelAndHoldAtTime) amp.gain.cancelAndHoldAtTime(r); // Chrome: exakt
@@ -483,7 +501,17 @@ class SynthEngine {
       amp.gain.setTargetAtTime(0, r, Math.max(0.005, p.release / 4));
       const end = r + Math.max(0.005, p.release / 4) * 9 + 0.05; // nästan helt tyst innan stopp
       sources.forEach((s) => s.stop(end));
-      sources[0].onended = () => amp.disconnect();
+      sources[0].onended = () => {
+        amp.disconnect();
+        try { this.vibLfo.disconnect(vib); } catch {}
+      };
     };
+    // Djup i cent (mjukt in/ut) och takt i Hz
+    stop.vibrato = (cents, rate) => {
+      const now = ctx.currentTime;
+      vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
+      if (rate) this.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
+    };
+    return stop;
   }
 }

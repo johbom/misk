@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=16" />
+  <link rel="stylesheet" href="css/style.css?v=17" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -94,6 +94,15 @@
           <input type="range" id="note-length" min="100" max="3000" step="50" value="300" />
           <span id="note-length-value" class="val">0,3 s</span>
         </label>
+      </fieldset>
+
+      <fieldset id="vibrato-set">
+        <legend>Vibrato</legend>
+        <label title="Vicka pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter">Djup
+          <input type="range" id="vibrato" min="0" max="60" step="5" value="20" />
+          <output id="vibrato-value" class="val">20 cent</output>
+        </label>
+        <p class="hint">Vicka pekaren fram och tillbaka på en ruta som låter.</p>
       </fieldset>
 
       <fieldset id="formation-set">
@@ -401,20 +410,21 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=16"></script>
-  <script src="js/sound-library.js?v=16"></script>
-  <script src="js/layout.js?v=16"></script>
-  <script src="js/core.js?v=16"></script>
-  <script src="js/audio.js?v=16"></script>
-  <script src="js/pads.js?v=16"></script>
-  <script src="js/notes.js?v=16"></script>
-  <script src="js/chords.js?v=16"></script>
-  <script src="js/sound.js?v=16"></script>
-  <script src="js/view.js?v=16"></script>
-  <script src="js/access.js?v=16"></script>
-  <script src="js/settings.js?v=16"></script>
-  <script src="js/user-presets.js?v=16"></script>
-  <script src="js/pwa.js?v=16"></script>
-  <script src="js/main.js?v=16"></script>
+  <script src="js/synth.js?v=17"></script>
+  <script src="js/sound-library.js?v=17"></script>
+  <script src="js/layout.js?v=17"></script>
+  <script src="js/core.js?v=17"></script>
+  <script src="js/audio.js?v=17"></script>
+  <script src="js/pads.js?v=17"></script>
+  <script src="js/vibrato.js?v=17"></script>
+  <script src="js/notes.js?v=17"></script>
+  <script src="js/chords.js?v=17"></script>
+  <script src="js/sound.js?v=17"></script>
+  <script src="js/view.js?v=17"></script>
+  <script src="js/access.js?v=17"></script>
+  <script src="js/settings.js?v=17"></script>
+  <script src="js/user-presets.js?v=17"></script>
+  <script src="js/pwa.js?v=17"></script>
+  <script src="js/main.js?v=17"></script>
 </body>
 </html>

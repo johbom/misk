@@ -26,6 +26,8 @@ Inställningarna är uppdelade i underflikar:
   - *Bestämd längd* – låter exakt den valda *Tonlängden* (0,1–3 s), även ljudfiler.
   - *Ligg kvar* – låter tills nästa ruta spelas (samma ruta igen tystar).
 
+  **Vibrato** – vickar man pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter blir det ett försiktigt pitchvibrato, även på ljudfiler. Takten följer hur fort man vickar (3–8 Hz), djupet växer med hur ihärdigt man vickar upp till valt *Djup* (0–60 cent, 20 från början, 0 = av), och vibratot tonar ut när man slutar. Ett vanligt svep eller små darrningar ger inget vibrato. Ögon- och kontaktprofilerna slår av det, så att blickens mikrorörelser inte ger vibrato.
+
   Och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
 - **Tillgänglighet** – ögonstyrning, kontakt, tangentbord, storlek och kontrast, se nedan.
 - **Toner** – antal toner (1–32, 12 från början), grundton, oktav och skala.
@@ -137,6 +139,7 @@ python3 -m http.server 8080
 - `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
 - `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
 - `js/audio.js` – ljud- och MIDI-utgång
+- `js/vibrato.js` – känner av vickning fram och tillbaka och gör om den till vibrato
 - `js/pads.js` – spela/släppa rutor, mus, ögonstyrning och pekskärm (aktiveringstid, darrtolerans, spärrtid)
 - `js/notes.js` – sidan Toner
 - `js/chords.js` – sidan Ackord: ackord, voicing, färger, harpa och högerklicksmeny

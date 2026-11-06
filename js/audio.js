@@ -28,14 +28,29 @@ function playSample(buffer) {
   src.buffer = buffer;
   const g = audioCtx.createGain();
   src.connect(g).connect(engine.input);
+  // Vibrato även på ljudfiler (detune finns inte i alla äldre webbläsare)
+  let vib = null;
+  if (src.detune) {
+    vib = audioCtx.createGain();
+    vib.gain.value = 0;
+    engine.vibLfo.connect(vib).connect(src.detune);
+  }
   src.start();
-  return () => {
+  src.onended = () => { if (vib) try { engine.vibLfo.disconnect(vib); } catch {} };
+  const stop = () => {
     const t = audioCtx.currentTime;
     g.gain.cancelScheduledValues(t);
     g.gain.setValueAtTime(g.gain.value, t);
     g.gain.setTargetAtTime(0, t, 0.015); // kort uttoning, inget klick
     src.stop(t + 0.12);
   };
+  stop.vibrato = (cents, rate) => {
+    if (!vib) return;
+    const now = audioCtx.currentTime;
+    vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
+    if (rate) engine.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
+  };
+  return stop;
 }
 
 // ---------- MIDI (Web MIDI) ----------

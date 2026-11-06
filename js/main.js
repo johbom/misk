@@ -19,6 +19,7 @@ buildChordPicker();
 buildChordPads();
 setupStrum();
 setupTouch();
+setupVibrato();
 setupUserPresets();
 setupPwa();
 setupAbout();
