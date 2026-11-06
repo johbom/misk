@@ -71,7 +71,8 @@ const LAYOUTS = {
     const sin = Math.sin(Math.PI / n);
     // Största bollen där grannar på ringen har "g" mellan sig
     const { s: fitted } = fitGap(gap, MIN_BALL, (g) => (2 * R0 * sin - g) / (1 + sin));
-    const s = Math.max(28, Math.min(fitted, R0 * 0.75));
+    // En enda boll: stor, mitt på ytan
+    const s = n === 1 ? R0 * 1.5 : Math.max(28, Math.min(fitted, R0 * 0.75));
     const R = n === 1 ? 0 : R0 - s / 2;
     return Array.from({ length: n }, (_, i) => {
       const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
@@ -88,7 +89,7 @@ const LAYOUTS = {
     const step = (2 * Math.PI) / n;
     const mid = (R + r) / 2;
     // Mellanrummet får ta högst knappt halva bågen, annars försvinner sektorerna
-    const g = Math.min(opts.ringGap, mid * step * 0.45);
+    const g = n === 1 ? 0 : Math.min(opts.ringGap, mid * step * 0.45); // en sektor = hel ring, ingen glipa
     const font = Math.min(28, (R - r) * 0.28, (mid * step - g) * 0.3);
     const rects = Array.from({ length: n }, (_, i) => {
       const a = -Math.PI / 2 + i * step; // sektorns mitt

@@ -21,11 +21,21 @@ function initAudio() {
 }
 
 // Spelar en uppladdad ljudfil genom effekterna (spelar alltid klart).
+// Spelar en uppladdad ljudfil. Returnerar en funktion som tonar ut och stoppar den
+// (så att ljudfiler kan följa spelsättet: hållas, spelas hela eller i bestämd längd).
 function playSample(buffer) {
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
-  src.connect(engine.input);
+  const g = audioCtx.createGain();
+  src.connect(g).connect(engine.input);
   src.start();
+  return () => {
+    const t = audioCtx.currentTime;
+    g.gain.cancelScheduledValues(t);
+    g.gain.setValueAtTime(g.gain.value, t);
+    g.gain.setTargetAtTime(0, t, 0.015); // kort uttoning, inget klick
+    src.stop(t + 0.12);
+  };
 }
 
 // ---------- MIDI (Web MIDI) ----------

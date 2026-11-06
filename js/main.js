@@ -4,7 +4,7 @@
 document.documentElement.classList.toggle('fixed-screen', FIXED_SCREEN);
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
 for (let n = NOTE_COUNT_MIN; n <= NOTE_COUNT_MAX; n++) ui.noteCount.append(new Option(n, n));
-ui.noteCount.value = 16;
+ui.noteCount.value = NOTE_COUNT_DEFAULT;
 accessDefaults();
 loadSettings();
 buildFormationButtons();

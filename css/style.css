@@ -659,7 +659,7 @@ header, #play-bar, #settings, #chord-picker, #about, #confirm, #unlock-btn { zoo
 .pad:focus-visible { outline-width: 4px; outline-offset: 4px; }
 
 /* Visa bara reglage som gäller valt spelsätt/stegning */
-body:not([data-play-mode="oneshot"]) .only-oneshot,
+body:not([data-play-mode="fixed"]) .only-fixed,
 body:not([data-play-mode="latch"]) .only-latch,
 body:not([data-scan="auto"]) .only-scan-auto { display: none !important; }
 

@@ -10,7 +10,7 @@ Knappen **Om** uppe till höger berättar vem som skapat appen och om MISK och T
 
 I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt annat finns under fliken **Inställningar**.
 
-- **Toner** – 2 till 32 rutor (16 från början), en ton per ruta; antalet väljs under *Inställningar → Sidan Toner*. Välj grundton, oktav och skala (dur, moll, pentatonisk, blues, kromatisk). Dra en ljudfil (wav/mp3) till en ruta för att byta dess ljud; högerklicka för att ta bort den.
+- **Toner** – 1 till 32 rutor (12 från början), en ton per ruta; antalet väljs under *Inställningar → Sidan Toner*. Välj grundton, oktav och skala (dur, moll, pentatonisk, blues, kromatisk). Dra en ljudfil (wav/mp3) till en ruta för att byta dess ljud; högerklicka för att ta bort den. Ljudfilen följer spelsättet, precis som tonerna.
 - **Ackord** – 2 till 8 rutor. **Högerklicka på en ruta/boll** för att byta dess ackord direkt (grundton + typ: dur, moll, 7, maj7, m7, 6, m6, 9, add9, sus2, sus4, dim, dim7, m7b5, aug); inget spelas medan menyn är öppen, och klick utanför eller Esc stänger den. Samma val finns också under Inställningar. Valfri bas en oktav ner. Rutorna visar bara ackordnamnet.
 - **Färger** – varje ackord har en egen färg som syns på rutan/bollen/sektorn/strängen och lyser upp när den spelas. Välj färg per ackord under *Inställningar → Sidan Ackord*. Knappen *Standardfärger* ger 1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos (det är också startläget); *Ingen färg* tar bort alla färger.
 - **Harpa i strängläge** – med formationen *Strängar* spelar en sträng hela ackordet när musen förs över den, precis som förut. **Håll inne musknappen (eller fingret) och dra:** första anslaget på en sträng spelar hela ackordet, och stannar du kvar och rör dig upp eller ner längs strängen går den över i harpläge – ackordets toner knäpps en och en över två oktaver, lägst nertill och högst upptill (t.ex. C E G C E G C). Prickarna på strängen visar var tonerna ligger.
@@ -20,9 +20,15 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt
 
 Inställningarna är uppdelade i underflikar:
 
-- **Spel** – spelsätt (*Håll*, *Kort ton* med valbar tonlängd, eller *Ligg kvar* där tonen spelar tills nästa ruta) och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
+- **Spel** – **spelsätt**, som gäller både toner och uppladdade ljudfiler:
+  - *Håll (gated)* – låter så länge pekaren/fingret är kvar på rutan; ljudfilen tonas ut när man lämnar den.
+  - *One-shot* – ett anslag som klingar ut av sig självt, oavsett pekaren. En ljudfil spelas hela; en ton klingar enligt ljudets volymkurva (attack + avklingning).
+  - *Bestämd längd* – låter exakt den valda *Tonlängden* (0,1–3 s), även ljudfiler.
+  - *Ligg kvar* – låter tills nästa ruta spelas (samma ruta igen tystar).
+
+  Och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
 - **Tillgänglighet** – ögonstyrning, kontakt, tangentbord, storlek och kontrast, se nedan.
-- **Toner** – antal toner (2–32), grundton, oktav och skala.
+- **Toner** – antal toner (1–32, 12 från början), grundton, oktav och skala.
 - **Ackord** – antal ackord, oktav, bas, avancerat läge (voicing), färger och ackordlistan.
 - **Ljud** – presetbiblioteket och alla reglage för ljudmotorn.
 - **Ut & MIDI** – ljud och/eller MIDI, MIDI-enhet, kanal och velocity. *Panik* skickar All Notes Off.

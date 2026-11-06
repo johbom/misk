@@ -37,7 +37,8 @@ const DEFAULT_CHORDS = [[0, ''], [7, ''], [9, 'm'], [5, ''], [2, 'm'], [4, 'm'],
 // Färdig färgpreset: 1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos
 const CHORD_PALETTE = ['#e5484d', '#f5c518', '#3fb950', '#3b82f6', '#f97316', '#a855f7', '#ec4899', '#14b8a6'];
 
-const NOTE_COUNT_MIN = 2;
+const NOTE_COUNT_MIN = 1;
+const NOTE_COUNT_DEFAULT = 12;
 const NOTE_COUNT_MAX = 32;
 const ONESHOT_MS = 300;
 

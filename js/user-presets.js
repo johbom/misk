@@ -37,7 +37,7 @@ function applySnapshot(data) {
   for (const [k, v] of Object.entries(data.settings || {})) {
     if (!SAVED.includes(k)) continue;
     if (ui[k].type === 'checkbox') ui[k].checked = !!v;
-    else ui[k].value = v;
+    else ui[k].value = normalizeSetting(k, v);
   }
   saveSettings();
 
