@@ -239,7 +239,7 @@ function stepControl(el, dir) {
 }
 
 function enhanceControl(el) {
-  if (el.parentElement.classList.contains('stepper')) return;
+  if (el.parentElement.classList.contains('stepper') || el.hasAttribute('data-no-stepper')) return;
   const isSelect = el.tagName === 'SELECT';
   const name = controlName(el);
   const wrap = document.createElement('span');

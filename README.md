@@ -74,6 +74,8 @@ Ljud i webbläsare kräver ett riktigt klick eller tangenttryck en gång innan n
 
 Under *Inställningar → Mina presets* sparar du **hela uppsättningen** under ett eget namn: ljud, ackord, färger, voicing, toner, formation, mellanrum, stränglängd, ringens inställningar och utgångar. Ett klick på *Ladda* ställer tillbaka allt. *Skriv över* uppdaterar ett sparat preset med det du har nu.
 
+Kryssa i **Visa på spelsidan** så syns dina presets också på Toner och Ackord, ovanför ljudvalet: **◀ ▶** byter till föregående/nästa (runt i en ring), och listan i mitten hoppar direkt till ett visst preset. Knapparna går att använda med blicken (*Klicka genom att titta*) och växer med *Stora − och + knappar*. Valet sparas för sig självt och påverkas inte av vilket preset du laddar. Raden syns inte när spelytan är låst.
+
 Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som backup eller för att flytta dem till en annan dator/telefon); *Importera från fil* läser in dem igen.
 
 ## Ljudmotor

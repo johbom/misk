@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=5" />
+  <link rel="stylesheet" href="css/style.css?v=6" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -50,6 +50,14 @@
 
   <!-- Det enda som syns i spelläge: preset och volym -->
   <section id="play-bar">
+    <!-- Mina presets på spelsidan (slås på under Inställningar → Mina presets) -->
+    <div id="up-bar" role="group" aria-label="Mina presets" hidden>
+      <button type="button" id="up-prev" class="up-step" aria-label="Föregående preset" title="Föregående preset">◀</button>
+      <label>Mina presets
+        <select id="up-select" data-no-stepper></select>
+      </label>
+      <button type="button" id="up-next" class="up-step" aria-label="Nästa preset" title="Nästa preset">▶</button>
+    </div>
     <label>Preset
       <select id="preset"></select>
     </label>
@@ -305,6 +313,7 @@
           <input type="text" id="up-name" placeholder="Namn, t.ex. Kvällsjam" maxlength="40" autocomplete="off" />
           <button type="submit">Spara</button>
         </form>
+        <label class="check up-show"><input type="checkbox" id="up-show" /> <span>Visa på spelsidan<small>Byt mellan dina presets direkt när du spelar, med ◀ ▶ eller listan bredvid ljudvalet.</small></span></label>
         <div id="up-list"></div>
         <div class="row up-file">
           <button type="button" id="up-export">Exportera alla till fil</button>
@@ -387,20 +396,20 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=5"></script>
-  <script src="js/sound-library.js?v=5"></script>
-  <script src="js/layout.js?v=5"></script>
-  <script src="js/core.js?v=5"></script>
-  <script src="js/audio.js?v=5"></script>
-  <script src="js/pads.js?v=5"></script>
-  <script src="js/notes.js?v=5"></script>
-  <script src="js/chords.js?v=5"></script>
-  <script src="js/sound.js?v=5"></script>
-  <script src="js/view.js?v=5"></script>
-  <script src="js/access.js?v=5"></script>
-  <script src="js/settings.js?v=5"></script>
-  <script src="js/user-presets.js?v=5"></script>
-  <script src="js/pwa.js?v=5"></script>
-  <script src="js/main.js?v=5"></script>
+  <script src="js/synth.js?v=6"></script>
+  <script src="js/sound-library.js?v=6"></script>
+  <script src="js/layout.js?v=6"></script>
+  <script src="js/core.js?v=6"></script>
+  <script src="js/audio.js?v=6"></script>
+  <script src="js/pads.js?v=6"></script>
+  <script src="js/notes.js?v=6"></script>
+  <script src="js/chords.js?v=6"></script>
+  <script src="js/sound.js?v=6"></script>
+  <script src="js/view.js?v=6"></script>
+  <script src="js/access.js?v=6"></script>
+  <script src="js/settings.js?v=6"></script>
+  <script src="js/user-presets.js?v=6"></script>
+  <script src="js/pwa.js?v=6"></script>
+  <script src="js/main.js?v=6"></script>
 </body>
 </html>

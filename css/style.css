@@ -952,3 +952,33 @@ html.high-contrast #gaze-dot { border-color: #00e5ff; }
 html.steppers #play-bar label { flex: 1 1 240px; }
 html.steppers #play-bar .stepper { flex: 1; }
 html.steppers #play-bar .stepper > select { flex: 1; }
+
+/* Mina presets på spelsidan: ◀ lista ▶ */
+#up-bar { display: flex; align-items: center; gap: 6px; }
+#up-bar[hidden] { display: none; }
+#up-bar label { min-width: 0; }
+#up-select { min-width: 140px; max-width: 240px; }
+.up-step {
+  min-width: 40px;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 1rem;
+  line-height: 1;
+  background: linear-gradient(160deg, #2c3146, #1f2230);
+}
+.up-step:disabled { opacity: 0.35; cursor: default; }
+html.steppers .up-step { min-width: 46px; min-height: 46px; }
+.up-show { margin-bottom: 12px; }
+/* Smal skärm: presetraden får en egen rad överst i spelraden */
+@media (max-width: 600px) {
+  body.up-bar-on #play-bar { flex-wrap: wrap !important; }
+  #up-bar { flex: 1 1 100%; }
+  #up-bar label { flex: 1; }
+  #up-select { flex: 1; min-width: 0; max-width: none; }
+  /* Preset och volym delar fortfarande på en rad under */
+  body.up-bar-on #play-bar > label { flex: 1 1 40%; min-width: 0; }
+  body.up-bar-on #play-bar > label select { min-width: 0; width: 100%; }
+  body.up-bar-on #play-bar > label input[type="range"] { min-width: 0; width: 100%; }
+}
+html.high-contrast .up-step { background: #000; }

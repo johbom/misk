@@ -4,6 +4,7 @@
 
 const USER_PRESETS_KEY = 'hoverPadsUserPresets';
 const USER_PRESET_ACTIVE_KEY = 'hoverPadsUserPresetActive';
+const USER_PRESET_ON_PLAY_KEY = 'hoverPadsUserPresetsOnPlay'; // visa presetraden på spelsidan
 
 function loadUserPresets() {
   try {
@@ -73,7 +74,49 @@ function describe(data) {
   return `${chordList} · ${FORMATIONS[s.formation] || ''} · ${sound}`;
 }
 
+// Laddar ett sparat preset med namn
+function loadUserPreset(name) {
+  const p = loadUserPresets().find((q) => q.name === name);
+  if (!p) return;
+  applySnapshot(p.data);
+  localStorage.setItem(USER_PRESET_ACTIVE_KEY, p.name);
+  renderUserPresets();
+  log(`Laddade presetet "${p.name}"`);
+}
+
+// Nästa (dir = 1) eller föregående (dir = -1) preset, runt i en ring
+function stepUserPreset(dir) {
+  const list = loadUserPresets();
+  if (!list.length) return;
+  const i = list.findIndex((p) => p.name === localStorage.getItem(USER_PRESET_ACTIVE_KEY));
+  const next = i < 0 ? (dir > 0 ? 0 : list.length - 1) : (i + dir + list.length) % list.length;
+  loadUserPreset(list[next].name);
+}
+
+// Raden på spelsidan: ◀ lista ▶
+function renderPresetBar() {
+  const list = loadUserPresets();
+  const active = localStorage.getItem(USER_PRESET_ACTIVE_KEY);
+  const show = !!localStorage.getItem(USER_PRESET_ON_PLAY_KEY);
+  $('up-show').checked = show;
+  $('up-bar').hidden = !show || !list.length;
+  document.body.classList.toggle('up-bar-on', show && list.length > 0);
+  const sel = $('up-select');
+  sel.innerHTML = '';
+  if (!list.some((p) => p.name === active)) {
+    const o = new Option('– välj –', '');
+    o.disabled = true;
+    sel.append(o);
+  }
+  list.forEach((p) => sel.append(new Option(p.name, p.name)));
+  sel.value = list.some((p) => p.name === active) ? active : '';
+  const one = list.length < 2;
+  $('up-prev').disabled = one && sel.value !== '';
+  $('up-next').disabled = one && sel.value !== '';
+}
+
 function renderUserPresets() {
+  renderPresetBar();
   const box = $('up-list');
   const list = loadUserPresets();
   const active = localStorage.getItem(USER_PRESET_ACTIVE_KEY);
@@ -96,12 +139,7 @@ function renderUserPresets() {
       <button type="button" class="up-del" title="Ta bort" aria-label="Ta bort">✕</button>`;
     row.querySelector('strong').textContent = p.name;
     row.querySelector('small').textContent = describe(p.data);
-    row.querySelector('.up-load').addEventListener('click', () => {
-      applySnapshot(p.data);
-      localStorage.setItem(USER_PRESET_ACTIVE_KEY, p.name);
-      renderUserPresets();
-      log(`Laddade presetet "${p.name}"`);
-    });
+    row.querySelector('.up-load').addEventListener('click', () => loadUserPreset(p.name));
     row.querySelector('.up-over').addEventListener('click', async () => {
       if (!await askConfirm(`Skriva över "${p.name}" med nuvarande inställningar?`, 'Skriv över')) return;
       storeUserPreset(p.name);
@@ -170,6 +208,14 @@ function setupUserPresets() {
     $('up-name').value = '';
   });
   $('up-export').addEventListener('click', exportUserPresets);
+  $('up-show').addEventListener('change', () => {
+    localStorage.setItem(USER_PRESET_ON_PLAY_KEY, $('up-show').checked ? '1' : '');
+    renderPresetBar();
+    layoutPads(); // spelraden kan bli högre
+  });
+  $('up-select').addEventListener('change', () => { loadUserPreset($('up-select').value); $('up-select').blur(); });
+  $('up-prev').addEventListener('click', () => stepUserPreset(-1));
+  $('up-next').addEventListener('click', () => stepUserPreset(1));
   $('up-import').addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (file) importUserPresets(file);
