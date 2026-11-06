@@ -179,6 +179,8 @@ const DEFAULT_PRESET = 'Elpiano';
 const presetParams = (name) => ({ ...SYNTH_DEFAULTS, ...SYNTH_PRESETS[name] });
 
 // ---------- Motorn ----------
+const NOTE_LOOKAHEAD = 0.015; // s, se noteOn
+
 class SynthEngine {
   constructor(ctx, params) {
     this.ctx = ctx;
@@ -365,7 +367,10 @@ class SynthEngine {
   noteOn(note, level = 1) {
     const { ctx } = this;
     const p = { ...this.p }; // tonen behåller sina inställningar även om reglagen ändras
-    const t = ctx.currentTime;
+    // Tonen planeras en aning framåt. ctx.currentTime kan ligga efter ljudtråden (särskilt Safari
+    // på iPhone/iPad); hamnar starten i det förflutna kan webbläsaren hoppa över de korta förloppen
+    // i början (FM-djup, filterkurva) och tonen låter "tom".
+    const t = ctx.currentTime + NOTE_LOOKAHEAD;
     const freq = 440 * Math.pow(2, (note - 69) / 12);
     const sources = [];
     const mixer = ctx.createGain();
@@ -399,6 +404,7 @@ class SynthEngine {
       const fm = ctx.createGain();
       const full = p.fmAmount * freq2;
       // FM-djupet klingar av med volymkurvan -> ljust anslag, mjukare ton (piano, klocka)
+      fm.gain.value = full; // startvärde direkt, även om förloppet nedan skulle hoppas över
       fm.gain.setValueAtTime(full, t);
       fm.gain.setTargetAtTime(full * Math.max(p.sustain, 0.2), t + p.attack, p.decay / 3);
       mod.connect(fm);
@@ -431,6 +437,7 @@ class SynthEngine {
     filter.Q.value = p.q;
     if (p.fEnv > 0) {
       const top = p.fEnv * 1200;
+      filter.detune.value = top; // startvärde: öppet filter (oscillatorerna startar först vid t)
       filter.detune.setValueAtTime(0, t);
       filter.detune.linearRampToValueAtTime(top, t + p.fAttack);
       filter.detune.setTargetAtTime(top * p.fSustain, t + p.fAttack, p.fDecay / 3);
@@ -444,6 +451,7 @@ class SynthEngine {
     const peak = 0.32 * level;
     const attack = Math.max(0.003, p.attack);
     const decayTau = p.decay / 3;
+    amp.gain.value = 0;
     amp.gain.setValueAtTime(0, t);
     amp.gain.linearRampToValueAtTime(peak, t + attack);
     amp.gain.setTargetAtTime(peak * p.sustain, t + attack, decayTau);
@@ -489,7 +497,9 @@ class SynthEngine {
 
     const stop = () => {
       // Släpp mjukt från exakt där kurvan är just nu (även mitt i anslaget)
-      const r = ctx.currentTime;
+      // Släppet planeras lika långt framåt som starten: tonen låter exakt så länge den hölls,
+      // och inget av förloppen hamnar i det förflutna
+      const r = ctx.currentTime + NOTE_LOOKAHEAD;
       if (amp.gain.cancelAndHoldAtTime) amp.gain.cancelAndHoldAtTime(r); // Chrome: exakt
       else {
         amp.gain.cancelScheduledValues(r);
