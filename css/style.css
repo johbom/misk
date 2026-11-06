@@ -523,7 +523,7 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 
 /* Rutnät */
 .pad-grid[data-formation="grid"] .pad.colored {
-  border-color: rgba(var(--c-rgb), 0.7);
+  border: 4px solid var(--c); /* ren, otonad färg runt rutan */
   background: linear-gradient(160deg, rgba(var(--c-rgb), 0.42), rgba(var(--c-rgb), 0.14));
 }
 .pad-grid[data-formation="grid"] .pad.colored.active {
@@ -534,7 +534,7 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 /* Bollar */
 .pad-grid[data-formation="circle"] .pad.colored,
 .pad-grid[data-formation="hex"] .pad.colored {
-  border-color: rgba(var(--c-rgb), 0.6);
+  border: 4px solid var(--c); /* ren, otonad färg runt bollen */
   background: radial-gradient(circle at 35% 30%, rgba(var(--c-rgb), 0.6), rgba(var(--c-rgb), 0.16) 70%);
 }
 .pad-grid[data-formation="circle"] .pad.colored.active,
