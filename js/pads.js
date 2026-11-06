@@ -10,7 +10,9 @@ const noteName = (n) => `${NOTE_NAMES[n % 12]}${Math.floor(n / 12) - 1}`;
 const clampNote = (n) => Math.max(0, Math.min(127, n));
 
 // ---------- Pekare över en ruta (mus, ögonstyrning, finger) ----------
-// Alla pekare går genom enterPad/leavePad, så att tillgänglighetsinställningarna gäller överallt:
+// Alla pekare går genom enterPad/leavePad. Tillgänglighetsinställningarna gäller pekare som SVÄVAR
+// (blick eller mus utan nedtryckt knapp). Trycker man eller drar med finger/musknapp är det avsiktligt,
+// och då spelar det direkt – annars skulle t.ex. svep och harpa över strängarna sluta fungera.
 //  - aktiveringstid: pekaren måste vila på rutan en stund innan den spelar (mot "Midas touch")
 //  - släppfördröjning: pekaren får darra ut över kanten en kort stund utan att tonen släpps
 //  - spärrtid: samma ruta kan inte spelas igen direkt (mot stamning vid kanten)
@@ -21,25 +23,25 @@ function hoverState(pad) {
   return pad.hover;
 }
 
-function enterPad(pad, src) {
+function enterPad(pad, src, pressed = false) {
   if (scanning()) return;
   const h = hoverState(pad);
   const wasEmpty = h.on.size === 0;
   h.on.add(src);
   if (h.leave) { clearTimeout(h.leave); h.leave = 0; return; } // tillbaka inom tålighetstiden
   if (!wasEmpty) return;
-  const wait = ms(ui.dwell);
-  if (!wait) { activate(pad); return; }
+  const wait = pressed ? 0 : ms(ui.dwell);
+  if (!wait) { activate(pad, pressed); return; }
   pad.el.style.setProperty('--dwell-ms', `${wait}ms`);
   pad.el.classList.add('dwelling');
   gazeDwell(wait);
   h.dwell = setTimeout(() => { h.dwell = 0; pad.el.classList.remove('dwelling'); gazeDwell(0); activate(pad); }, wait);
 }
 
-function leavePad(pad, src) {
+function leavePad(pad, src, pressed = false) {
   const h = hoverState(pad);
   if (!h.on.delete(src) || h.on.size) return;
-  const grace = ms(ui.releaseDelay);
+  const grace = pressed ? 0 : ms(ui.releaseDelay);
   const done = () => {
     h.leave = 0;
     cancelDwell(pad);
@@ -55,11 +57,11 @@ function cancelDwell(pad) {
   pad.el.classList.remove('dwelling');
 }
 
-// Spela, om spärrtiden har gått ut
-function activate(pad) {
+// Spela, om spärrtiden har gått ut (gäller inte när man trycker/drar)
+function activate(pad, pressed = false) {
   const h = hoverState(pad);
   const now = performance.now();
-  if (now - h.last < ms(ui.lockout)) return;
+  if (!pressed && now - h.last < ms(ui.lockout)) return;
   h.last = now;
   trigger(pad);
 }
@@ -77,10 +79,16 @@ function resetHover() {
 // Musen (och ögonstyrning, som styr muspekaren); fingrar sköts av setupTouch() nedan.
 function attachHover(pad, hitEl) {
   hitEl.addEventListener('pointerenter', (e) => {
-    if (e.pointerType !== 'touch') enterPad(pad, 'mouse');
+    if (e.pointerType !== 'touch') enterPad(pad, 'mouse', e.buttons > 0);
   });
   hitEl.addEventListener('pointerleave', (e) => {
-    if (e.pointerType !== 'touch') leavePad(pad, 'mouse');
+    if (e.pointerType !== 'touch') leavePad(pad, 'mouse', e.buttons > 0);
+  });
+  // Trycker man på en ruta som väntar ut aktiveringstiden spelar den direkt
+  hitEl.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'touch' || !hoverState(pad).dwell || scanning()) return;
+    cancelDwell(pad);
+    activate(pad, true);
   });
 }
 
@@ -104,8 +112,8 @@ function moveFinger(id, pad) {
   const old = fingers.get(id) || null;
   if (pad === old) return;
   fingers.set(id, pad);
-  if (old) leavePad(old, id);
-  if (pad) enterPad(pad, id);
+  if (old) leavePad(old, id, true); // ett finger på skärmen trycker alltid
+  if (pad) enterPad(pad, id, true);
 }
 
 function liftFinger(id) {

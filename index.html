@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=9" />
+  <link rel="stylesheet" href="css/style.css?v=10" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -129,7 +129,8 @@
       </fieldset>
 
       <fieldset class="access-set">
-        <legend>Aktivering – blick, mus och finger</legend>
+        <legend>Aktivering – blick och svävande mus</legend>
+        <p class="hint">Gäller pekare som svävar. Trycker eller drar man med finger eller musknapp spelar det direkt, så svep och harpa fungerar som vanligt.</p>
         <label class="slider">
           <span class="lbl">Aktiveringstid<small>Hur länge pekaren ska vila på en ruta innan den spelar. Ger tid att titta utan att allt låter.</small></span>
           <input type="range" id="dwell" min="0" max="2000" step="50" value="0" />
@@ -183,7 +184,7 @@
       <fieldset class="access-set">
         <legend>Kontakt och tangentbord</legend>
         <label class="slider">
-          <span class="lbl">Stegning<small>Rutorna markeras en i taget. Spela den markerade med en kontakt.</small></span>
+          <span class="lbl">Stegning<small>Rutorna markeras en i taget. Spela den markerade med en kontakt. Medan stegningen är på spelar pekare och finger inte rutorna (ingen harpa).</small></span>
           <select id="scan-mode">
             <option value="off">Av</option>
             <option value="auto">En kontakt – automatisk stegning</option>
@@ -397,20 +398,20 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=9"></script>
-  <script src="js/sound-library.js?v=9"></script>
-  <script src="js/layout.js?v=9"></script>
-  <script src="js/core.js?v=9"></script>
-  <script src="js/audio.js?v=9"></script>
-  <script src="js/pads.js?v=9"></script>
-  <script src="js/notes.js?v=9"></script>
-  <script src="js/chords.js?v=9"></script>
-  <script src="js/sound.js?v=9"></script>
-  <script src="js/view.js?v=9"></script>
-  <script src="js/access.js?v=9"></script>
-  <script src="js/settings.js?v=9"></script>
-  <script src="js/user-presets.js?v=9"></script>
-  <script src="js/pwa.js?v=9"></script>
-  <script src="js/main.js?v=9"></script>
+  <script src="js/synth.js?v=10"></script>
+  <script src="js/sound-library.js?v=10"></script>
+  <script src="js/layout.js?v=10"></script>
+  <script src="js/core.js?v=10"></script>
+  <script src="js/audio.js?v=10"></script>
+  <script src="js/pads.js?v=10"></script>
+  <script src="js/notes.js?v=10"></script>
+  <script src="js/chords.js?v=10"></script>
+  <script src="js/sound.js?v=10"></script>
+  <script src="js/view.js?v=10"></script>
+  <script src="js/access.js?v=10"></script>
+  <script src="js/settings.js?v=10"></script>
+  <script src="js/user-presets.js?v=10"></script>
+  <script src="js/pwa.js?v=10"></script>
+  <script src="js/main.js?v=10"></script>
 </body>
 </html>
