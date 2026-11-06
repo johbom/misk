@@ -11,13 +11,16 @@ const VOICINGS = [
   ['drop2', 'Drop 2', 'Drop 2'],
 ];
 const CHORD_SHIFTS = [[-1, 'Oktav −1'], [0, 'Oktav ±0'], [1, 'Oktav +1']];
+// Baston (avancerat läge): -1 = ackordets grundton, annars en egen ton (snedstrecksackord, t.ex. C/E)
+const BASS_ROOT = -1;
+const BASS_OPTIONS = [[BASS_ROOT, 'Grundton'], ...CHORD_ROOTS.map((n, r) => [r, n])];
 
 // Alla 8 ackordval sparas, även de som inte syns när antalet är lägre.
 let chords = loadChords();
 
 // Fyller i det som saknas i äldre sparade ackord
 function normalizeChord(c, i) {
-  return { voicing: 'root', shift: 0, color: CHORD_PALETTE[i], ...c };
+  return { voicing: 'root', shift: 0, bass: BASS_ROOT, color: CHORD_PALETTE[i], ...c };
 }
 
 function loadChords() {
@@ -29,8 +32,13 @@ function loadChords() {
 }
 
 const saveChords = () => localStorage.setItem('hoverPadsChords', JSON.stringify(chords));
-const chordName = (c) => CHORD_ROOTS[c.root] + c.type;
 const isAdvanced = () => ui.chordAdvanced.checked;
+// Egen baston gäller i avancerat läge, och bara om den skiljer sig från grundtonen
+const slashBass = (c) => (isAdvanced() && c.bass >= 0 && c.bass !== Number(c.root) ? c.bass : null);
+const chordName = (c) => {
+  const b = slashBass(c);
+  return CHORD_ROOTS[c.root] + c.type + (b === null ? '' : `/${CHORD_ROOTS[b]}`);
+};
 const chordSize = (c) => CHORD_INTERVALS[c.type].length;
 // 3:e omvändningen finns bara för ackord med minst fyra toner
 const voicingAllowed = (v, c) => v !== 'inv3' || chordSize(c) >= 4;
@@ -60,9 +68,10 @@ function chordNotes(c) {
   const base = 12 * (Number(ui.chordOctave.value) + 1 + (adv ? c.shift : 0)) + Number(c.root);
   let notes = CHORD_INTERVALS[c.type].map((i) => base + i);
   if (adv) notes = voice(notes, voicingAllowed(c.voicing, c) ? c.voicing : 'root');
-  if (ui.chordBass.checked) {
-    // Grundtonen i basen, alltid under resten av ackordet
-    let bass = base - 12;
+  // Basen: grundtonen (om Bas är på) eller en vald egen baston (alltid), under resten av ackordet
+  const slash = slashBass(c);
+  if (slash !== null || ui.chordBass.checked) {
+    let bass = base - 12 + (slash === null ? 0 : slash - Number(c.root));
     while (bass >= notes[0]) bass -= 12;
     notes.unshift(bass);
   }
@@ -173,6 +182,7 @@ function buildChordEditor() {
     if (adv) {
       field('Voicing', VOICINGS, chord.voicing, 'voicing');
       field('Oktavläge', CHORD_SHIFTS, chord.shift, 'shift', Number);
+      field('Bas', BASS_OPTIONS, chord.bass, 'bass', Number);
     }
 
     paint();
@@ -340,6 +350,7 @@ function buildChordPicker() {
   group('cp-types', 'type', CHORD_TYPES.map(([s, l]) => [s, l]));
   group('cp-voicings', 'voicing', VOICINGS.map(([v, , short]) => [v, short]));
   group('cp-shifts', 'shift', CHORD_SHIFTS.map(([v]) => [v, v === 0 ? '±0' : v > 0 ? `+${v}` : `−${-v}`]));
+  group('cp-basses', 'bass', BASS_OPTIONS.map(([v, text]) => [v, v === BASS_ROOT ? 'Samma som grundtonen' : text]));
 
   $('cp-close').addEventListener('click', closeChordPicker);
   // Klick utanför eller Esc stänger

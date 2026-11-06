@@ -383,6 +383,7 @@ body:not(.advanced) .adv-only { display: none; }
 #chord-editor.adv { grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
 #cp-voicings { grid-template-columns: repeat(3, 1fr); }
 #cp-shifts { grid-template-columns: repeat(3, 1fr); }
+#cp-basses button:first-child { grid-column: 1 / -1; }
 #cp-notes { margin-top: 8px; color: var(--muted); font-size: 0.75rem; text-align: center; font-variant-numeric: tabular-nums; }
 .cp-grid button:disabled { opacity: 0.3; cursor: default; }
 
