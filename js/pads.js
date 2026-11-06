@@ -172,6 +172,8 @@ function trigger(pad) {
     notes.forEach((n) => noteOn(n, ch));
     stops.push(() => notes.forEach((n) => noteOff(n, ch)));
   }
+  const oscStop = oscNoteOn(pad, notes);
+  if (oscStop) stops.push(oscStop);
   pad.release = () => stops.forEach((s) => s());
   // Vibrato på allt som rutan spelar just nu (styrs av js/vibrato.js)
   pad.vibrato = (cents, rate) => stops.forEach((s) => s.vibrato && s.vibrato(cents, rate));

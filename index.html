@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=18" />
+  <link rel="stylesheet" href="css/style.css?v=19" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -74,7 +74,7 @@
       <button type="button" data-panel="notes">Toner</button>
       <button type="button" data-panel="chords">Ackord</button>
       <button type="button" data-panel="sound">Ljud</button>
-      <button type="button" data-panel="io">Ut &amp; MIDI</button>
+      <button type="button" data-panel="io">Ut, MIDI &amp; OSC</button>
       <button type="button" data-panel="mine">Mina presets</button>
     </nav>
 
@@ -299,6 +299,29 @@
         <legend>Utgång</legend>
         <label><input type="checkbox" id="out-audio" checked /> Ljud</label>
         <label><input type="checkbox" id="out-midi" /> MIDI</label>
+        <label><input type="checkbox" id="out-osc" /> OSC</label>
+      </fieldset>
+
+      <fieldset id="osc-set">
+        <legend>OSC</legend>
+        <p class="hint">Webbläsare kan inte skicka OSC (UDP) själva. Starta bryggan på datorn – <code>node tools/osc-bridge.mjs</code> – så skickar den vidare till t.ex. Max, Pure Data eller TouchDesigner på port 9000. I Safari: öppna appen från bryggan, <code>http://localhost:8765</code> (Safari stoppar anslutningen från den publicerade sidan).</p>
+        <label>Brygga
+          <input type="text" id="osc-url" value="ws://localhost:8765" spellcheck="false" autocomplete="off" />
+        </label>
+        <label>Adressprefix
+          <input type="text" id="osc-prefix" value="/hoverpads" spellcheck="false" autocomplete="off" />
+        </label>
+        <button type="button" id="osc-test">Skicka test</button>
+        <span id="osc-status" class="status">Av</span>
+        <details class="osc-help">
+          <summary>Meddelanden</summary>
+          <ul>
+            <li><code>/hoverpads/note</code> ton (MIDI-nummer), styrka (0 = släpp)</li>
+            <li><code>/hoverpads/pad</code> sida (notes/chords), ruta (1–), 1 = på / 0 = av</li>
+            <li><code>/hoverpads/chord</code> ackordnamn, ruta</li>
+            <li><code>/hoverpads/vibrato</code> sida, ruta, djup i cent</li>
+          </ul>
+        </details>
       </fieldset>
 
       <fieldset>
@@ -410,21 +433,22 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=18"></script>
-  <script src="js/sound-library.js?v=18"></script>
-  <script src="js/layout.js?v=18"></script>
-  <script src="js/core.js?v=18"></script>
-  <script src="js/audio.js?v=18"></script>
-  <script src="js/pads.js?v=18"></script>
-  <script src="js/vibrato.js?v=18"></script>
-  <script src="js/notes.js?v=18"></script>
-  <script src="js/chords.js?v=18"></script>
-  <script src="js/sound.js?v=18"></script>
-  <script src="js/view.js?v=18"></script>
-  <script src="js/access.js?v=18"></script>
-  <script src="js/settings.js?v=18"></script>
-  <script src="js/user-presets.js?v=18"></script>
-  <script src="js/pwa.js?v=18"></script>
-  <script src="js/main.js?v=18"></script>
+  <script src="js/synth.js?v=19"></script>
+  <script src="js/sound-library.js?v=19"></script>
+  <script src="js/layout.js?v=19"></script>
+  <script src="js/core.js?v=19"></script>
+  <script src="js/audio.js?v=19"></script>
+  <script src="js/pads.js?v=19"></script>
+  <script src="js/osc.js?v=19"></script>
+  <script src="js/vibrato.js?v=19"></script>
+  <script src="js/notes.js?v=19"></script>
+  <script src="js/chords.js?v=19"></script>
+  <script src="js/sound.js?v=19"></script>
+  <script src="js/view.js?v=19"></script>
+  <script src="js/access.js?v=19"></script>
+  <script src="js/settings.js?v=19"></script>
+  <script src="js/user-presets.js?v=19"></script>
+  <script src="js/pwa.js?v=19"></script>
+  <script src="js/main.js?v=19"></script>
 </body>
 </html>

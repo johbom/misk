@@ -347,6 +347,16 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 /* Formationsknappar */
 #formation-buttons, #play-mode-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 #play-mode-set { display: block; }
+#osc-set { max-width: 720px; }
+#osc-set .hint { flex-basis: 100%; margin: 0; }
+#osc-set input[type="text"] {
+  background: #262938; color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; font: 0.85rem ui-monospace, Menlo, monospace; width: 13em;
+}
+.osc-help { flex-basis: 100%; color: var(--muted); font-size: 0.8rem; }
+.osc-help summary { cursor: pointer; }
+.osc-help ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7; }
+code { font: 0.85em ui-monospace, Menlo, monospace; }
 #vibrato-set .hint { margin: 0; flex-basis: 100%; }
 #play-mode-desc { margin: 8px 0 4px; }
 #play-mode-set .only-fixed { margin-top: 6px; }

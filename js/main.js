@@ -20,6 +20,7 @@ buildChordPads();
 setupStrum();
 setupTouch();
 setupVibrato();
+setupOsc();
 setupUserPresets();
 setupPwa();
 setupAbout();

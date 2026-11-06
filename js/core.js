@@ -46,6 +46,9 @@ const $ = (id) => document.getElementById(id);
 const ui = {
   outAudio: $('out-audio'),
   outMidi: $('out-midi'),
+  outOsc: $('out-osc'),
+  oscUrl: $('osc-url'),
+  oscPrefix: $('osc-prefix'),
   playMode: $('play-mode'),
   noteLength: $('note-length'),
   vibrato: $('vibrato'),

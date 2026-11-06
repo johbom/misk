@@ -252,6 +252,8 @@ function pluck(pad, idx) {
     noteOn(note, ch);
     stops.push(() => noteOff(note, ch));
   }
+  const oscStop = oscPluck(note);
+  if (oscStop) stops.push(oscStop);
   setTimeout(() => stops.forEach((s) => s()), PLUCK_MS);
   const dot = pad.el.querySelectorAll('.strum i')[idx];
   if (dot && !ui.reduceMotion.checked) {

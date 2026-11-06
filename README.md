@@ -119,6 +119,34 @@ På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymp
 Web MIDI fungerar i Chrome, Edge och Firefox (inte Safari) och kräver https eller localhost.
 På Mac kan du skicka till t.ex. Logic/Ableton via en virtuell port: *Ljud-MIDI-konfiguration → MIDI-studio → IAC-drivrutin → "Enheten är online"*.
 
+## OSC
+
+Under *Inställningar → Ut, MIDI & OSC* kan appen skicka **OSC** (Open Sound Control) till t.ex. Max, Pure Data, TouchDesigner, QLab, Ableton (via Max for Live) eller SuperCollider.
+
+Webbläsare får inte skicka UDP, så det behövs en liten brygga på datorn. Den finns i `tools/osc-bridge.mjs` och kräver bara Node 18 eller senare:
+
+```
+node tools/osc-bridge.mjs
+```
+
+Bryggan tar emot från appen på `ws://localhost:8765` och skickar vidare som vanlig OSC/UDP till `127.0.0.1:9000`. Kryssa i **OSC** under *Utgång*; statusen visar *Ansluten*, och appen återansluter av sig själv om bryggan startas om. *Skicka test* skickar `/hoverpads/test "hej"`.
+
+Val: `--port 7000` (UDP-port), `--host 192.168.1.20` (annan dator), `--ws 8765` (WebSocket-port), `--verbose` (skriv ut varje meddelande), `--lan` (låt andra enheter i nätverket, t.ex. en iPad, ansluta – annars bara den här datorn).
+
+**Safari:** Safari stoppar anslutningen från den publicerade https-sidan. Bryggan serverar därför också själva appen – öppna `http://localhost:8765` så fungerar OSC även i Safari. Chrome, Edge och Firefox fungerar från båda.
+
+Meddelanden (prefixet `/hoverpads` kan ändras):
+
+| Adress | Argument |
+|---|---|
+| `/hoverpads/note` | ton (MIDI-nummer, int), styrka (int, 0 = släpp) |
+| `/hoverpads/pad` | sida (`notes`/`chords`), ruta (1–), 1 = på / 0 = av |
+| `/hoverpads/chord` | ackordnamn (t.ex. `C/E`), ruta – när en ackordruta slås an |
+| `/hoverpads/vibrato` | sida, ruta, djup i cent (float) |
+| `/hoverpads/test` | `"hej"` |
+
+Styrkan är samma som *Velocity* under MIDI. Harpans toner skickas som `/note`.
+
 ## Köra lokalt
 
 ```bash
@@ -139,6 +167,8 @@ python3 -m http.server 8080
 - `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
 - `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
 - `js/audio.js` – ljud- och MIDI-utgång
+- `js/osc.js` – OSC-utgång: kodar OSC-paket och skickar dem till bryggan
+- `tools/osc-bridge.mjs` – OSC-bryggan (WebSocket → UDP), serverar också appen lokalt
 - `js/vibrato.js` – känner av vickning fram och tillbaka och gör om den till vibrato
 - `js/pads.js` – spela/släppa rutor, mus, ögonstyrning och pekskärm (aktiveringstid, darrtolerans, spärrtid)
 - `js/notes.js` – sidan Toner
