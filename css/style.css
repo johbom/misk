@@ -79,6 +79,10 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
 #settings .panel { display: none; flex-wrap: wrap; gap: 12px; align-items: flex-start; }
 #settings .panel.on { display: flex; }
 #settings .panel > fieldset { flex: 1 1 auto; }
+/* Små paneler: rutorna blir bara så breda som innehållet (inte hela skärmen i helskärm) */
+#settings .panel:is([data-panel="play"], [data-panel="io"], [data-panel="notes"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
+/* Speltoner (▶ C …) i loggen hör till spelsidorna, inte inställningarna */
+body[data-tab="settings"] #log[data-kind="play"] { visibility: hidden; }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; }
 .val { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
 
@@ -347,7 +351,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 /* Formationsknappar */
 #formation-buttons, #play-mode-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
 #play-mode-set { display: block; }
-#osc-set { max-width: 720px; }
+#settings .panel > #osc-set { flex: 0 1 600px; max-width: 600px; order: 1; } /* efter MIDI, lagom bred */
 #osc-set .hint { flex-basis: 100%; margin: 0; }
 #osc-set input[type="text"] {
   background: #262938; color: var(--text); border: 1px solid var(--border);

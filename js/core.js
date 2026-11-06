@@ -94,4 +94,8 @@ const ui = {
 const FIXED_SCREEN = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 1
   || new URLSearchParams(location.search).has('fast');
 
-function log(msg) { ui.log.textContent = msg; }
+function log(msg) {
+  ui.log.textContent = msg;
+  // ▶ ♪ ■ = det som spelas just nu; döljs under Inställningar (style.css)
+  ui.log.dataset.kind = /^[▶♪■]/.test(msg) ? 'play' : 'info';
+}
