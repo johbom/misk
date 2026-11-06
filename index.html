@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=12" />
+  <link rel="stylesheet" href="css/style.css?v=13" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -79,22 +79,21 @@
     </nav>
 
     <div class="panel" data-panel="play">
-      <fieldset>
+      <fieldset id="play-mode-set">
         <legend>Spelsätt</legend>
-        <label>
-          <select id="play-mode" aria-label="Spelsätt">
-            <option value="hold">Håll (gated) – låter så länge pekaren är kvar</option>
-            <option value="shot">One-shot – ett anslag som klingar ut; ljudfiler spelas hela</option>
-            <option value="fixed">Bestämd längd – låter i vald tonlängd</option>
-            <option value="latch">Ligg kvar – låter tills nästa ruta</option>
-          </select>
-        </label>
+        <!-- Värdet ligger i den dolda listan; knapparna med symboler byggs av js/view.js -->
+        <select id="play-mode" aria-label="Spelsätt" data-no-stepper hidden>
+          <option value="hold">Håll</option>
+          <option value="shot">One-shot</option>
+          <option value="fixed">Bestämd längd</option>
+          <option value="latch">Ligg kvar</option>
+        </select>
+        <div id="play-mode-buttons" role="radiogroup" aria-label="Spelsätt"></div>
+        <p id="play-mode-desc" class="hint"></p>
         <label class="only-fixed">Tonlängd
           <input type="range" id="note-length" min="100" max="3000" step="50" value="300" />
           <span id="note-length-value" class="val">0,3 s</span>
         </label>
-        <p class="hint only-latch">Titta eller peka på samma ruta igen för att tysta den.</p>
-        <p class="hint">Gäller både toner och uppladdade ljudfiler.</p>
       </fieldset>
 
       <fieldset id="formation-set">
@@ -400,20 +399,20 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=12"></script>
-  <script src="js/sound-library.js?v=12"></script>
-  <script src="js/layout.js?v=12"></script>
-  <script src="js/core.js?v=12"></script>
-  <script src="js/audio.js?v=12"></script>
-  <script src="js/pads.js?v=12"></script>
-  <script src="js/notes.js?v=12"></script>
-  <script src="js/chords.js?v=12"></script>
-  <script src="js/sound.js?v=12"></script>
-  <script src="js/view.js?v=12"></script>
-  <script src="js/access.js?v=12"></script>
-  <script src="js/settings.js?v=12"></script>
-  <script src="js/user-presets.js?v=12"></script>
-  <script src="js/pwa.js?v=12"></script>
-  <script src="js/main.js?v=12"></script>
+  <script src="js/synth.js?v=13"></script>
+  <script src="js/sound-library.js?v=13"></script>
+  <script src="js/layout.js?v=13"></script>
+  <script src="js/core.js?v=13"></script>
+  <script src="js/audio.js?v=13"></script>
+  <script src="js/pads.js?v=13"></script>
+  <script src="js/notes.js?v=13"></script>
+  <script src="js/chords.js?v=13"></script>
+  <script src="js/sound.js?v=13"></script>
+  <script src="js/view.js?v=13"></script>
+  <script src="js/access.js?v=13"></script>
+  <script src="js/settings.js?v=13"></script>
+  <script src="js/user-presets.js?v=13"></script>
+  <script src="js/pwa.js?v=13"></script>
+  <script src="js/main.js?v=13"></script>
 </body>
 </html>

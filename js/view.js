@@ -88,8 +88,41 @@ function buildFormationButtons() {
   syncFormationButtons();
 }
 
+// Knappar med symbol per spelsätt; värdet ligger i den dolda listan #play-mode.
+function buildPlayModeButtons() {
+  const box = $('play-mode-buttons');
+  Object.entries(PLAY_MODES).forEach(([value, m]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'formation-btn mode-btn';
+    b.dataset.value = value;
+    b.setAttribute('role', 'radio');
+    b.title = m.desc;
+    b.innerHTML = `${m.icon}<span>${m.name}</span>`;
+    b.addEventListener('click', () => {
+      if (ui.playMode.value === value) return;
+      ui.playMode.value = value;
+      ui.playMode.dispatchEvent(new Event('input')); // tillgänglighet m.m.
+      ui.playMode.dispatchEvent(new Event('change')); // sparar
+    });
+    box.append(b);
+  });
+  syncPlayModeButtons();
+}
+
+// Anropas också när spelsättet ändras på annat sätt (profiler, presets, uppstart)
+function syncPlayModeButtons() {
+  if (!(ui.playMode.value in PLAY_MODES)) ui.playMode.value = 'hold';
+  document.querySelectorAll('#play-mode-buttons .mode-btn').forEach((b) => {
+    const on = b.dataset.value === ui.playMode.value;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-checked', on);
+  });
+  $('play-mode-desc').textContent = PLAY_MODES[ui.playMode.value].desc;
+}
+
 function syncFormationButtons() {
-  document.querySelectorAll('.formation-btn').forEach((b) => {
+  document.querySelectorAll('#formation-buttons .formation-btn').forEach((b) => {
     const on = b.dataset.value === ui.formation.value;
     b.classList.toggle('on', on);
     b.setAttribute('aria-checked', on);

@@ -345,7 +345,11 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 .pad.editing { outline: 2px solid var(--accent); outline-offset: 4px; }
 
 /* Formationsknappar */
-#formation-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+#formation-buttons, #play-mode-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+#play-mode-set { display: block; }
+#play-mode-desc { margin: 8px 0 4px; }
+#play-mode-set .only-fixed { margin-top: 6px; }
+@media (max-width: 480px) { #play-mode-buttons { gap: 5px; } }
 @media (max-width: 480px) {
   #formation-buttons { gap: 5px; }
   .formation-btn { width: 60px; padding: 6px 2px 5px; font-size: 0.7rem; }

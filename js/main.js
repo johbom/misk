@@ -8,6 +8,7 @@ ui.noteCount.value = NOTE_COUNT_DEFAULT;
 accessDefaults();
 loadSettings();
 buildFormationButtons();
+buildPlayModeButtons();
 document.body.classList.toggle('advanced', isAdvanced());
 applyGap();
 applyFormationOpts();

@@ -20,7 +20,7 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, preset och volym. Allt
 
 Inställningarna är uppdelade i underflikar:
 
-- **Spel** – **spelsätt**, som gäller både toner och uppladdade ljudfiler:
+- **Spel** – **spelsätt**, valt med knappar vars symbol visar ljudets volym över tid. Gäller både toner och uppladdade ljudfiler:
   - *Håll (gated)* – låter så länge pekaren/fingret är kvar på rutan; ljudfilen tonas ut när man lämnar den.
   - *One-shot* – ett anslag som klingar ut av sig självt, oavsett pekaren. En ljudfil spelas hela; en ton klingar enligt ljudets volymkurva (attack + avklingning).
   - *Bestämd längd* – låter exakt den valda *Tonlängden* (0,1–3 s), även ljudfiler.

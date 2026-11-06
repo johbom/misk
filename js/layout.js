@@ -50,6 +50,31 @@ const FORMATION_ICONS = {
     `<line x1="${8 + i * 8}" y1="4" x2="${8 + i * 8}" y2="32" stroke-width="2" stroke-linecap="round"/>`).join('')),
 };
 
+// Symboler för spelsätten: volymen över tid (ljudets "kurva")
+const modeIcon = (fill, line, extra = '') => svgIcon(
+  `<path d="${fill}" fill-opacity="0.28" stroke="none"/>`
+  + `<path d="${line}" fill="none" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>${extra}`);
+const PLAY_MODES = {
+  hold: {
+    name: 'Håll', desc: 'Låter så länge pekaren är kvar på rutan (gated).',
+    icon: modeIcon('M10 29 L13 8 H33 L36 29 Z', 'M4 29 H10 L13 8 H33 L36 29 H44'),
+  },
+  shot: {
+    name: 'One-shot', desc: 'Ett anslag som klingar ut av sig självt. Ljudfiler spelas hela.',
+    icon: modeIcon('M9 29 L11.5 6 C16 19 24 27 44 28.5 V29 Z', 'M4 29 H9 L11.5 6 C16 19 24 27 44 28.5'),
+  },
+  fixed: {
+    name: 'Längd', desc: 'Låter exakt den tonlängd du väljer.',
+    icon: modeIcon('M10 25 L12.5 6 H33.5 L36 25 Z', 'M4 25 H10 L12.5 6 H33.5 L36 25 H44',
+      '<path d="M11 29 V35 M35 29 V35 M11 32 H35" fill="none" stroke-width="1.8" stroke-linecap="round"/>'),
+  },
+  latch: {
+    name: 'Ligg kvar', desc: 'Låter tills nästa ruta. Samma ruta igen tystar.',
+    icon: modeIcon('M8 29 L11 10 H40 V29 Z', 'M4 29 H8 L11 10 H39',
+      '<path d="M37 5.5 L43.5 10 L37 14.5" fill="none" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>'),
+  },
+};
+
 const MIN_BALL = 60; // minsta bollstorlek innan mellanrummet krymps
 const MIN_STRING = 40; // minsta strängbredd innan mellanrummet krymps
 

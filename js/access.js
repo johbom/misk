@@ -40,6 +40,7 @@ function refreshAccess() {
   root.classList.toggle('steppers', ui.steppers.checked);
   root.classList.toggle('show-keys', ui.showKeys.checked);
   root.dataset.pointer = ui.showPointer.value;
+  syncPlayModeButtons();
   document.body.dataset.playMode = ui.playMode.value;
   document.body.dataset.scan = ui.scanMode.value;
   if (ui.playMode.value !== 'latch') allPads().forEach((p) => { if (!p.hover?.on.size) release(p); });
