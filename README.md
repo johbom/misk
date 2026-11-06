@@ -93,6 +93,7 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 
 Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip eller Enkel – eller gå till **Inställningar → Ljudmotor** och skruva själv:
 
+- **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och FM, allt nedan) eller **fysisk modell**, se nedan.
 - **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.
 - **Oscillator 2:** blandas in eller frekvensmodulerar osc 1 (FM), transponering, fininställning, brus.
 - **Filter:** lågpass/högpass/bandpass med resonans och egen envelope.
@@ -100,7 +101,13 @@ Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, 
 - **LFO:** vibrato, filter-wah eller tremolo.
 - **Effekter:** drive, chorus, delay och reverb.
 
-**Presetbibliotek:** överst under *Inställningar → Ljudmotor* finns 100 färdiga ljud i tio kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
+**Fysisk modell:** i stället för att forma vågformer räknar motorn ut hur en riktig sträng eller kropp svänger, så klangen beter sig naturligt över hela registret.
+- *Sträng* – en räknad sträng (Karplus–Strong) som kan **knäppas**, **slås** (som en pianohammare) eller **strykas med stråke** (klingar så länge tonen hålls).
+- *Resonans* – en kropp som slås an, med verkliga deltonsförhållanden: **marimba, vibrafon, glas, klocka, trumma** eller **metallstav**.
+- Reglage: *Klingtid* (hur länge den ringer), *Ljushet* (mörk/mjuk eller ljus/hård), *Anslagspunkt* (vid kanten = tunnare, mitten = rundare).
+- Filter, volymkurva, LFO, vibrato och alla effekter fungerar som vanligt. Modellerna räknas i ljudtråden (AudioWorklet) och stängs av när de tystnat.
+
+**Presetbibliotek:** överst under *Inställningar → Ljudmotor* finns 110 färdiga ljud i elva kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip, fysisk modell – t.ex. *Nylonsträng*, *Stråkcello*, *Marimbaträ*, *Vibrafonstav*, *Glasklang*, *Handtrumma*). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
 
 Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ preset* går tillbaka, *Slumpa ljud* hittar på något nytt.
 Uppladdade ljudfiler går också genom effekterna.
@@ -165,7 +172,8 @@ python3 -m http.server 8080
 - `css/style.css` – utseende
 - `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`)
 - `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
-- `js/sound-library.js` – presetbiblioteket med 100 ljud
+- `js/sound-library.js` – presetbiblioteket med 110 ljud
+- `js/pm-worklet.js` – fysisk modell i ljudtråden: sträng (Karplus–Strong) och resonanskropp
 - `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
 - `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
 - `js/audio.js` – ljud- och MIDI-utgång

@@ -47,7 +47,26 @@ const sec = (v) => (v < 1 ? `${Math.round(v * 1000)} ms` : `${v.toFixed(2)} s`);
 const hz = (v) => (v < 1000 ? `${Math.round(v)} Hz` : `${(v / 1000).toFixed(1)} kHz`);
 const signed = (unit) => (v) => `${v > 0 ? '+' : ''}${v} ${unit}`;
 
+// Fysisk modellering: resonanskroppar med verkliga deltonsförhållanden (från mätningar/litteratur).
+// ratios = deltonernas frekvens i förhållande till grundtonen, amps = styrka, damp = hur mycket
+// fortare de högre deltonerna klingar av.
+const PM_BODIES = {
+  marimba: { name: 'Marimba', ratios: [1, 3.99, 10.65], amps: [1, 0.45, 0.2], damp: 0.9 },
+  vibes: { name: 'Vibrafon', ratios: [1, 3.93, 9.24], amps: [1, 0.5, 0.25], damp: 0.6 },
+  glass: { name: 'Glas', ratios: [1, 2.32, 4.25, 6.63, 9.38], amps: [1, 0.55, 0.35, 0.2, 0.12], damp: 0.4 },
+  bell: { name: 'Klocka', ratios: [0.5, 1, 1.19, 1.5, 2, 2.66, 3.01], amps: [0.15, 1, 0.55, 0.35, 0.6, 0.25, 0.2], damp: 0.5 },
+  drum: { name: 'Trumma', ratios: [1, 1.59, 2.14, 2.3, 2.65, 2.92, 3.16], amps: [1, 0.8, 0.6, 0.5, 0.4, 0.35, 0.3], damp: 0.8 },
+  bar: { name: 'Metallstav', ratios: [1, 2.76, 5.4, 8.93], amps: [1, 0.4, 0.22, 0.1], damp: 0.7 },
+};
+
 const SYNTH_PARAMS = [
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng (fysisk modell)'], ['modal', 'Resonans (fysisk modell)']] },
+  { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
+  { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
+  { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
+  { key: 'pmBright', label: 'Ljushet', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'pmPos', label: 'Anslagspunkt', min: 0.02, max: 0.5, step: 0.01, fmt: (v) => (v < 0.1 ? 'Vid kanten' : v > 0.4 ? 'Mitten' : pct(v)) },
+
   { group: 'Oscillator 1', key: 'osc1Wave', label: 'Vågform', options: WAVES },
   { key: 'osc1Level', label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'unison', label: 'Unison', min: 1, max: 7, step: 1, fmt: (v) => `${v} röster` },
@@ -88,9 +107,24 @@ const SYNTH_PARAMS = [
 ];
 
 // Reglage som inte gör något i vissa lägen gråas ut.
+const notOsc = (p) => p.model && p.model !== 'osc';
 const SYNTH_DISABLED_WHEN = {
-  osc2Level: (p) => p.osc2Mode === 'fm',
-  fmAmount: (p) => p.osc2Mode !== 'fm',
+  pmExciter: (p) => p.model !== 'string',
+  pmBody: (p) => p.model !== 'modal',
+  pmDecay: (p) => !notOsc(p),
+  pmBright: (p) => !notOsc(p),
+  pmPos: (p) => !notOsc(p),
+  osc1Wave: notOsc,
+  osc1Level: notOsc,
+  unison: notOsc,
+  spread: notOsc,
+  osc2Mode: notOsc,
+  osc2Wave: notOsc,
+  osc2Semi: notOsc,
+  osc2Fine: notOsc,
+  noise: notOsc,
+  osc2Level: (p) => notOsc(p) || p.osc2Mode === 'fm',
+  fmAmount: (p) => notOsc(p) || p.osc2Mode !== 'fm',
   fAttack: (p) => p.fEnv === 0,
   fDecay: (p) => p.fEnv === 0,
   fSustain: (p) => p.fEnv === 0,
@@ -103,6 +137,7 @@ const SYNTH_DISABLED_WHEN = {
 
 // ---------- Presets ----------
 const SYNTH_DEFAULTS = {
+  model: 'osc', pmExciter: 'pluck', pmBody: 'marimba', pmDecay: 3, pmBright: 0.6, pmPos: 0.2,
   osc1Wave: 'triangle', osc1Level: 1, unison: 1, spread: 0,
   osc2Mode: 'mix', osc2Wave: 'sine', osc2Level: 0, fmAmount: 0, osc2Semi: 0, osc2Fine: 0, noise: 0,
   filterType: 'lowpass', cutoff: 18000, q: 0.7, fEnv: 0, fAttack: 0.01, fDecay: 0.3, fSustain: 1,
@@ -180,6 +215,8 @@ const presetParams = (name) => ({ ...SYNTH_DEFAULTS, ...SYNTH_PRESETS[name] });
 
 // ---------- Motorn ----------
 const NOTE_LOOKAHEAD = 0.015; // s, se noteOn
+// Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
+const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
 class SynthEngine {
   constructor(ctx, params) {
@@ -269,6 +306,12 @@ class SynthEngine {
     this.vibLfo = ctx.createOscillator();
     this.vibLfo.frequency.value = 5.5;
     this.vibLfo.start();
+
+    // Fysisk modell: strängen räknas i ljudtråden. Tills den laddats spelas en resonanskropp i stället.
+    this.pmReady = false;
+    this.ready = ctx.audioWorklet
+      ? ctx.audioWorklet.addModule(PM_WORKLET_URL).then(() => { this.pmReady = true; }).catch(() => {})
+      : Promise.resolve();
 
     this.reverbBuiltSize = null;
     this.updateEffects();
@@ -363,6 +406,82 @@ class SynthEngine {
     return o;
   }
 
+  // Fysisk modell: en sträng (AudioWorklet) eller en resonanskropp (bandpassfilter som ringer).
+  addModelVoice(p, freq, t, out, detunes, onRelease, onEnd) {
+    const { ctx } = this;
+    if (p.model === 'string' && this.pmReady) {
+      const node = new AudioWorkletNode(ctx, 'pm-string', {
+        numberOfInputs: 0,
+        numberOfOutputs: 1,
+        outputChannelCount: [1],
+        processorOptions: { start: t, decay: p.pmDecay, bright: p.pmBright, pos: p.pmPos, exciter: p.pmExciter },
+      });
+      node.parameters.get('frequency').value = freq;
+      detunes.push(node.parameters.get('detune'));
+      node.connect(out);
+      onRelease.push((r, end) => node.port.postMessage({ release: r, end }));
+      onEnd.push(() => node.disconnect());
+      return;
+    }
+    // Resonanskropp (också reserv för strängen om ljudtråden inte hunnit laddas)
+    const body = PM_BODIES[p.model === 'modal' ? p.pmBody : 'bar'] || PM_BODIES.marimba;
+    const sr = ctx.sampleRate;
+    // Anslaget: en kort puls – hårdare klubba (ljusare) = kortare puls = fler höga deltoner
+    const len = Math.max(2, Math.round(sr * (0.0004 + 0.008 * (1 - p.pmBright) ** 2)));
+    // Deltonens styrka: kroppens egen, anslagspunkten och hur hård klubban är
+    const weight = (k) => body.amps[k] * (0.3 + 0.7 * Math.abs(Math.sin(Math.PI * (k + 1) * p.pmPos)))
+      * (k === 0 ? 1 : 0.3 + 0.7 * p.pmBright);
+    const t60 = (ratio) => Math.max(0.03, p.pmDecay * Math.pow(ratio, -body.damp));
+    if (this.pmReady) {
+      const node = new AudioWorkletNode(ctx, 'pm-modal', {
+        numberOfInputs: 0,
+        numberOfOutputs: 1,
+        outputChannelCount: [1],
+        processorOptions: {
+          start: t,
+          ratios: body.ratios,
+          // Normaliserat med summan, så att kroppar med många deltoner inte blir starkare
+          amps: body.ratios.map((_, k) => (weight(k) / body.ratios.reduce((sum, __, j) => sum + weight(j), 0)) * 2.25),
+          t60s: body.ratios.map(t60),
+          pulseLen: len,
+          noise: 0.25 * p.pmBright,
+        },
+      });
+      node.parameters.get('frequency').value = freq;
+      detunes.push(node.parameters.get('detune'));
+      node.connect(out);
+      onRelease.push((r, end) => node.port.postMessage({ end }));
+      onEnd.push(() => node.disconnect());
+      return;
+    }
+    // Reserv med inbyggda filter (bara de första ögonblicken innan ljudtråden laddats)
+    const buf = ctx.createBuffer(1, len + 8, sr);
+    const d = buf.getChannelData(0);
+    let area = 0;
+    for (let i = 0; i < len; i++) {
+      d[i] = Math.sin((Math.PI * i) / len) ** 2 * (1 + 0.25 * p.pmBright * (Math.random() * 2 - 1));
+      area += d[i];
+    }
+    const hit = ctx.createBufferSource();
+    hit.buffer = buf;
+    hit.start(t);
+    body.ratios.forEach((ratio, k) => {
+      const fk = freq * ratio;
+      if (fk > sr * 0.45) return; // över halva samplingsfrekvensen går inte
+      const bw = 6.91 / (Math.PI * t60(ratio)); // bandbredd (Hz) som ger klingtiden
+      const bq = ctx.createBiquadFilter();
+      bq.type = 'bandpass';
+      bq.frequency.value = fk;
+      bq.Q.value = fk / bw;
+      const w = weight(k);
+      const g = ctx.createGain();
+      g.gain.value = (w / ((2 * Math.PI * bw / sr) * area)) * 0.5; // ringningens styrka = w
+      hit.connect(bq).connect(g).connect(out);
+      detunes.push(bq.detune);
+    });
+    onEnd.push(() => hit.disconnect());
+  }
+
   // Startar en ton. Returnerar en funktion som släpper den.
   noteOn(note, level = 1) {
     const { ctx } = this;
@@ -374,10 +493,22 @@ class SynthEngine {
     const freq = 440 * Math.pow(2, (note - 69) / 12);
     const sources = [];
     const mixer = ctx.createGain();
-
-    // Oscillator 1, med unison (flera lätt ostämda kopior spridda i stereo)
     const carriers = [];
     const pitched = []; // alla oscillatorer som ska få vibrato
+    const detunes = []; // tonhöjd (cent) för fysiska modeller – för LFO och vibrato
+    const onRelease = []; // (r) => … när tonen släpps
+    const onEnd = []; // städning när rösten tystnat
+
+    // Håller reda på när rösten är slut (även när den inte har några oscillatorer)
+    const life = ctx.createConstantSource();
+    life.offset.value = 0;
+    life.connect(mixer);
+    sources.push(life);
+
+    if (p.model === 'string' || p.model === 'modal') {
+      this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd);
+    } else {
+    // Oscillator 1, med unison (flera lätt ostämda kopior spridda i stereo)
     const osc1Gain = ctx.createGain();
     osc1Gain.gain.value = p.osc1Level / Math.sqrt(p.unison);
     for (let i = 0; i < p.unison; i++) {
@@ -429,6 +560,7 @@ class SynthEngine {
       n.connect(g).connect(mixer);
       sources.push(n);
     }
+    } // slut på oscillatorerna
 
     // Filter med egen envelope (styr filtrets "detune" i cent ovanför cutoff)
     const filter = ctx.createBiquadFilter();
@@ -476,6 +608,7 @@ class SynthEngine {
       if (p.lfoTarget === 'pitch') {
         depth.gain.value = p.lfoDepth * 100; // upp till en halvton
         carriers.forEach((c) => depth.connect(c.detune));
+        detunes.forEach((d) => depth.connect(d));
       } else if (p.lfoTarget === 'filter') {
         depth.gain.value = p.lfoDepth * 3600; // upp till tre oktaver
         depth.connect(filter.detune);
@@ -492,6 +625,7 @@ class SynthEngine {
     vib.gain.value = 0;
     this.vibLfo.connect(vib);
     [...carriers, ...pitched].forEach((o) => vib.connect(o.detune));
+    detunes.forEach((d) => vib.connect(d));
 
     sources.forEach((s) => s.start(t));
 
@@ -511,8 +645,10 @@ class SynthEngine {
       amp.gain.setTargetAtTime(0, r, Math.max(0.005, p.release / 4));
       const end = r + Math.max(0.005, p.release / 4) * 9 + 0.05; // nästan helt tyst innan stopp
       sources.forEach((s) => s.stop(end));
+      onRelease.forEach((f) => f(r, end));
       sources[0].onended = () => {
         amp.disconnect();
+        onEnd.forEach((f) => f());
         try { this.vibLfo.disconnect(vib); } catch {}
       };
     };

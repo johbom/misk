@@ -1,4 +1,4 @@
-// Presetbibliotek: 100 färdiga ljud i 10 kategorier.
+// Presetbibliotek: 110 färdiga ljud i 11 kategorier.
 // Väljer man ett av dem laddas inställningarna in i "Eget", så kan man fortsätta skruva därifrån.
 // Varje kategori har en bas; varje ljud ändrar bara det som skiljer sig (ovanpå SYNTH_DEFAULTS).
 
@@ -161,6 +161,24 @@ const PRESET_CATEGORIES = [
       'Bitklocka': { osc1Wave: 'square', osc2Wave: 'square', osc2Level: 0.4, osc2Semi: 12, decay: 0.3, sustain: 0 },
       'Pling': { osc1Wave: 'pulse', decay: 0.45, sustain: 0.1, delayMix: 0.3, delayTime: 0.15, delayFeedback: 0.4 },
       'Retrolead': { osc1Wave: 'pulse', unison: 2, spread: 8, lfoTarget: 'pitch', lfoRate: 6, lfoDepth: 0.12, delayMix: 0.25, delayTime: 0.2, delayFeedback: 0.35 },
+    },
+  },
+  {
+    // Fysisk modellering: en räknad sträng eller resonanskropp i stället för oscillatorer.
+    // Modellen klingar ut av sig själv (Klingtid); volymkurvan håller bara tonen och tar släppet.
+    name: 'Fysisk modell',
+    base: { attack: 0.001, decay: 6, sustain: 1, release: 1.2, reverbMix: 0.25, reverbSize: 2.5 },
+    presets: {
+      'Nylonsträng': { model: 'string', pmExciter: 'pluck', pmDecay: 3, pmBright: 0.45, pmPos: 0.22, reverbMix: 0.2 },
+      'Stålsträng': { model: 'string', pmExciter: 'pluck', pmDecay: 5, pmBright: 0.8, pmPos: 0.12, chorus: 0.15 },
+      'Harpsträng': { model: 'string', pmExciter: 'pluck', pmDecay: 6, pmBright: 0.55, pmPos: 0.45, release: 2.5, reverbMix: 0.4, reverbSize: 4 },
+      'Kotosträng': { model: 'string', pmExciter: 'pluck', pmDecay: 2.5, pmBright: 0.9, pmPos: 0.07, lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.05, delayMix: 0.15, delayTime: 0.35, delayFeedback: 0.3 },
+      'Stråkcello': { model: 'string', pmExciter: 'bow', pmDecay: 4, pmBright: 0.35, pmPos: 0.15, attack: 0.15, release: 0.5, lfoTarget: 'pitch', lfoRate: 5.5, lfoDepth: 0.06, reverbMix: 0.35, reverbSize: 3 },
+      'Marimbaträ': { model: 'modal', pmBody: 'marimba', pmDecay: 1.4, pmBright: 0.45, pmPos: 0.25, release: 1.5 },
+      'Vibrafonstav': { model: 'modal', pmBody: 'vibes', pmDecay: 4.5, pmBright: 0.55, pmPos: 0.25, lfoTarget: 'amp', lfoRate: 5.5, lfoDepth: 0.35, release: 3 },
+      'Glasklang': { model: 'modal', pmBody: 'glass', pmDecay: 5, pmBright: 0.75, pmPos: 0.3, release: 4, reverbMix: 0.45, reverbSize: 5 },
+      'Tumpiano': { model: 'modal', pmBody: 'bar', pmDecay: 1.6, pmBright: 0.55, pmPos: 0.2, release: 1.2, reverbMix: 0.2 },
+      'Handtrumma': { model: 'modal', pmBody: 'drum', pmDecay: 0.45, pmBright: 0.35, pmPos: 0.3, release: 0.4, reverbMix: 0.15 },
     },
   },
 ];
