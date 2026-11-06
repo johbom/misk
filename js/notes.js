@@ -54,6 +54,8 @@ function updateNotes() {
 
 function renderNotePad(pad) {
   pad.el.classList.toggle('sample', !!pad.sample);
+  // Grundtonen (i alla oktaver) får ljusare ruta – följer med när grundton, skala eller antal ändras
+  pad.el.classList.toggle('root', pad.note % 12 === Number(ui.root.value));
   pad.el.innerHTML = `${noteName(pad.note)}<small>${
     pad.sample ? pad.sampleName : `MIDI ${pad.note}`
   }</small>`;

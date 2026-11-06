@@ -1025,3 +1025,33 @@ html.show-keys .pad[data-key]::before {
 .pad-grid:not([data-formation="grid"]) .pad[data-key]::before { margin-bottom: 0; }
 html.high-contrast .chord-row { background: #000; border-color: #fff; border-left: 6px solid var(--cr); }
 html.high-contrast .cr-num { background: #fff; color: #000; }
+
+/* Grundtonerna på sidan Toner: ljusare när de inte spelas (.root sätts av notes.js) */
+.pad.root:not(.active) {
+  background: linear-gradient(160deg, #474e72, #333955);
+  border-color: #5a6390;
+}
+.pad.root:not(.active) small { color: #b3b9d6; }
+.pad-grid[data-formation="circle"] .pad.root:not(.active),
+.pad-grid[data-formation="hex"] .pad.root:not(.active) {
+  background: radial-gradient(circle at 35% 30%, #5d6690, #2f3450 70%);
+}
+.pad-grid[data-formation="ring"] .pad.root:not(.active) {
+  background: radial-gradient(circle closest-side, #2a2f48 40%, #4a5278 72%, #3c4363 100%);
+}
+.pad-grid[data-formation="strings"] .pad.root:not(.active) {
+  color: #fff;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 2.5px), #e6e9f7 calc(50% - 2.5px),
+      #e6e9f7 calc(50% + 2.5px), transparent calc(50% + 2.5px)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+}
+.pad-grid[data-formation="strings"] .pad.root:not(.active) .strum i { background: #e6e9f7; }
+html.high-contrast .pad.root:not(.active) { background: #444 !important; }
+html.high-contrast .pad-grid[data-formation="ring"] .pad.root:not(.active) { background: #6a6a6a !important; }
+html.high-contrast .pad-grid[data-formation="strings"] .pad.root:not(.active) {
+  background:
+    linear-gradient(90deg, transparent calc(50% - 5px), #fff calc(50% - 5px),
+      #fff calc(50% + 5px), transparent calc(50% + 5px)),
+    linear-gradient(180deg, #333, #222) !important;
+}
