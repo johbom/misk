@@ -262,19 +262,39 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 #chord-settings .row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; }
 #chord-editor {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(270px, 100%), 1fr));
-  gap: 8px 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
 }
+/* Ett kort per ackord: färgad kant till vänster, huvud (nummer, namn, färg) och valen under */
 .chord-row {
-  display: grid;
-  grid-template-columns: 56px 1fr 1fr 34px 56px;
-  align-items: center;
-  gap: 6px;
+  --cr: var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 10px 10px 12px;
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--cr);
+  border-radius: 10px;
+  background: #20222e;
   font-size: 0.85rem;
 }
-.chord-row span { color: var(--muted); }
-.chord-row select { min-width: 0; }
-.chord-row output { font-weight: 600; text-align: right; }
+.cr-head { display: flex; align-items: center; gap: 8px; }
+.cr-num {
+  min-width: 1.6em;
+  height: 1.6em;
+  line-height: 1.6em;
+  border-radius: 6px;
+  background: #2c3042;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-align: center;
+}
+.cr-name { font-size: 1.15rem; font-weight: 700; min-width: 2.6em; }
+.cr-fields { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.cr-field { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
+.cr-field small { color: var(--muted); font-size: 0.7rem; }
+.cr-field select { min-width: 4.5em; }
 
 /* Ljudmotor-panelen */
 #synth { display: block; }
@@ -356,8 +376,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Avancerat läge (voicing) */
 body:not(.advanced) .adv-only { display: none; }
-#chord-editor.adv { grid-template-columns: repeat(auto-fill, minmax(min(470px, 100%), 1fr)); }
-#chord-editor.adv .chord-row { grid-template-columns: 56px 0.7fr 1fr 1.3fr 1fr 34px 64px; }
+#chord-editor.adv { grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
 #cp-voicings { grid-template-columns: repeat(3, 1fr); }
 #cp-shifts { grid-template-columns: repeat(3, 1fr); }
 #cp-notes { margin-top: 8px; color: var(--muted); font-size: 0.75rem; text-align: center; font-variant-numeric: tabular-nums; }
@@ -514,7 +533,7 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 .swatches { display: inline-flex; gap: 2px; }
 .swatches i { width: 10px; height: 14px; border-radius: 3px; }
 .chord-row input[type="color"] {
-  width: 30px; height: 26px; padding: 0; border: 1px solid var(--border); border-radius: 6px;
+  width: 34px; height: 28px; flex: none; padding: 0; border: 1px solid var(--border); border-radius: 6px;
   background: none; cursor: pointer;
 }
 .chord-row input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
@@ -754,7 +773,7 @@ html.steppers .stepper > input[type="number"] { min-height: 46px; width: 3.5em; 
 html.steppers .knob { grid-template-columns: 1fr auto; }
 html.steppers .knob output { grid-row: 1; grid-column: 2; }
 html.steppers .knob .stepper { grid-row: 2; grid-column: 1 / -1; }
-html.steppers .chord-row { display: flex; flex-wrap: wrap; align-items: center; }
+html.steppers #chord-editor { grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
 html.steppers.fixed-screen #play-bar { flex-wrap: wrap !important; }
 html.steppers #play-bar label { min-width: 0; }
 
@@ -999,3 +1018,5 @@ html.show-keys .pad[data-key]::before {
   opacity: 0.85;
 }
 .pad-grid:not([data-formation="grid"]) .pad[data-key]::before { margin-bottom: 0; }
+html.high-contrast .chord-row { background: #000; border-color: #fff; border-left: 6px solid var(--cr); }
+html.high-contrast .cr-num { background: #fff; color: #000; }

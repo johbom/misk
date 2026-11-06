@@ -103,7 +103,8 @@ function buildChordPads() {
   layoutPads();
 }
 
-// Ackordvalen under fliken Inställningar: en rad per ruta (+ voicing i avancerat läge).
+// Ackordvalen under fliken Inställningar: ett kort per ruta.
+// Överst det som hör ihop med hur rutan ser ut (nummer, namn, färg), under det ackordvalen.
 function buildChordEditor() {
   const box = $('chord-editor');
   const adv = isAdvanced();
@@ -111,11 +112,48 @@ function buildChordEditor() {
   box.classList.toggle('adv', adv);
   chordPads.forEach((pad, i) => {
     const chord = chords[i];
-    const row = document.createElement('div');
-    row.className = 'chord-row';
-    const select = (title, options, value, key, parse = (x) => x) => {
+    const card = document.createElement('div');
+    card.className = 'chord-row';
+    card.setAttribute('role', 'group');
+    card.setAttribute('aria-label', `Ackord ${i + 1}`);
+
+    // Huvud: nummer, ackordnamn och färg tätt ihop
+    const head = document.createElement('div');
+    head.className = 'cr-head';
+    const num = document.createElement('span');
+    num.className = 'cr-num';
+    num.textContent = i + 1;
+    const name = document.createElement('output');
+    name.className = 'cr-name';
+    name.textContent = chordName(chord);
+    const color = document.createElement('input');
+    color.type = 'color';
+    color.title = `Färg för ackord ${i + 1}`;
+    color.value = chord.color || '#5b6078';
+    color.classList.toggle('none', !chord.color);
+    const paint = () => {
+      card.style.setProperty('--cr', chord.color || 'var(--border)');
+      name.style.color = chord.color || '';
+    };
+    color.addEventListener('input', () => {
+      chords[i].color = color.value;
+      color.classList.remove('none');
+      saveChords();
+      paintChordPad(pad);
+      paint();
+    });
+    head.append(num, name, color);
+
+    // Ackordvalen, med en liten rubrik över varje
+    const fields = document.createElement('div');
+    fields.className = 'cr-fields';
+    const field = (title, options, value, key, parse = (x) => x) => {
+      const label = document.createElement('label');
+      label.className = `cr-field cr-${key}`;
+      const cap = document.createElement('small');
+      cap.textContent = title;
       const sel = document.createElement('select');
-      sel.title = title;
+      sel.title = `${title}, ackord ${i + 1}`;
       options.forEach(([v, text]) => {
         const o = new Option(text, v);
         if (key === 'voicing') o.disabled = !voicingAllowed(v, chord);
@@ -127,39 +165,19 @@ function buildChordEditor() {
         if (key === 'type') buildChordEditor(); // 3:e omvändning kan bli (o)tillgänglig
         else name.textContent = chordName(chord);
       });
-      return sel;
+      label.append(cap, sel);
+      fields.append(label);
     };
-    const label = document.createElement('span');
-    label.textContent = `Ruta ${i + 1}`;
-    const name = document.createElement('output');
-    name.textContent = chordName(chord);
-    row.append(
-      label,
-      select('Grundton', CHORD_ROOTS.map((n, r) => [r, n]), chord.root, 'root', Number),
-      select('Ackordtyp', CHORD_TYPES.map(([s, l]) => [s, l]), chord.type, 'type'),
-    );
+    field('Grundton', CHORD_ROOTS.map((n, r) => [r, n]), chord.root, 'root', Number);
+    field('Typ', CHORD_TYPES.map(([suf, l]) => [suf, l]), chord.type, 'type');
     if (adv) {
-      row.append(
-        select('Voicing', VOICINGS, chord.voicing, 'voicing'),
-        select('Oktavläge', CHORD_SHIFTS, chord.shift, 'shift', Number),
-      );
+      field('Voicing', VOICINGS, chord.voicing, 'voicing');
+      field('Oktavläge', CHORD_SHIFTS, chord.shift, 'shift', Number);
     }
-    // Färg för just det här ackordet
-    const color = document.createElement('input');
-    color.type = 'color';
-    color.title = 'Färg';
-    color.value = chord.color || '#5b6078';
-    color.classList.toggle('none', !chord.color);
-    color.addEventListener('input', () => {
-      chords[i].color = color.value;
-      color.classList.remove('none');
-      saveChords();
-      paintChordPad(pad);
-      name.style.color = color.value;
-    });
-    name.style.color = chord.color || '';
-    row.append(color, name);
-    box.append(row);
+
+    paint();
+    card.append(head, fields);
+    box.append(card);
   });
 }
 
