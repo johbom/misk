@@ -107,14 +107,14 @@ const LAYOUTS = {
   hex(n, W, H, gap) {
     const ROW = Math.sqrt(3) / 2; // radavstånd i ett tätpackat mönster
     const bestFor = (g) => {
-      let best = null;
+      let best = { s: 0, cols: 1, rows: 1, shift: 0, none: true }; // (n = 0 ger inga rutor)
       for (let cols = 1; cols <= n; cols++) {
         const rows = Math.ceil(n / cols);
         const shift = rows > 1 ? 0.5 : 0;
         const sW = (W - (cols - 1 + shift) * g) / (cols + shift);
         const sH = (H - (rows - 1) * ROW * g) / (1 + (rows - 1) * ROW);
         const s = Math.min(sW, sH);
-        if (!best || s > best.s) best = { s, cols, rows, shift };
+        if (best.none || s > best.s) best = { s, cols, rows, shift };
       }
       return best;
     };

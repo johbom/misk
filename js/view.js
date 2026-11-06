@@ -123,6 +123,7 @@ function layoutPads() {
   const container = tab === 'notes' ? ui.pads : tab === 'chords' ? ui.chordPads : null;
   if (!container) return; // fliken Inställningar: inget att placera
   const pads = container === ui.pads ? notePads : chordPads;
+  if (!pads.length) return; // vid uppstart finns inga rutor än
   pads.forEach((p) => {
     p.el.removeAttribute('style');
     if (p.chord) paintChordPad(p); // färgen ligger också i style
