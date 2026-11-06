@@ -241,7 +241,18 @@ class SynthEngine {
     comp.ratio.value = 4;
     comp.attack.value = 0.005;
     comp.release.value = 0.2;
-    this.volume.connect(comp).connect(ctx.destination);
+    // Toppbegränsare sist: när många toner klingar samtidigt (snabba ackordbyten, lång release)
+    // får summan aldrig gå över 0 dB – annars klipper ljudkortet hårt och det "blippar".
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -3;
+    limiter.knee.value = 0;
+    limiter.ratio.value = 20;
+    limiter.attack.value = 0.001;
+    limiter.release.value = 0.1;
+    // Kompressorn höjer automatiskt nivån (ca +1,7 dB vid de här värdena) – ta bort det igen
+    const makeup = ctx.createGain();
+    makeup.gain.value = 0.82;
+    this.volume.connect(comp).connect(limiter).connect(makeup).connect(ctx.destination);
 
     // Brus (en sekund som loopas)
     this.noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
@@ -416,12 +427,23 @@ class SynthEngine {
     // Tremolo-steg (används bara när LFO styr volymen)
     const trem = ctx.createGain();
 
-    // Volymkurva (ADSR)
+    // Volymkurva (ADSR). Minst 3 ms attack, annars knäpper det i anslaget.
     const amp = ctx.createGain();
     const peak = 0.32 * level;
+    const attack = Math.max(0.003, p.attack);
+    const decayTau = p.decay / 3;
     amp.gain.setValueAtTime(0, t);
-    amp.gain.linearRampToValueAtTime(peak, t + p.attack);
-    amp.gain.setTargetAtTime(peak * p.sustain, t + p.attack, p.decay / 3);
+    amp.gain.linearRampToValueAtTime(peak, t + attack);
+    amp.gain.setTargetAtTime(peak * p.sustain, t + attack, decayTau);
+    // Kurvans värde vid tiden r. Webbläsare utan cancelAndHoldAtTime (Safari, Firefox) kan inte
+    // "hålla" volymen mitt i en ramp, och att fråga efter gain.value kan ge fel värde = hårt klick.
+    const envAt = (r) => {
+      const dt = r - t;
+      if (dt <= 0) return 0;
+      if (dt < attack) return (peak * dt) / attack;
+      const s = peak * p.sustain;
+      return s + (peak - s) * Math.exp(-(dt - attack) / decayTau);
+    };
 
     mixer.connect(filter).connect(trem).connect(amp).connect(this.input);
 
@@ -448,14 +470,18 @@ class SynthEngine {
     sources.forEach((s) => s.start(t));
 
     return () => {
+      // Släpp mjukt från exakt där kurvan är just nu (även mitt i anslaget)
       const r = ctx.currentTime;
-      if (amp.gain.cancelAndHoldAtTime) amp.gain.cancelAndHoldAtTime(r);
+      if (amp.gain.cancelAndHoldAtTime) amp.gain.cancelAndHoldAtTime(r); // Chrome: exakt
       else {
         amp.gain.cancelScheduledValues(r);
-        amp.gain.setValueAtTime(amp.gain.value, r);
+        // Mitt i anslaget: lägg tillbaka samma ramp fram till nu (att bara sätta ett värde
+        // ger ett hack på en sampling). Annars: fortsätt från kurvans värde.
+        if (r - t < attack) amp.gain.linearRampToValueAtTime(envAt(r), r);
+        else amp.gain.setValueAtTime(envAt(r), r);
       }
-      amp.gain.setTargetAtTime(0, r, p.release / 4);
-      const end = r + p.release * 1.5 + 0.05;
+      amp.gain.setTargetAtTime(0, r, Math.max(0.005, p.release / 4));
+      const end = r + Math.max(0.005, p.release / 4) * 9 + 0.05; // nästan helt tyst innan stopp
       sources.forEach((s) => s.stop(end));
       sources[0].onended = () => amp.disconnect();
     };
