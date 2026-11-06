@@ -24,6 +24,7 @@ setupOsc();
 setupUserPresets();
 setupPwa();
 setupAbout();
+setupSegments();
 setupAccess();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 

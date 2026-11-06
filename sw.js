@@ -3,7 +3,7 @@
 // svarar nätet inte inom några sekunder, eller är man offline, används cachen.
 // Kör tools/bump_version.py vid varje ny version (höjer VERSION här och ?v= i index.html).
 
-const VERSION = 'hover-pads-v20';
+const VERSION = 'hover-pads-v21';
 const ASSETS = [
   './',
   'index.html',
@@ -21,6 +21,7 @@ const ASSETS = [
   'js/chords.js',
   'js/sound.js',
   'js/view.js',
+  'js/controls.js',
   'js/access.js',
   'js/settings.js',
   'js/user-presets.js',

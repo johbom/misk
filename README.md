@@ -36,6 +36,8 @@ Inställningarna är uppdelade i underflikar:
 - **Ut & MIDI** – ljud och/eller MIDI, MIDI-enhet, kanal och velocity. *Panik* skickar All Notes Off.
 - **Mina presets** – se nedan.
 
+Korta val visas som knappgrupper där alla alternativ syns på en gång (grundton, skala, antal ackord, synlig pekare, storlek, stegning), av/på-val som brytare, och sifferfält har stora − och + knappar. Piltangenterna flyttar mellan valen i en knappgrupp.
+
 Allt sparas i webbläsaren.
 
 ## Tillgänglighet och ögonstyrning
@@ -175,6 +177,7 @@ python3 -m http.server 8080
 - `js/chords.js` – sidan Ackord: ackord, voicing, färger, harpa och högerklicksmeny
 - `js/sound.js` – ljudreglagen och presetbiblioteket i Inställningar
 - `js/view.js` – flikar, underflikar och formationer
+- `js/controls.js` – knappgrupper i stället för korta listor (grundton, skala, antal ackord, pekare, storlek, stegning)
 - `js/access.js` – tillgänglighet: profiler, synlig pekare, klicka genom att titta, − / + knappar, lås, stegning och tangentbord
 - `js/settings.js` – sparade inställningar
 - `js/user-presets.js` – Mina presets (spara/ladda/exportera)

@@ -825,21 +825,7 @@ html.steppers #play-bar label { min-width: 0; }
 }
 .profile.on small { color: #c4d2f8; }
 .access-set { display: flex; flex-direction: column; align-items: stretch !important; gap: 16px !important; }
-label.slider {
-  display: grid;
-  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1.2fr) 4.2em;
-  align-items: center;
-  gap: 6px 14px;
-}
-label.slider > .stepper.is-select, label.slider > select { grid-column: 2 / 4; }
-label.slider > .stepper > input[type="range"] { flex: 1; }
-.lbl small, label.check small {
-  display: block;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 0.78rem;
-  line-height: 1.35;
-}
+label.check small { display: block; margin-top: 2px; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
 label.check { align-items: flex-start; gap: 10px; }
 label.check input, #settings input[type="checkbox"] { accent-color: var(--accent); }
 label.check input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; }
@@ -853,12 +839,6 @@ kbd {
   font: 0.78rem ui-monospace, Menlo, monospace;
   color: var(--text);
   line-height: 1.5;
-}
-@media (max-width: 640px) {
-  label.slider { grid-template-columns: 1fr auto; }
-  label.slider .lbl { grid-column: 1 / -1; }
-  label.slider > .stepper:not(.is-select) { grid-column: 1; }
-  label.slider > .stepper.is-select, label.slider > select { grid-column: 1 / -1; }
 }
 
 /* Lås spelytan */
@@ -1069,4 +1049,133 @@ html.high-contrast .pad-grid[data-formation="strings"] .pad.root:not(.active) {
     linear-gradient(90deg, transparent calc(50% - 5px), #fff calc(50% - 5px),
       #fff calc(50% + 5px), transparent calc(50% + 5px)),
     linear-gradient(180deg, #333, #222) !important;
+}
+
+/* ===================================================================
+   Reglage (js/controls.js m.m.): knappgrupper, brytare, − / + vid siffror
+   =================================================================== */
+
+/* Rader med reglage: rubrik + värde överst, reglaget under, kort förklaring sist */
+label.slider {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "lbl val" "ctl ctl" "desc desc";
+  align-items: center;
+  gap: 6px 12px;
+}
+label.slider > .lbl { grid-area: lbl; font-weight: 600; }
+label.slider > output, label.slider > .val { grid-area: val; text-align: right; }
+label.slider > .stepper, label.slider > input, label.slider > select, label.slider > .seg { grid-area: ctl; }
+label.slider > .stepper > input[type="range"], label.slider > input[type="range"] { flex: 1; width: 100%; }
+label.slider > .seg { justify-self: start; }
+label.slider > .desc { grid-area: desc; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+.access-set { gap: 18px !important; }
+
+/* Knappgrupp: alla val synliga, det valda markerat */
+.seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #171922;
+}
+.seg button {
+  min-height: 34px;
+  padding: 4px 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+.seg button:hover { color: var(--text); background: #262938; }
+.seg button.on { background: var(--accent); color: #fff; font-weight: 600; }
+.seg-notes button, .seg-count button { min-width: 38px; padding: 4px 6px; }
+@media (max-width: 520px) {
+  .seg-notes { display: grid; grid-template-columns: repeat(6, 1fr); }
+}
+html.steppers .seg button { min-height: 46px; min-width: 46px; font-size: 1rem; }
+
+/* Brytare i stället för kryssrutor (större träffyta, tydligt på/av) */
+#settings input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  position: relative;
+  flex: none;
+  width: 42px;
+  height: 24px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #33374a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#settings input[type="checkbox"]::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #c9cde0;
+  transition: transform 0.15s;
+}
+#settings input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+#settings input[type="checkbox"]:checked::before { transform: translateX(18px); background: #fff; }
+label.check input[type="checkbox"] { margin-top: 1px; }
+html.reduce-motion #settings input[type="checkbox"],
+html.reduce-motion #settings input[type="checkbox"]::before { transition: none; }
+
+/* − / + alltid vid sifferfält och antal (de inbyggda pilarna är för små) */
+.stepper.spin .step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 30px;
+  height: 30px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
+}
+.stepper.spin > input[type="number"], .stepper.spin > select { width: 3.2em; text-align: center; text-align-last: center; }
+.stepper.spin > select { -webkit-appearance: none; appearance: none; padding: 4px 2px; }
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+html.steppers .stepper.spin .step { min-width: 46px; height: 46px; }
+
+/* Knappar med betydelse */
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button.danger { border-color: #8a3a3a; color: #ffb0b0; }
+button.danger:hover { background: #4a1f1f; border-color: #e5484d; }
+
+/* Sidan Toner/Ackord i Inställningar: varje val på egen rad med rubrik */
+#settings .panel[data-panel="notes"] > fieldset { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px 14px; }
+#settings .panel[data-panel="notes"] > fieldset > label { display: contents; }
+
+/* Hög kontrast */
+html.high-contrast .seg { background: #000; border: 2px solid #fff; }
+html.high-contrast .seg button { color: #fff; border: none !important; }
+/* !important: den allmänna kontrastregeln för knappar väger annars tyngre */
+html.high-contrast .seg button.on { background: #ffd400 !important; color: #000 !important; font-weight: 700; }
+html.high-contrast #settings input[type="checkbox"] { background: #000; border: 2px solid #fff; }
+html.high-contrast #settings input[type="checkbox"]::before { background: #fff; }
+html.high-contrast #settings input[type="checkbox"]:checked { background: #ffd400; border-color: #ffd400; }
+html.high-contrast #settings input[type="checkbox"]:checked::before { background: #000; }
+html.high-contrast button.primary { background: #ffd400 !important; color: #000 !important; }
+html.high-contrast button.danger { border-color: #ff6b6b; color: #ff9b9b; }
+
+/* Smal skärm: profilerna två i bredd, beskrivningen bara för den valda */
+@media (max-width: 520px) {
+  #access-profiles { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .profile { min-height: 0; padding: 10px 12px; }
+  .profile:not(.on) small { display: none; }
+  .profile.on { grid-column: 1 / -1; }
 }

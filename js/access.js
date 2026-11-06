@@ -40,6 +40,7 @@ function refreshAccess() {
   root.classList.toggle('reduce-motion', ui.reduceMotion.checked);
   root.classList.toggle('steppers', ui.steppers.checked);
   root.classList.toggle('show-keys', ui.showKeys.checked);
+  syncSegments();
   root.dataset.pointer = ui.showPointer.value;
   syncPlayModeButtons();
   document.body.dataset.playMode = ui.playMode.value;
@@ -249,10 +250,13 @@ function stepControl(el, dir) {
 
 function enhanceControl(el) {
   if (el.parentElement.classList.contains('stepper') || el.hasAttribute('data-no-stepper')) return;
-  const isSelect = el.tagName === 'SELECT';
+  // Sifferfält (och listor med data-spin, t.ex. antal toner) får alltid − / +, inte bara i läget
+  // "Stora − och + knappar": de små inbyggda pilarna är svåra att träffa.
+  const spin = el.type === 'number' || el.hasAttribute('data-spin');
+  const isSelect = el.tagName === 'SELECT' && !spin;
   const name = controlName(el);
   const wrap = document.createElement('span');
-  wrap.className = `stepper${isSelect ? ' is-select' : ''}`;
+  wrap.className = `stepper${isSelect ? ' is-select' : ''}${spin ? ' spin' : ''}`;
   el.before(wrap);
   const button = (dir) => {
     const b = document.createElement('button');

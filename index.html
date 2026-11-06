@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=20" />
+  <link rel="stylesheet" href="css/style.css?v=21" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -134,79 +134,87 @@
     <div class="panel" data-panel="access">
       <fieldset id="access-quick">
         <legend>Snabbval</legend>
-        <p class="hint">Börja med en profil och finjustera sedan nedan. Allt sparas, och följer med i <em>Mina presets</em>.</p>
+        <p class="hint">Välj en profil och finjustera nedan. Allt följer med i <em>Mina presets</em>.</p>
         <div id="access-profiles"></div>
       </fieldset>
 
       <fieldset class="access-set">
         <legend>Aktivering – blick och svävande mus</legend>
-        <p class="hint">Gäller pekare som svävar. Trycker eller drar man med finger eller musknapp spelar det direkt, så svep och harpa fungerar som vanligt.</p>
+        <p class="hint">Gäller svävande pekare. Trycker eller drar man spelar det direkt.</p>
         <label class="slider">
-          <span class="lbl">Aktiveringstid<small>Hur länge pekaren ska vila på en ruta innan den spelar. Ger tid att titta utan att allt låter.</small></span>
+          <span class="lbl">Aktiveringstid</span>
           <input type="range" id="dwell" min="0" max="2000" step="50" value="0" />
           <output id="dwell-value" class="val">Direkt</output>
+          <small class="desc">Hur länge blicken eller pekaren vilar innan rutan spelar.</small>
         </label>
         <label class="slider">
-          <span class="lbl">Darrtolerans<small>Pekaren får glida ut över kanten så här länge utan att tonen släpps eller spelas om.</small></span>
+          <span class="lbl">Darrtolerans</span>
           <input type="range" id="release-delay" min="0" max="1000" step="50" value="0" />
           <output id="release-delay-value" class="val">Av</output>
+          <small class="desc">Hur länge pekaren får glida utanför kanten utan att tonen släpps.</small>
         </label>
         <label class="slider">
-          <span class="lbl">Spärrtid<small>Samma ruta kan inte spelas igen förrän tiden gått. Hindrar stamning.</small></span>
+          <span class="lbl">Spärrtid</span>
           <input type="range" id="lockout" min="0" max="2000" step="50" value="0" />
           <output id="lockout-value" class="val">Av</output>
+          <small class="desc">Samma ruta kan inte spelas om förrän tiden gått.</small>
         </label>
         <label class="slider">
-          <span class="lbl">Synlig pekare<small>En ring som följer blicken/musen och fylls medan du vilar på något.</small></span>
+          <span class="lbl">Synlig pekare</span>
           <select id="show-pointer">
             <option value="off">Av</option>
             <option value="small">Liten</option>
             <option value="large">Stor</option>
             <option value="xlarge">Extra stor</option>
           </select>
+          <small class="desc">En ring som följer pekaren och fylls under väntetiden.</small>
         </label>
       </fieldset>
 
       <fieldset class="access-set">
         <legend>Knappar och reglage</legend>
         <label class="slider">
-          <span class="lbl">Klicka genom att titta<small>Knappar trycks in när pekaren vilat på dem så här länge. Låt stå på Av om ögonstyrningen redan klickar åt dig.</small></span>
+          <span class="lbl">Klicka genom att titta</span>
           <input type="range" id="dwell-click" min="0" max="3000" step="100" value="0" />
           <output id="dwell-click-value" class="val">Av</output>
+          <small class="desc">Knappar trycks när pekaren vilat på dem. Av om ögonstyrningen redan klickar.</small>
         </label>
         <label class="slider">
-          <span class="lbl">Storlek<small>Gör flikar, knappar, text och reglage större.</small></span>
+          <span class="lbl">Storlek</span>
           <select id="ui-size">
             <option value="1">Normal</option>
             <option value="1.25">Stor</option>
             <option value="1.5">Extra stor</option>
           </select>
+          <small class="desc">Större flikar, knappar och text.</small>
         </label>
-        <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar vid alla reglage och listor<small>Ändra värden utan att dra eller öppna menyer – bra med ögonstyrning och kontakt.</small></span></label>
+        <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar<small>Ändra alla värden utan att dra eller öppna listor.</small></span></label>
       </fieldset>
 
       <fieldset class="access-set">
         <legend>Visning</legend>
-        <label class="check"><input type="checkbox" id="high-contrast" /> <span>Hög kontrast<small>Svart bakgrund, vita kanter och gul markering.</small></span></label>
-        <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter. Fyllnaden som visar aktiveringstiden finns kvar.</small></span></label>
+        <label class="check"><input type="checkbox" id="high-contrast" /> <span>Hög kontrast<small>Svart bakgrund, vita kanter, gul markering.</small></span></label>
+        <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter.</small></span></label>
       </fieldset>
 
       <fieldset class="access-set">
         <legend>Kontakt och tangentbord</legend>
         <label class="slider">
-          <span class="lbl">Stegning<small>Rutorna markeras en i taget. Spela den markerade med en kontakt. Medan stegningen är på spelar pekare och finger inte rutorna (ingen harpa).</small></span>
+          <span class="lbl">Stegning</span>
           <select id="scan-mode">
             <option value="off">Av</option>
-            <option value="auto">En kontakt – automatisk stegning</option>
-            <option value="two">Två kontakter – stega och spela</option>
+            <option value="auto">En kontakt</option>
+            <option value="two">Två kontakter</option>
           </select>
+          <small class="desc">Rutorna markeras en i taget och spelas med en kontakt. Pekaren spelar inte då.</small>
         </label>
         <label class="slider only-scan-auto">
-          <span class="lbl">Steghastighet<small>Tid på varje ruta.</small></span>
+          <span class="lbl">Steghastighet</span>
           <input type="range" id="scan-speed" min="500" max="5000" step="100" value="1500" />
           <output id="scan-speed-value" class="val">1,5 s</output>
+          <small class="desc">Tid på varje ruta.</small>
         </label>
-        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Bra när flera kontakter är kopplade till var sin siffra: man ser vilken kontakt som spelar vilken ruta.</small></span></label>
+        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
         <ul class="hint keys">
           <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
           <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
@@ -217,7 +225,7 @@
 
       <fieldset class="access-set">
         <legend>Lås spelytan</legend>
-        <p class="hint">Knappen <strong>Lås</strong> uppe till höger gömmer flikar och reglage så att bara rutorna syns – då kan ingen råka hamna i inställningarna. Lås upp genom att <strong>hålla inne</strong> knappen i hörnet i två sekunder (ett vanligt klick eller en blick räcker inte).</p>
+        <p class="hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i hörnet i två sekunder – en blick eller ett klick räcker inte.</p>
       </fieldset>
     </div>
 
@@ -225,7 +233,7 @@
       <fieldset>
         <legend>Sidan Toner</legend>
         <label>Antal
-          <select id="note-count"></select>
+          <select id="note-count" data-spin></select>
         </label>
         <label>Grundton
           <select id="root"></select>
@@ -304,7 +312,7 @@
 
       <fieldset id="osc-set">
         <legend>OSC</legend>
-        <p class="hint">Webbläsare kan inte skicka OSC (UDP) själva. Starta bryggan på datorn – <code>node tools/osc-bridge.mjs</code> – så skickar den vidare till t.ex. Max, Pure Data eller TouchDesigner på port 9000. I Safari: öppna appen från bryggan, <code>http://localhost:8765</code> (Safari stoppar anslutningen från den publicerade sidan).</p>
+        <p class="hint">Kräver bryggan på datorn: <code>node tools/osc-bridge.mjs</code> (skickar till port 9000). I Safari: öppna appen på <code>http://localhost:8765</code>.</p>
         <label>Brygga
           <input type="text" id="osc-url" value="ws://localhost:8765" spellcheck="false" autocomplete="off" />
         </label>
@@ -335,7 +343,7 @@
         <label>Velocity
           <input type="range" id="velocity" min="1" max="127" value="100" />
         </label>
-        <button id="panic" type="button" title="Skicka 'All Notes Off'">Panik</button>
+        <button id="panic" type="button" class="danger" title="Skicka All Notes Off – tystar allt som hänger kvar">Panik</button>
       </fieldset>
     </div>
 
@@ -343,12 +351,12 @@
     <div class="panel" data-panel="mine">
       <fieldset id="user-presets">
         <legend>Mina presets</legend>
-        <p class="hint">Spara hela uppsättningen – ljud, ackord, färger, voicing, toner, formation och mellanrum – under ett namn, och ladda den igen med ett klick.</p>
+        <p class="hint">Sparar allt – ljud, ackord, färger, formation och inställningar – under ett namn.</p>
         <form id="up-save" class="row">
           <input type="text" id="up-name" placeholder="Namn, t.ex. Kvällsjam" maxlength="40" autocomplete="off" />
-          <button type="submit">Spara</button>
+          <button type="submit" class="primary">Spara</button>
         </form>
-        <label class="check up-show"><input type="checkbox" id="up-show" /> <span>Visa på spelsidan<small>Byt mellan dina presets direkt när du spelar, med ◀ ▶ eller listan bredvid ljudvalet.</small></span></label>
+        <label class="check up-show"><input type="checkbox" id="up-show" /> <span>Visa på spelsidan<small>Byt preset med ◀ ▶ medan du spelar.</small></span></label>
         <div id="up-list"></div>
         <div class="row up-file">
           <button type="button" id="up-export">Exportera alla till fil</button>
@@ -433,22 +441,23 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=20"></script>
-  <script src="js/sound-library.js?v=20"></script>
-  <script src="js/layout.js?v=20"></script>
-  <script src="js/core.js?v=20"></script>
-  <script src="js/audio.js?v=20"></script>
-  <script src="js/pads.js?v=20"></script>
-  <script src="js/osc.js?v=20"></script>
-  <script src="js/vibrato.js?v=20"></script>
-  <script src="js/notes.js?v=20"></script>
-  <script src="js/chords.js?v=20"></script>
-  <script src="js/sound.js?v=20"></script>
-  <script src="js/view.js?v=20"></script>
-  <script src="js/access.js?v=20"></script>
-  <script src="js/settings.js?v=20"></script>
-  <script src="js/user-presets.js?v=20"></script>
-  <script src="js/pwa.js?v=20"></script>
-  <script src="js/main.js?v=20"></script>
+  <script src="js/synth.js?v=21"></script>
+  <script src="js/sound-library.js?v=21"></script>
+  <script src="js/layout.js?v=21"></script>
+  <script src="js/core.js?v=21"></script>
+  <script src="js/audio.js?v=21"></script>
+  <script src="js/pads.js?v=21"></script>
+  <script src="js/osc.js?v=21"></script>
+  <script src="js/vibrato.js?v=21"></script>
+  <script src="js/notes.js?v=21"></script>
+  <script src="js/chords.js?v=21"></script>
+  <script src="js/sound.js?v=21"></script>
+  <script src="js/view.js?v=21"></script>
+  <script src="js/controls.js?v=21"></script>
+  <script src="js/access.js?v=21"></script>
+  <script src="js/settings.js?v=21"></script>
+  <script src="js/user-presets.js?v=21"></script>
+  <script src="js/pwa.js?v=21"></script>
+  <script src="js/main.js?v=21"></script>
 </body>
 </html>
