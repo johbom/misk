@@ -1231,3 +1231,4 @@ html.high-contrast #xy-pad { background: #000; border: 2px solid #fff; }
   .tab-sep { margin: 8px 0; }
 }
 html.high-contrast .tab-sep { background: #fff; }
+#start-msg { text-align: center; line-height: 1.5; margin: 0 16px; }
