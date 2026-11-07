@@ -83,6 +83,8 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
 #settings .panel:is([data-panel="play"], [data-panel="io"], [data-panel="notes"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
 /* Speltoner (▶ C …) i loggen hör till spelsidorna, inte inställningarna */
 body[data-tab="settings"] #log[data-kind="play"] { visibility: hidden; }
+/* Tipset om ljudfiler gäller bara rutorna på Toner-sidan */
+body:not([data-tab="notes"]) #log[data-kind="file-hint"] { visibility: hidden; }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; }
 .val { min-width: 3.5em; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.85rem; }
 
