@@ -12,6 +12,7 @@ function showTab(tab) {
     b.classList.toggle('on', b.dataset.tab === tab)
   );
   localStorage.setItem('hoverPadsTab', tab);
+  if (tab !== 'settings') localStorage.setItem('hoverPadsPlayTab', tab); // senaste spelsidan
   layoutPads();
   xyShow(tab === 'xy');
 }

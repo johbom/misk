@@ -89,4 +89,29 @@ async function startApp(tab) {
   });
   // Senast använda har fokus: Enter, mellanslag eller en kontakt startar direkt där
   box.querySelector('.last')?.focus({ preventScroll: true });
+
+  // Sparade presets: ett klick laddar presetet och startar på senaste spelsidan
+  const presets = loadUserPresets();
+  if (!presets.length) return;
+  const list = $('start-preset-list');
+  const active = localStorage.getItem(USER_PRESET_ACTIVE_KEY);
+  const playTab = localStorage.getItem('hoverPadsPlayTab') || (last !== 'settings' ? last : 'notes');
+  presets.forEach((p) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'start-preset';
+    b.classList.toggle('active', p.name === active);
+    const n = Number(p.data.settings?.chordCount) || 4;
+    const sw = (p.data.chords || []).slice(0, n)
+      .map((c) => `<i style="background:${c.color || '#3a3f55'}"></i>`).join('');
+    b.innerHTML = `<span class="swatches" aria-hidden="true">${sw}</span><span></span>`;
+    b.lastChild.textContent = p.name;
+    b.title = describe(p.data);
+    b.addEventListener('click', () => {
+      loadUserPreset(p.name);
+      startApp(playTab);
+    });
+    list.append(b);
+  });
+  $('start-presets').hidden = false;
 })();

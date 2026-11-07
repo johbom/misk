@@ -92,11 +92,13 @@ Under *Inställningar → Mina presets* sparar du **hela uppsättningen** under 
 
 Kryssa i **Visa på spelsidan** så syns dina presets också på Toner och Ackord, ovanför ljudvalet: **◀ ▶** byter till föregående/nästa (runt i en ring), och listan i mitten hoppar direkt till ett visst preset. Knapparna går att använda med blicken (*Klicka genom att titta*) och växer med *Stora − och + knappar*. Valet sparas för sig självt och påverkas inte av vilket preset du laddar. Raden syns inte när spelytan är låst.
 
+Har du sparat presets syns de också på **startsidan**, under de fyra valen: ett klick laddar presetet och startar direkt på den spelsida du senast använde (Toner, Ackord eller XY). Utan sparade presets ser startsidan ut som vanligt.
+
 Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som backup eller för att flytta dem till en annan dator/telefon); *Importera från fil* läser in dem igen.
 
 ## Ljudmotor
 
-Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip eller Enkel – eller gå till **Inställningar → Ljudmotor** och skruva själv:
+Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljudmotor** och skruva själv:
 
 - **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och FM, allt nedan) eller **fysisk modell**, se nedan.
 - **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.
