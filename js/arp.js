@@ -31,9 +31,9 @@ function arpRemove(pad) {
 function arpStart() {
   arp.step = 0;
   arp.last = -1;
-  arp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.005;
+  // Första steget planeras vid nästa runda (25 ms): fingrar/tangenter som landar samtidigt hinner med
+  arp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
   arp.timer = setInterval(arpTick, ARP_TICK_MS);
-  arpTick();
 }
 
 function arpStop() {
@@ -135,7 +135,7 @@ function syncArpToggle() {
 function setupArp() {
   const sync = syncArpToggle;
   // Byter man arpeggiator av/på mitt i spelet börjar man om från tyst läge
-  ui.arpOn.addEventListener('change', () => { allPads().forEach(release); arpReset(); sync(); });
+  ui.arpOn.addEventListener('change', () => { allPads().forEach(release); arpReset(); if (typeof xyStopAll === 'function') xyStopAll(); sync(); });
   $('arp-toggle').addEventListener('click', () => {
     ui.arpOn.checked = !ui.arpOn.checked;
     ui.arpOn.dispatchEvent(new Event('change'));

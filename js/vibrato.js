@@ -11,6 +11,14 @@ const WIGGLE_WINDOW_MS = 700; // vändningar äldre än så här glöms bort
 const wiggles = new Map(); // pointerId -> { pad, x, y, turns, depth }
 let wiggleTimer = 0;
 
+// XY-plattan: en låtsasruta per pekare, så att vickning ger vibrato där också
+const xyPseudo = new Map();
+function xyPseudoPad(id) {
+  if (document.body.dataset.tab !== 'xy' || !(xy.voices.has(id) || xyArp.pts.has(id))) return null;
+  if (!xyPseudo.has(id)) xyPseudo.set(id, { el: xy.el, vibrato: (c, r) => xyVibrato(id, c, r) });
+  return xyPseudo.get(id);
+}
+
 const padOfEl = (el) => {
   const e = el instanceof Element ? el.closest('.pad') : null;
   return e ? allPads().find((p) => p.el === e) || null : null;
@@ -69,7 +77,7 @@ function tickWiggles() {
 function setupVibrato() {
   document.addEventListener('pointermove', (e) => {
     if (!Number(ui.vibrato.value) || scanning()) return;
-    const pad = padOfEl(e.target);
+    const pad = padOfEl(e.target) || xyPseudoPad(e.pointerId);
     let st = wiggles.get(e.pointerId);
     if (st && st.pad !== pad) { stopWiggle(e.pointerId); st = null; }
     if (!pad || !pad.vibrato || (strum.harp && strum.pad === pad)) return; // tyst ruta eller harpa

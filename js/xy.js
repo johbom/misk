@@ -20,6 +20,7 @@ const xy = {
   voices: new Map(), // pointerId -> röst
   present: new Set(), // pekare som just nu är på ytan (mus över, finger nere)
   trails: new Map(), // pointerId -> { color, pts: [{ x, y, t }] }
+  pulses: [], // arpeggiots steg: ringar som växer och bleknar
   colorIdx: 0,
   frame: 0,
 };
@@ -60,14 +61,14 @@ function xyBus() {
   return xy.bus;
 }
 
-function xyVoiceStart(id, nx, ny) {
-  if (!audioCtx || !engine || !ui.outAudio.checked) return;
+// En röst: XY:s klang -> highcut -> volym. when = ljudklockans starttid (arpeggiatorn planerar i förväg).
+function xyMakeVoice(freq, cut, when = 0) {
   const ctx = audioCtx;
-  const t = ctx.currentTime + NOTE_LOOKAHEAD;
+  const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
   const snd = XY_SOUNDS[ui.xySound.value] || XY_SOUNDS.sine;
   const mix = ctx.createGain();
   const oscs = (snd.detunes || [0]).map((cents, i, all) => {
-    const o = engine.makeOsc(snd.wave || ui.xySound.value, xyFreq(nx));
+    const o = engine.makeOsc(snd.wave || ui.xySound.value, freq);
     o.detune.value = cents;
     if (all.length > 1) {
       const pan = ctx.createStereoPanner();
@@ -77,45 +78,30 @@ function xyVoiceStart(id, nx, ny) {
     return o;
   });
   mix.gain.value = snd.level / Math.sqrt(oscs.length);
-  const osc = oscs[0];
   const hp = ctx.createBiquadFilter();
   hp.type = 'lowpass'; // highcut
   hp.Q.value = 1.2; // lite karaktär när filtret sveper
-  hp.frequency.value = xyCut(ny);
+  hp.frequency.value = cut;
   const amp = ctx.createGain();
   const attack = 0.012; // XY svarar direkt
   amp.gain.value = 0;
   amp.gain.setValueAtTime(0, t);
   amp.gain.linearRampToValueAtTime(XY_LEVEL, t + attack);
-  // Vibrato (vickning) på XY-rösterna också
+  // Vibrato (vickning)
   const vib = ctx.createGain();
   vib.gain.value = 0;
   engine.vibLfo.connect(vib);
   oscs.forEach((o) => vib.connect(o.detune));
   mix.connect(hp).connect(amp).connect(xyBus());
   oscs.forEach((o) => o.start(t));
-  xy.voices.set(id, { osc, oscs, hp, amp, vib, t, attack });
-  oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
+  return { osc: oscs[0], oscs, hp, amp, vib, t, attack };
 }
 
-function xyVoiceMove(id, nx, ny) {
-  const v = xy.voices.get(id);
-  if (!v) return;
-  const now = audioCtx.currentTime;
-  // Kort glidtid: följer pekaren mjukt utan trappsteg mellan mushändelserna
-  v.oscs.forEach((o) => o.frequency.setTargetAtTime(xyFreq(nx), now, 0.012));
-  v.hp.frequency.setTargetAtTime(xyCut(ny), now, 0.02);
-  oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
-}
-
-function xyVoiceStop(id) {
-  const v = xy.voices.get(id);
-  if (!v) return;
-  xy.voices.delete(id);
+// Släpp en röst (at = ljudklockans tid, annars så snart som möjligt). Reverb klingar ut ändå.
+function xyVoiceEnd(v, at = 0) {
   const ctx = audioCtx;
   const rel = XY_RELEASE;
-  // Aldrig före rösten börjat (den ligger en aning framåt)
-  const r = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, v.t + 0.005);
+  const r = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, at, v.t + 0.005); // aldrig före starten
   if (v.amp.gain.cancelAndHoldAtTime) v.amp.gain.cancelAndHoldAtTime(r);
   else {
     v.amp.gain.cancelScheduledValues(r);
@@ -129,10 +115,133 @@ function xyVoiceStop(id) {
     v.amp.disconnect();
     try { engine.vibLfo.disconnect(v.vib); } catch {}
   };
+}
+
+function xyVoiceStart(id, nx, ny) {
+  if (!audioCtx || !engine || !ui.outAudio.checked) return;
+  oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
+  if (arpOn()) { xyArpAdd(id, nx, ny); return; } // arpeggio: pekaren blir en ton i arpeggiot
+  xy.voices.set(id, xyMakeVoice(xyFreq(nx), xyCut(ny)));
+}
+
+function xyVoiceMove(id, nx, ny) {
+  oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
+  if (xyArp.pts.has(id)) { xyArpMove(id, nx, ny); return; }
+  const v = xy.voices.get(id);
+  if (!v) return;
+  const now = audioCtx.currentTime;
+  // Kort glidtid: följer pekaren mjukt utan trappsteg mellan mushändelserna
+  v.oscs.forEach((o) => o.frequency.setTargetAtTime(xyFreq(nx), now, 0.012));
+  v.hp.frequency.setTargetAtTime(xyCut(ny), now, 0.02);
+}
+
+function xyVoiceStop(id) {
+  if (xyArp.pts.has(id)) { xyArpRemove(id); oscSend('xy', xyOscId(id), { f: 0 }, { f: 0 }, 0); return; }
+  const v = xy.voices.get(id);
+  if (!v) return;
+  xy.voices.delete(id);
+  xyVoiceEnd(v);
   oscSend('xy', xyOscId(id), { f: 0 }, { f: 0 }, 0);
 }
 
-const xyStopAll = () => { [...xy.voices.keys()].forEach(xyVoiceStop); xy.present.clear(); };
+// ---------- Arpeggio på XY ----------
+// Varje pekare är en ton (med sin steglösa tonhöjd och sitt filter). Flera fingrar = arpeggio mellan
+// dem, ett finger = arpeggio över oktaverna (1 oktav = rytmisk upprepning). Samma inställningar som
+// arpeggiatorn för rutorna (js/arp.js).
+const xyArp = { pts: new Map(), timer: 0, nextTime: 0, step: 0, last: -1, emptySince: 0 };
+
+function xyArpAdd(id, nx, ny) {
+  xyArp.pts.set(id, { id, nx, ny, order: performance.now(), vib: 0, voices: new Set() });
+  if (!xyArp.timer) {
+    xyArp.step = 0;
+    xyArp.last = -1;
+    // Första steget vid nästa runda: fingrar som landar samtidigt hinner med
+    xyArp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
+    xyArp.timer = setInterval(xyArpTick, ARP_TICK_MS);
+  }
+}
+
+function xyArpMove(id, nx, ny) {
+  const p = xyArp.pts.get(id);
+  if (p) { p.nx = nx; p.ny = ny; }
+}
+
+function xyArpRemove(id) {
+  xyArp.pts.delete(id);
+  if (!xyArp.pts.size) xyArp.emptySince = audioCtx.currentTime; // takten fortsätter ett steg
+}
+
+function xyArpReset() {
+  clearInterval(xyArp.timer);
+  xyArp.timer = 0;
+  xyArp.pts.clear();
+}
+
+function xyArpSequence() {
+  const pts = [...xyArp.pts.values()];
+  if (!pts.length) return [];
+  const pattern = ui.arpPattern.value;
+  pts.sort(pattern === 'order' ? (a, b) => a.order - b.order : (a, b) => a.nx - b.nx);
+  const octaves = Number(ui.arpOctaves.value) || 1;
+  let seq = [];
+  for (let o = 0; o < octaves; o++) seq.push(...pts.map((p) => ({ p, oct: o })));
+  if (pattern === 'down') seq.reverse();
+  else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
+  return seq;
+}
+
+function xyArpTick() {
+  const now = audioCtx.currentTime;
+  if (xyArp.nextTime < now - 0.05) xyArp.nextTime = now + NOTE_LOOKAHEAD;
+  if (!xyArp.pts.size && now - xyArp.emptySince > arpStepDur()) {
+    clearInterval(xyArp.timer);
+    xyArp.timer = 0;
+    return;
+  }
+  while (xyArp.nextTime < now + ARP_LOOKAHEAD) {
+    xyArpStep(xyArp.nextTime);
+    xyArp.nextTime += arpStepDur();
+  }
+}
+
+function xyArpStep(time) {
+  const seq = xyArpSequence();
+  if (!seq.length) return;
+  let idx;
+  if (ui.arpPattern.value === 'random') {
+    idx = Math.floor(Math.random() * seq.length);
+    if (seq.length > 1 && idx === xyArp.last) idx = (idx + 1) % seq.length;
+  } else idx = xyArp.step % seq.length;
+  xyArp.last = idx;
+  xyArp.step++;
+  const { p, oct } = seq[idx];
+  const dur = arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
+  const v = xyMakeVoice(xyFreq(p.nx) * Math.pow(2, oct), xyCut(p.ny), time);
+  if (p.vib) v.vib.gain.value = p.vib;
+  xyVoiceEnd(v, time + dur);
+  p.voices.add(v);
+  const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
+  setTimeout(() => {
+    xy.pulses.push({ x: p.nx, y: 1 - p.ny, t: performance.now(), color: xy.trails.get(p.id)?.color || '#fff' });
+    xyLoop();
+  }, wait);
+  setTimeout(() => p.voices.delete(v), wait + dur * 1000 + 100);
+}
+
+// Vibrato för en XY-pekare (anropas av js/vibrato.js)
+function xyVibrato(id, cents, rate) {
+  const now = audioCtx.currentTime;
+  if (rate) engine.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
+  const v = xy.voices.get(id);
+  if (v) v.vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
+  const p = xyArp.pts.get(id);
+  if (p) {
+    p.vib = cents;
+    p.voices.forEach((pv) => pv.vib.gain.setTargetAtTime(cents, now, 0.12));
+  }
+}
+
+const xyStopAll = () => { [...xy.voices.keys()].forEach(xyVoiceStop); xyArpReset(); xy.present.clear(); };
 const xyOscId = (id) => (id > 1e6 ? id % 1000 : id); // korta id:n i OSC
 
 // ---------- Pekare ----------
@@ -314,7 +423,7 @@ function xyDraw() {
       }
     }
     // Pekarens punkt (så länge den låter)
-    if (xy.voices.has(id)) {
+    if (xy.voices.has(id) || xyArp.pts.has(id)) {
       const last = pts[pts.length - 1];
       g.globalAlpha = 1;
       g.shadowBlur = hc ? 0 : 30;
@@ -323,6 +432,20 @@ function xyDraw() {
       g.arc(last.x * W, last.y * H, 7, 0, Math.PI * 2);
       g.fill();
     }
+  }
+  // Arpeggiots steg: en ring som växer ut från pekaren och bleknar
+  xy.pulses = xy.pulses.filter((pl) => now - pl.t < 450);
+  for (const pl of xy.pulses) {
+    const k = (now - pl.t) / 450;
+    g.globalAlpha = (1 - k) * 0.9;
+    g.shadowBlur = hc ? 0 : 18;
+    g.shadowColor = pl.color;
+    g.strokeStyle = hc ? '#ffd400' : pl.color;
+    g.lineWidth = 3 * (1 - k) + 1;
+    g.beginPath();
+    g.arc(pl.x * W, pl.y * H, 8 + 34 * k, 0, Math.PI * 2);
+    g.stroke();
+    alive = true;
   }
   g.globalAlpha = 1;
   g.shadowBlur = 0;
