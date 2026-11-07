@@ -12,6 +12,7 @@ function showTab(tab) {
   );
   localStorage.setItem('hoverPadsTab', tab);
   layoutPads();
+  xyShow(tab === 'xy');
 }
 
 // ---------- Om-rutan ----------

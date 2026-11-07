@@ -14,6 +14,7 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, ljudval och volym. All
 - **Ackord** – 2 till 8 rutor. **Högerklicka på en ruta/boll** för att byta dess ackord direkt (grundton + typ: dur, moll, 7, maj7, m7, 6, m6, 9, add9, sus2, sus4, dim, dim7, m7b5, aug); inget spelas medan menyn är öppen, och klick utanför eller Esc stänger den. Samma val finns också under Inställningar. Valfri bas en oktav ner. Rutorna visar bara ackordnamnet.
 - **Färger** – varje ackord har en egen färg som syns på rutan/bollen/sektorn/strängen och lyser upp när den spelas. Välj färg per ackord under *Inställningar → Sidan Ackord*. Knappen *Standardfärger* ger 1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos (det är också startläget); *Ingen färg* tar bort alla färger.
 - **Harpa i strängläge** – med formationen *Strängar* spelar en sträng hela ackordet när musen förs över den, precis som förut. **Håll inne musknappen (eller fingret) och dra:** första anslaget på en sträng spelar hela ackordet, och stannar du kvar och rör dig upp eller ner längs strängen går den över i harpläge – ackordets toner knäpps en och en över två oktaver, lägst nertill och högst upptill (t.ex. C E G C E G C). Prickarna på strängen visar var tonerna ligger.
+- **XY** – en XY-platta där **varje muspekare och varje finger är en egen oscillator**. **X = tonhöjd** som steglöst frekvensglissando (inga fasta toner), **Y = lowcut**: längst ned fullt ljud, uppåt skärs basen bort allt mer. Musen låter så länge den är över ytan, fingrar så länge de rör skärmen – flera fingrar ger flera röster samtidigt. Varje pekare ritar ett glödande spår i egen färg som bleknar bort. Svaga linjer visar skalans toner (grundtonen tydligast) bara som orientering. Omfånget (1–5 oktaver) väljs under *Inställningar → Spel*; tonhöjden börjar en oktav under grundtonen på sidan Toner. Vågformen tas från ljudmotorn (sågtand om en fysisk modell är vald), och reverb, delay m.m. gäller också. Vickar man pekaren blir det vibrato.
 - **Avancerat (voicing)** – kryssa i under *Inställningar → Sidan Ackord* för att välja voicing per ackord: *grundläge*, *1:a/2:a/3:e omvändning* (3:e kräver fyrklang), *öppen* eller *drop 2*, plus *oktavläge* −1/±0/+1 och **bas**: en egen baston under ackordet (snedstrecksackord, t.ex. *C/E* eller *C/G*). Ackordnamnet visar basen, och en vald baston spelas även om *Bas* är avkryssat. Valen syns både i listan och i högerklicksmenyn (som då också visar tonerna). Slår du av avancerat läge spelas ackorden i grundläge igen, men dina val sparas.
 
 ## Inställningar (fliken)
@@ -152,6 +153,7 @@ Meddelanden (prefixet `/hoverpads` kan ändras):
 | `/hoverpads/pad` | sida (`notes`/`chords`), ruta (1–), 1 = på / 0 = av |
 | `/hoverpads/chord` | ackordnamn (t.ex. `C/E`), ruta – när en ackordruta slås an |
 | `/hoverpads/vibrato` | sida, ruta, djup i cent (float) |
+| `/hoverpads/xy` | pekare (id), x (0–1, float), y (0–1, float, 0 = nederkant), 1 = på / 0 = av |
 | `/hoverpads/test` | `"hej"` |
 
 Styrkan är samma som *Velocity* under MIDI. Harpans toner skickas som `/note`.
@@ -179,6 +181,7 @@ python3 -m http.server 8080
 - `js/audio.js` – ljud- och MIDI-utgång
 - `js/osc.js` – OSC-utgång: kodar OSC-paket och skickar dem till bryggan
 - `tools/osc-bridge.mjs` – OSC-bryggan (WebSocket → UDP), serverar också appen lokalt
+- `js/xy.js` – XY-plattan: en oscillator per pekare, glödande spår
 - `js/vibrato.js` – känner av vickning fram och tillbaka och gör om den till vibrato
 - `js/pads.js` – spela/släppa rutor, mus, ögonstyrning och pekskärm (aktiveringstid, darrtolerans, spärrtid)
 - `js/notes.js` – sidan Toner

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=22" />
+  <link rel="stylesheet" href="css/style.css?v=23" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -38,6 +38,7 @@
     <nav id="tabs">
       <button type="button" data-tab="notes">Toner</button>
       <button type="button" data-tab="chords">Ackord</button>
+      <button type="button" data-tab="xy">XY</button>
       <button type="button" data-tab="settings">Inställningar</button>
     </nav>
     <div class="header-right">
@@ -93,6 +94,21 @@
         <label class="only-fixed">Tonlängd
           <input type="range" id="note-length" min="100" max="3000" step="50" value="300" />
           <span id="note-length-value" class="val">0,3 s</span>
+        </label>
+      </fieldset>
+
+      <fieldset id="xy-set">
+        <legend>XY-platta</legend>
+        <label class="slider">
+          <span class="lbl">Omfång</span>
+          <select id="xy-octaves">
+            <option value="1">1 oktav</option>
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
+          <small class="desc">Tonhöjden glider steglöst från vänster till höger, med start en oktav under grundtonen på sidan Toner. Uppåt skärs basen bort (lowcut).</small>
         </label>
       </fieldset>
 
@@ -415,6 +431,10 @@
   <!-- ===== Spelflikarna ===== -->
   <main id="pads" class="pad-grid only-notes"></main>
   <main id="chord-pads" class="pad-grid only-chords"></main>
+  <!-- XY-platta: varje pekare/finger är en egen oscillator (js/xy.js) -->
+  <main id="xy-pad" class="only-xy" aria-label="XY-platta: vänster–höger tonhöjd, nedåt–uppåt lowcut">
+    <canvas id="xy-canvas"></canvas>
+  </main>
 
   <!-- Högerklicksmeny på sidan Ackord: byt ackord direkt på rutan/bollen -->
   <div id="chord-picker" hidden>
@@ -441,23 +461,24 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=22"></script>
-  <script src="js/sound-library.js?v=22"></script>
-  <script src="js/layout.js?v=22"></script>
-  <script src="js/core.js?v=22"></script>
-  <script src="js/audio.js?v=22"></script>
-  <script src="js/pads.js?v=22"></script>
-  <script src="js/osc.js?v=22"></script>
-  <script src="js/vibrato.js?v=22"></script>
-  <script src="js/notes.js?v=22"></script>
-  <script src="js/chords.js?v=22"></script>
-  <script src="js/sound.js?v=22"></script>
-  <script src="js/view.js?v=22"></script>
-  <script src="js/controls.js?v=22"></script>
-  <script src="js/access.js?v=22"></script>
-  <script src="js/settings.js?v=22"></script>
-  <script src="js/user-presets.js?v=22"></script>
-  <script src="js/pwa.js?v=22"></script>
-  <script src="js/main.js?v=22"></script>
+  <script src="js/synth.js?v=23"></script>
+  <script src="js/sound-library.js?v=23"></script>
+  <script src="js/layout.js?v=23"></script>
+  <script src="js/core.js?v=23"></script>
+  <script src="js/audio.js?v=23"></script>
+  <script src="js/pads.js?v=23"></script>
+  <script src="js/osc.js?v=23"></script>
+  <script src="js/xy.js?v=23"></script>
+  <script src="js/vibrato.js?v=23"></script>
+  <script src="js/notes.js?v=23"></script>
+  <script src="js/chords.js?v=23"></script>
+  <script src="js/sound.js?v=23"></script>
+  <script src="js/view.js?v=23"></script>
+  <script src="js/controls.js?v=23"></script>
+  <script src="js/access.js?v=23"></script>
+  <script src="js/settings.js?v=23"></script>
+  <script src="js/user-presets.js?v=23"></script>
+  <script src="js/pwa.js?v=23"></script>
+  <script src="js/main.js?v=23"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ setupStrum();
 setupTouch();
 setupVibrato();
 setupOsc();
+setupXY();
 setupUserPresets();
 setupPwa();
 setupAbout();

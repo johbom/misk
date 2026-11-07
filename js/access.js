@@ -9,7 +9,7 @@
 //  - Kontakt/switch och tangentbord: stegning en ruta i taget, siffertangenter spelar direkt.
 //  - Lås: bara rutorna syns, och man låser upp genom att hålla inne – inte genom att titta.
 
-const isPlayTab = () => ['notes', 'chords'].includes(document.body.dataset.tab);
+const isPlayTab = () => ['notes', 'chords', 'xy'].includes(document.body.dataset.tab);
 const visiblePads = () => (document.body.dataset.tab === 'notes' ? notePads
   : document.body.dataset.tab === 'chords' ? chordPads : []);
 // Där tangenterna ska skriva text i stället för att spela (listor och reglage på spelraden räknas inte:
