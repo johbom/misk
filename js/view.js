@@ -5,6 +5,7 @@ function showTab(tab) {
   closeChordPicker();
   resetHover();
   allPads().forEach(release);
+  arpReset();
   document.body.dataset.tab = tab;
   if (tab === 'settings') setLocked(false);
   document.querySelectorAll('#tabs button[data-tab]').forEach((b) =>

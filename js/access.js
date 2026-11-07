@@ -26,6 +26,8 @@ const ACCESS_LABELS = {
   noteLength: secs,
   vibrato: (v) => (v ? `${v} cent` : 'Av'),
   xyReverb: (v) => `${Math.round(v * 100)} %`,
+  arpBpm: (v) => `${v} BPM`,
+  arpGate: (v) => `${v} %`,
   dwell: (v) => (v ? secs(v) : 'Direkt'),
   releaseDelay: (v) => (v ? secs(v) : 'Av'),
   lockout: (v) => (v ? secs(v) : 'Av'),
@@ -42,6 +44,7 @@ function refreshAccess() {
   root.classList.toggle('steppers', ui.steppers.checked);
   root.classList.toggle('show-keys', ui.showKeys.checked);
   syncSegments();
+  syncArpToggle();
   root.dataset.pointer = ui.showPointer.value;
   syncPlayModeButtons();
   document.body.dataset.playMode = ui.playMode.value;
@@ -481,7 +484,7 @@ function setupAccess() {
   setupLock();
   setupKeys();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
-    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb']
+    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb', 'arpBpm', 'arpGate']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));
   // Ljudet kan ha pausats (t.ex. om Start valdes med blicken): väck det vid första riktiga tryck
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => {

@@ -23,9 +23,11 @@ function initAudio() {
 // Spelar en uppladdad ljudfil genom effekterna (spelar alltid klart).
 // Spelar en uppladdad ljudfil. Returnerar en funktion som tonar ut och stoppar den
 // (så att ljudfiler kan följa spelsättet: hållas, spelas hela eller i bestämd längd).
-function playSample(buffer) {
+// when/rate (valfritt): starttid i ljudklockan och uppspelningshastighet (för arpeggiatorns oktaver)
+function playSample(buffer, when = 0, rate = 1) {
   const src = audioCtx.createBufferSource();
   src.buffer = buffer;
+  src.playbackRate.value = rate;
   const g = audioCtx.createGain();
   src.connect(g).connect(engine.input);
   // Vibrato även på ljudfiler (detune finns inte i alla äldre webbläsare)
@@ -35,10 +37,11 @@ function playSample(buffer) {
     vib.gain.value = 0;
     engine.vibLfo.connect(vib).connect(src.detune);
   }
-  src.start();
+  const t0 = Math.max(audioCtx.currentTime, when);
+  src.start(t0);
   src.onended = () => { if (vib) try { engine.vibLfo.disconnect(vib); } catch {} };
-  const stop = () => {
-    const t = audioCtx.currentTime;
+  const stop = (at = 0) => {
+    const t = Math.max(audioCtx.currentTime, at, t0 + 0.005);
     g.gain.cancelScheduledValues(t);
     g.gain.setValueAtTime(g.gain.value, t);
     g.gain.setTargetAtTime(0, t, 0.015); // kort uttoning, inget klick
@@ -92,10 +95,12 @@ function updateMidiStatus() {
   ui.midiStatus.classList.toggle('ok', !!out);
 }
 
-function sendMidi(bytes) {
+// when (valfritt): ljudklockans tid – räknas om till Web MIDI:s tidsstämpel (performance.now)
+function sendMidi(bytes, when = 0) {
   const out = currentMidiOutput();
   if (!out) return;
-  out.send(bytes);
+  if (when && audioCtx) out.send(bytes, performance.now() + Math.max(0, when - audioCtx.currentTime) * 1000);
+  else out.send(bytes);
   ui.midiStatus.classList.add('flash');
   setTimeout(() => ui.midiStatus.classList.remove('flash'), 60);
 }
@@ -106,18 +111,18 @@ const heldNotes = new Map(); // "kanal:ton" -> antal
 
 const midiChannel = () => (Math.min(16, Math.max(1, Number(ui.midiCh.value) || 1)) - 1);
 
-function noteOn(note, ch) {
+function noteOn(note, ch, when = 0) {
   const key = `${ch}:${note}`;
   heldNotes.set(key, (heldNotes.get(key) || 0) + 1);
-  sendMidi([0x90 | ch, note, Number(ui.velocity.value)]);
+  sendMidi([0x90 | ch, note, Number(ui.velocity.value)], when);
 }
 
-function noteOff(note, ch) {
+function noteOff(note, ch, when = 0) {
   const key = `${ch}:${note}`;
   const left = (heldNotes.get(key) || 1) - 1;
   if (left > 0) { heldNotes.set(key, left); return; }
   heldNotes.delete(key);
-  sendMidi([0x80 | ch, note, 0]);
+  sendMidi([0x80 | ch, note, 0], when);
 }
 
 function panic() {

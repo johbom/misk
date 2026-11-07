@@ -29,6 +29,8 @@ Inställningarna är uppdelade i underflikar:
   - *Bestämd längd* – låter exakt den valda *Tonlängden* (0,1–3 s), även ljudfiler.
   - *Ligg kvar* – låter tills nästa ruta spelas (samma ruta igen tystar).
 
+  **Arpeggiator** – slå på med **Arp**-knappen i spelraden (eller under *Spel*). Då spelas tonerna i det du spelar en i taget, i takt, i stället för samtidigt: en ackordruta arpeggieras, flera tonrutor som hålls (fingrar, tangenter, kontakter) arpeggieras tillsammans, och en ensam ton arpeggieras över oktaverna. Fungerar med **alla spelsätt**: *Håll* så länge du är kvar, *One-shot* och *Längd* en viss tid, *Ligg kvar* tills nästa ruta – byter du ackord fortsätter arpeggiot i takt. Inställningar: *Mönster* (Upp, Ner, Upp & ner, Slump, Spelordning), *Tempo* (40–240 BPM), *Notvärde* (1/4, 1/8, 1/8 triol, 1/16), *Oktaver* (1–3) och *Tonlängd* (staccato–legato). Noterna planeras i ljudklockan så att takten blir stadig; MIDI (med tidsstämplar), OSC, ljudfiler och vibrato följer med. Varje ton blinkar till på sin ruta. (Inte på XY-plattan.)
+
   **Vibrato** – vickar man pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter blir det ett försiktigt pitchvibrato, även på ljudfiler. Takten följer hur fort man vickar (3–8 Hz), djupet växer med hur ihärdigt man vickar upp till valt *Djup* (0–60 cent, 20 från början, 0 = av), och vibratot tonar ut när man slutar. Ett vanligt svep eller små darrningar ger inget vibrato. Ögon- och kontaktprofilerna slår av det, så att blickens mikrorörelser inte ger vibrato.
 
   Och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa* eller *Strängar*. Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna, *Stränglängd* för strängarna, och för ringen *Mellanrum mellan sektorer* (hur tight de ligger) och *Hålets storlek*.
@@ -183,6 +185,7 @@ python3 -m http.server 8080
 - `js/audio.js` – ljud- och MIDI-utgång
 - `js/osc.js` – OSC-utgång: kodar OSC-paket och skickar dem till bryggan
 - `tools/osc-bridge.mjs` – OSC-bryggan (WebSocket → UDP), serverar också appen lokalt
+- `js/arp.js` – arpeggiatorn: tonpool, mönster och planering i ljudklockan
 - `js/xy.js` – XY-plattan: en oscillator per pekare, glödande spår
 - `js/vibrato.js` – känner av vickning fram och tillbaka och gör om den till vibrato
 - `js/pads.js` – spela/släppa rutor, mus, ögonstyrning och pekskärm (aktiveringstid, darrtolerans, spärrtid)

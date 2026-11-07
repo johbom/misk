@@ -22,6 +22,7 @@ setupTouch();
 setupVibrato();
 setupOsc();
 setupXY();
+setupArp();
 setupUserPresets();
 setupPwa();
 setupAbout();

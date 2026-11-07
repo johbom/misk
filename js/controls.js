@@ -67,5 +67,8 @@ function setupSegments() {
   segmentSelect(ui.uiSize);
   segmentSelect(ui.scanMode);
   segmentSelect(ui.xyOctaves, 'seg-count');
+  segmentSelect(ui.arpPattern);
+  segmentSelect(ui.arpRate);
+  segmentSelect(ui.arpOctaves, 'seg-count');
   segmentSelect(ui.xySound, 'seg-xy');
 }

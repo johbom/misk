@@ -483,13 +483,14 @@ class SynthEngine {
   }
 
   // Startar en ton. Returnerar en funktion som släpper den.
-  noteOn(note, level = 1) {
+  // when (valfritt): ljudklockans tid då tonen ska börja (arpeggiatorn planerar i förväg).
+  noteOn(note, level = 1, when = 0) {
     const { ctx } = this;
     const p = { ...this.p }; // tonen behåller sina inställningar även om reglagen ändras
     // Tonen planeras en aning framåt. ctx.currentTime kan ligga efter ljudtråden (särskilt Safari
     // på iPhone/iPad); hamnar starten i det förflutna kan webbläsaren hoppa över de korta förloppen
     // i början (FM-djup, filterkurva) och tonen låter "tom".
-    const t = ctx.currentTime + NOTE_LOOKAHEAD;
+    const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
     const freq = 440 * Math.pow(2, (note - 69) / 12);
     const sources = [];
     const mixer = ctx.createGain();
@@ -629,11 +630,12 @@ class SynthEngine {
 
     sources.forEach((s) => s.start(t));
 
-    const stop = () => {
+    // at (valfritt): ljudklockans tid då tonen ska släppas
+    const stop = (at = 0) => {
       // Släpp mjukt från exakt där kurvan är just nu (även mitt i anslaget)
       // Släppet planeras lika långt framåt som starten: tonen låter exakt så länge den hölls,
       // och inget av förloppen hamnar i det förflutna
-      const r = ctx.currentTime + NOTE_LOOKAHEAD;
+      const r = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, at, t + 0.003);
       if (amp.gain.cancelAndHoldAtTime) amp.gain.cancelAndHoldAtTime(r); // Chrome: exakt
       else {
         amp.gain.cancelScheduledValues(r);

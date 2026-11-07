@@ -160,6 +160,12 @@ function trigger(pad) {
   const notes = pad.notes();
   const stops = [];
   const useSample = ui.outAudio.checked && !!pad.sample;
+  if (arpOn()) {
+    // Arpeggiator: tonerna spelas en i taget i takt (js/arp.js) så länge rutan låter
+    arpAdd(pad, notes);
+    pad.release = () => arpRemove(pad);
+    pad.vibrato = (cents, rate) => arpVibrato(pad, cents, rate);
+  } else {
   if (ui.outAudio.checked) {
     if (useSample) stops.push(playSample(pad.sample));
     else {
@@ -177,7 +183,8 @@ function trigger(pad) {
   pad.release = () => stops.forEach((s) => s());
   // Vibrato på allt som rutan spelar just nu (styrs av js/vibrato.js)
   pad.vibrato = (cents, rate) => stops.forEach((s) => s.vibrato && s.vibrato(cents, rate));
-  log(`▶ ${pad.label()}  (${notes.map(noteName).join(' ')})`);
+  }
+  log(`▶ ${pad.label()}  (${notes.map(noteName).join(' ')})${arpOn() ? '  · arp' : ''}`);
 
   // One-shot och Bestämd längd: släpps av en timer, inte av pekaren
   const length = mode === 'fixed' ? ms(ui.noteLength) || ONESHOT_MS

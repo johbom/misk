@@ -1,0 +1,147 @@
+// Arpeggiator: tonerna i det man spelar spelas en i taget, i takt, i stället för samtidigt.
+//
+// Alla rutor som låter lägger sina toner i en gemensam pool (en ackordruta = hela ackordet, flera
+// tonrutor = alla tillsammans). Spelsätten styr som vanligt hur länge en ruta "låter" – Håll så länge
+// man är kvar, One-shot/Längd en viss tid, Ligg kvar tills nästa ruta – och lika länge ligger dess
+// toner i poolen. Noterna planeras i ljudklockan en bit i förväg, så att takten blir stadig även om
+// webbläsaren är upptagen en stund.
+
+const ARP_LOOKAHEAD = 0.12; // s som planeras i förväg
+const ARP_TICK_MS = 25;
+const ARP_RATES = { 4: 1, 8: 0.5, '8t': 1 / 3, 16: 0.25 }; // andel av ett taktslag
+
+const arp = { pool: [], timer: 0, nextTime: 0, step: 0, last: -1, emptySince: 0 };
+const arpOn = () => ui.arpOn.checked;
+const arpStepDur = () => (60 / (Number(ui.arpBpm.value) || 120)) * (ARP_RATES[ui.arpRate.value] || 0.5);
+
+// En ruta börjar låta: lägg till dess toner
+function arpAdd(pad, notes) {
+  notes.forEach((note, i) => arp.pool.push({ note, pad, order: performance.now() + i * 1e-3 }));
+  pad.arpVib = 0;
+  if (!arp.timer) arpStart();
+}
+
+// En ruta släpps: ta bort dess toner. Takten fortsätter ett steg till, så att ett ackordbyte
+// (Ligg kvar) eller en snabb förflyttning till nästa ruta håller takten i stället för att börja om.
+function arpRemove(pad) {
+  arp.pool = arp.pool.filter((e) => e.pad !== pad);
+  if (!arp.pool.length && arp.timer) arp.emptySince = audioCtx.currentTime;
+}
+
+function arpStart() {
+  arp.step = 0;
+  arp.last = -1;
+  arp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.005;
+  arp.timer = setInterval(arpTick, ARP_TICK_MS);
+  arpTick();
+}
+
+function arpStop() {
+  clearInterval(arp.timer);
+  arp.timer = 0;
+}
+
+// Slår av arpeggiatorn helt (t.ex. när den stängs av eller fliken byts)
+function arpReset() {
+  arpStop();
+  arp.pool = [];
+}
+
+// Tonföljden enligt mönster och oktaver
+function arpSequence() {
+  const seen = new Set();
+  const base = [];
+  for (const e of arp.pool) if (!seen.has(e.note)) { seen.add(e.note); base.push(e); }
+  if (!base.length) return [];
+  const pattern = ui.arpPattern.value;
+  if (pattern !== 'order') base.sort((a, b) => a.note - b.note);
+  else base.sort((a, b) => a.order - b.order);
+  const octaves = Number(ui.arpOctaves.value) || 1;
+  let seq = [];
+  for (let o = 0; o < octaves; o++) seq.push(...base.map((e) => ({ ...e, note: clampNote(e.note + 12 * o) })));
+  if (pattern === 'down') seq.reverse();
+  else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
+  return seq;
+}
+
+function arpTick() {
+  const now = audioCtx.currentTime;
+  // Har webbläsaren varit upptagen (t.ex. flik i bakgrunden)? Hoppa över missade steg i stället för att
+  // spela dem alla på en gång.
+  if (arp.nextTime < now - 0.05) arp.nextTime = now + NOTE_LOOKAHEAD;
+  // Tom pool längre än ett steg: stanna (nästa ruta börjar då om från början, direkt).
+  // Kortare än så räknas takten vidare utan att spela, så att nästa ruta hamnar i takt.
+  if (!arp.pool.length && now - arp.emptySince > arpStepDur()) { arpStop(); return; }
+  while (arp.nextTime < now + ARP_LOOKAHEAD) {
+    arpPlayStep(arp.nextTime);
+    arp.nextTime += arpStepDur();
+  }
+}
+
+function arpPlayStep(time) {
+  const seq = arpSequence();
+  if (!seq.length) return;
+  let idx;
+  if (ui.arpPattern.value === 'random') {
+    idx = Math.floor(Math.random() * seq.length);
+    if (seq.length > 1 && idx === arp.last) idx = (idx + 1) % seq.length;
+  } else {
+    idx = arp.step % seq.length;
+  }
+  arp.last = idx;
+  arp.step++;
+  const { note, pad } = seq[idx];
+  const dur = arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
+  const off = time + dur;
+
+  if (ui.outAudio.checked) {
+    let stop;
+    if (pad.sample) stop = playSample(pad.sample, time, Math.pow(2, (note - pad.note) / 12));
+    else stop = engine.noteOn(note, 0.8, time);
+    if (pad.arpVib && stop.vibrato) stop.vibrato(pad.arpVib);
+    stop(off);
+    // Vibrato (vickning) når också toner som redan klingar
+    (pad.arpStops || (pad.arpStops = new Set())).add(stop);
+    setTimeout(() => pad.arpStops.delete(stop), (off - audioCtx.currentTime) * 1000 + 50);
+  }
+  if (ui.outMidi.checked) {
+    const ch = midiChannel();
+    noteOn(note, ch, time);
+    noteOff(note, ch, off);
+  }
+  // OSC och ljusblink på rutan, så nära tonen som möjligt
+  const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
+  setTimeout(() => {
+    oscSend('note', note, Number(ui.velocity.value) || 100);
+    pad.el.classList.remove('arp-hit');
+    void pad.el.offsetWidth;
+    pad.el.classList.add('arp-hit');
+  }, wait);
+  setTimeout(() => oscSend('note', note, 0), wait + dur * 1000);
+}
+
+// Vibrato för en ruta som arpeggieras
+function arpVibrato(pad, cents, rate) {
+  pad.arpVib = cents;
+  pad.arpStops?.forEach((s) => s.vibrato && s.vibrato(cents, rate));
+}
+
+// Arp-knappen i spelraden visar om arpeggiatorn är på (anropas också när presets/profiler laddas)
+function syncArpToggle() {
+  $('arp-toggle').classList.toggle('on', arpOn());
+  $('arp-toggle').setAttribute('aria-pressed', arpOn());
+}
+
+function setupArp() {
+  const sync = syncArpToggle;
+  // Byter man arpeggiator av/på mitt i spelet börjar man om från tyst läge
+  ui.arpOn.addEventListener('change', () => { allPads().forEach(release); arpReset(); sync(); });
+  $('arp-toggle').addEventListener('click', () => {
+    ui.arpOn.checked = !ui.arpOn.checked;
+    ui.arpOn.dispatchEvent(new Event('change'));
+    log(`Arpeggiator ${arpOn() ? 'på' : 'av'}`);
+  });
+  sync();
+  // Byte av mönster börjar om från första tonen
+  ui.arpPattern.addEventListener('change', () => { arp.step = 0; });
+}
