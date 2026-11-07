@@ -194,6 +194,7 @@ footer p { margin: 0; font-family: ui-monospace, Menlo, monospace; }
 body:not([data-tab="notes"]) .only-notes,
 body:not([data-tab="chords"]) .only-chords,
 body:not([data-tab="xy"]) .only-xy,
+body[data-tab="xy"] .not-xy,
 body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Ackordrutor */
@@ -1255,4 +1256,12 @@ html.reduce-motion .start-choice { transition: none; }
 @media (max-width: 560px) {
   #start-choices { grid-template-columns: repeat(2, minmax(120px, 160px)); }
   .start-choice { min-height: 104px; }
+}
+
+/* XY: Klang i spelraden */
+.xy-sound .seg button { padding: 4px 10px; }
+@media (max-width: 560px) {
+  body[data-tab="xy"] #play-bar { flex-wrap: wrap !important; row-gap: 6px; }
+  #play-bar .xy-sound { flex: 1 1 100%; }
+  #play-bar .xy-sound .seg { display: grid; grid-template-columns: repeat(3, 1fr); flex: 1; }
 }

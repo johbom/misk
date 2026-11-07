@@ -53,6 +53,8 @@ const ui = {
   noteLength: $('note-length'),
   vibrato: $('vibrato'),
   xyOctaves: $('xy-octaves'),
+  xySound: $('xy-sound'),
+  xyReverb: $('xy-reverb'),
   dwell: $('dwell'),
   releaseDelay: $('release-delay'),
   lockout: $('lockout'),

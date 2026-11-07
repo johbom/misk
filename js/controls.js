@@ -67,4 +67,5 @@ function setupSegments() {
   segmentSelect(ui.uiSize);
   segmentSelect(ui.scanMode);
   segmentSelect(ui.xyOctaves, 'seg-count');
+  segmentSelect(ui.xySound, 'seg-xy');
 }

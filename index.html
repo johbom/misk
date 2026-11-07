@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=30" />
+  <link rel="stylesheet" href="css/style.css?v=31" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -61,8 +61,19 @@
       </label>
       <button type="button" id="up-next" class="up-step" aria-label="Nästa preset" title="Nästa preset">▶</button>
     </div>
-    <label>Ljud
+    <label class="not-xy">Ljud
       <select id="preset"></select>
+    </label>
+    <!-- XY-plattans egen klang (rutornas ljud påverkar inte XY) -->
+    <label class="only-xy xy-sound">Klang
+      <select id="xy-sound">
+        <option value="sine">Sinus</option>
+        <option value="triangle">Triangel</option>
+        <option value="warm">Varm</option>
+        <option value="sawtooth">Sågtand</option>
+        <option value="square">Fyrkant</option>
+        <option value="supersaw">Bred</option>
+      </select>
     </label>
     <label>Volym
       <input type="range" id="volume" min="0" max="1" step="0.01" value="0.6" />
@@ -107,10 +118,16 @@
             <option value="1">1 oktav</option>
             <option value="2">2</option>
             <option value="3">3</option>
-            <option value="4" selected>4</option>
-            <option value="5">5</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
           </select>
-          <small class="desc">Tonhöjden glider steglöst från vänster till höger och slutar på C6 – omfånget räknas nedåt därifrån. Filtret (highcut) öppnar uppåt: dovt längst ned, ljust längst upp.</small>
+          <small class="desc">Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7). Filtret (highcut) öppnar uppåt: dovt längst ned, ljust längst upp.</small>
+        </label>
+        <label class="slider">
+          <span class="lbl">Rumsklang</span>
+          <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
+          <output id="xy-reverb-value" class="val">35 %</output>
+          <small class="desc">XY har egen klang och rumsklang – klangen väljs på XY-sidan. Rutornas ljud påverkar inte XY.</small>
         </label>
       </fieldset>
 
@@ -463,24 +480,24 @@
     <p id="log" aria-live="off">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=30"></script>
-  <script src="js/sound-library.js?v=30"></script>
-  <script src="js/layout.js?v=30"></script>
-  <script src="js/core.js?v=30"></script>
-  <script src="js/audio.js?v=30"></script>
-  <script src="js/pads.js?v=30"></script>
-  <script src="js/osc.js?v=30"></script>
-  <script src="js/xy.js?v=30"></script>
-  <script src="js/vibrato.js?v=30"></script>
-  <script src="js/notes.js?v=30"></script>
-  <script src="js/chords.js?v=30"></script>
-  <script src="js/sound.js?v=30"></script>
-  <script src="js/view.js?v=30"></script>
-  <script src="js/controls.js?v=30"></script>
-  <script src="js/access.js?v=30"></script>
-  <script src="js/settings.js?v=30"></script>
-  <script src="js/user-presets.js?v=30"></script>
-  <script src="js/pwa.js?v=30"></script>
-  <script src="js/main.js?v=30"></script>
+  <script src="js/synth.js?v=31"></script>
+  <script src="js/sound-library.js?v=31"></script>
+  <script src="js/layout.js?v=31"></script>
+  <script src="js/core.js?v=31"></script>
+  <script src="js/audio.js?v=31"></script>
+  <script src="js/pads.js?v=31"></script>
+  <script src="js/osc.js?v=31"></script>
+  <script src="js/xy.js?v=31"></script>
+  <script src="js/vibrato.js?v=31"></script>
+  <script src="js/notes.js?v=31"></script>
+  <script src="js/chords.js?v=31"></script>
+  <script src="js/sound.js?v=31"></script>
+  <script src="js/view.js?v=31"></script>
+  <script src="js/controls.js?v=31"></script>
+  <script src="js/access.js?v=31"></script>
+  <script src="js/settings.js?v=31"></script>
+  <script src="js/user-presets.js?v=31"></script>
+  <script src="js/pwa.js?v=31"></script>
+  <script src="js/main.js?v=31"></script>
 </body>
 </html>

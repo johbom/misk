@@ -25,38 +25,76 @@ const xy = {
 };
 
 // ---------- Tonhöjd och filter ----------
-// Högerkanten är alltid C6; omfånget (oktaver, under Spel) räknas nedåt därifrån.
-const XY_TOP_MIDI = 84; // C6
-const xyOctaves = () => Number(ui.xyOctaves.value) || 4; // 4 = C2–C6
+// Högerkanten är alltid C7; omfånget (oktaver, under Spel) räknas nedåt därifrån.
+const XY_TOP_MIDI = 96; // C7
+const xyOctaves = () => Number(ui.xyOctaves.value) || 5; // 5 = C2–C7
 const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
 const xyFreq = (nx) => xyLowHz() * Math.pow(2, nx * xyOctaves()); // nx 0..1, vänster..höger
 const xyCut = (ny) => XY_CUT_MIN * Math.pow(XY_CUT_MAX / XY_CUT_MIN, ny); // ny 0..1, nederkant..överkant
 
 // ---------- Ljud: en röst per pekare ----------
+// XY har egen klang och egen rumsklang, oberoende av rutornas ljud. Nivåerna är utjämnade så att
+// alla klanger låter ungefär lika starkt.
+const XY_SOUNDS = {
+  // Uppmätta: övertonsrika klanger låter starkare per energi, så de ligger lite lägre än sinus
+  sine: { level: 0.85 },
+  triangle: { level: 0.95 },
+  warm: { level: 0.85 },
+  sawtooth: { level: 1.05 },
+  square: { level: 0.75 },
+  supersaw: { level: 2.2, detunes: [-18, -9, 0, 9, 18], wave: 'sawtooth' }, // bred, i stereo
+};
+
+// Egen buss: torrt + egen rumsklang, direkt till volymen (efter rutornas effekter)
+function xyBus() {
+  if (xy.bus && xy.busCtx === audioCtx) return xy.bus;
+  const ctx = audioCtx;
+  xy.busCtx = ctx;
+  xy.bus = ctx.createGain();
+  xy.send = ctx.createGain();
+  xy.send.gain.value = Number(ui.xyReverb.value);
+  const rev = ctx.createConvolver();
+  rev.buffer = engine.makeImpulse(2.8);
+  xy.bus.connect(engine.volume);
+  xy.bus.connect(xy.send).connect(rev).connect(engine.volume);
+  return xy.bus;
+}
+
 function xyVoiceStart(id, nx, ny) {
   if (!audioCtx || !engine || !ui.outAudio.checked) return;
   const ctx = audioCtx;
-  const p = engine.p;
   const t = ctx.currentTime + NOTE_LOOKAHEAD;
-  // Vågformen från ljudmotorn (fysiska modeller har ingen glidande oscillator – då sågtand)
-  const wave = p.model && p.model !== 'osc' ? 'sawtooth' : p.osc1Wave;
-  const osc = engine.makeOsc(wave, xyFreq(nx));
+  const snd = XY_SOUNDS[ui.xySound.value] || XY_SOUNDS.sine;
+  const mix = ctx.createGain();
+  const oscs = (snd.detunes || [0]).map((cents, i, all) => {
+    const o = engine.makeOsc(snd.wave || ui.xySound.value, xyFreq(nx));
+    o.detune.value = cents;
+    if (all.length > 1) {
+      const pan = ctx.createStereoPanner();
+      pan.pan.value = (i / (all.length - 1)) * 1.4 - 0.7;
+      o.connect(pan).connect(mix);
+    } else o.connect(mix);
+    return o;
+  });
+  mix.gain.value = snd.level / Math.sqrt(oscs.length);
+  const osc = oscs[0];
   const hp = ctx.createBiquadFilter();
   hp.type = 'lowpass'; // highcut
   hp.Q.value = 1.2; // lite karaktär när filtret sveper
   hp.frequency.value = xyCut(ny);
   const amp = ctx.createGain();
-  const attack = Math.min(0.5, Math.max(0.01, p.attack));
+  const attack = 0.012; // XY svarar direkt
   amp.gain.value = 0;
   amp.gain.setValueAtTime(0, t);
   amp.gain.linearRampToValueAtTime(XY_LEVEL, t + attack);
   // Vibrato (vickning) på XY-rösterna också
   const vib = ctx.createGain();
   vib.gain.value = 0;
-  engine.vibLfo.connect(vib).connect(osc.detune);
-  osc.connect(hp).connect(amp).connect(engine.input);
-  osc.start(t);
-  xy.voices.set(id, { osc, hp, amp, vib, t, attack });
+  engine.vibLfo.connect(vib);
+  oscs.forEach((o) => vib.connect(o.detune));
+  mix.connect(hp).connect(amp).connect(xyBus());
+  oscs.forEach((o) => o.start(t));
+  xy.voices.set(id, { osc, oscs, hp, amp, vib, t, attack });
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
 }
 
@@ -65,7 +103,7 @@ function xyVoiceMove(id, nx, ny) {
   if (!v) return;
   const now = audioCtx.currentTime;
   // Kort glidtid: följer pekaren mjukt utan trappsteg mellan mushändelserna
-  v.osc.frequency.setTargetAtTime(xyFreq(nx), now, 0.012);
+  v.oscs.forEach((o) => o.frequency.setTargetAtTime(xyFreq(nx), now, 0.012));
   v.hp.frequency.setTargetAtTime(xyCut(ny), now, 0.02);
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
 }
@@ -86,7 +124,7 @@ function xyVoiceStop(id) {
   }
   v.amp.gain.setTargetAtTime(0, r, rel / 4);
   const end = r + (rel / 4) * 9 + 0.05;
-  v.osc.stop(end);
+  v.oscs.forEach((o) => o.stop(end));
   v.osc.onended = () => {
     v.amp.disconnect();
     try { engine.vibLfo.disconnect(v.vib); } catch {}
@@ -116,12 +154,13 @@ function xyTrail(id, x, y) {
 }
 
 function setupXY() {
-  // En gång: tidigare standard var 3 oktaver (C3–C6), nu C2–C6
-  if (!localStorage.getItem('hoverPadsXyRange2')) {
-    localStorage.setItem('hoverPadsXyRange2', '1');
-    ui.xyOctaves.value = '4';
+  // En gång: standard är nu C2–C7 (5 oktaver)
+  if (!localStorage.getItem('hoverPadsXyRange3')) {
+    localStorage.setItem('hoverPadsXyRange3', '1');
+    ui.xyOctaves.value = '5';
     saveSettings();
   }
+  ui.xyReverb.addEventListener('input', () => { if (xy.send) xy.send.gain.setTargetAtTime(Number(ui.xyReverb.value), audioCtx.currentTime, 0.05); });
   xy.el = $('xy-pad');
   xy.canvas = $('xy-canvas');
   xy.g = xy.canvas.getContext('2d');
