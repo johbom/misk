@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=50" />
+  <link rel="stylesheet" href="css/style.css?v=53" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -363,22 +363,25 @@
     </div>
 
     <div class="panel" data-panel="sound">
-      <!-- Alla reglage för ljudmotorn (byggs av js/sound.js från SYNTH_PARAMS i js/synth.js) -->
-      <fieldset id="synth">
-        <legend>Ljudmotor</legend>
-        <div id="library">
-          <div class="lib-head">
-            <strong>Presetbibliotek</strong>
-            <span>110 färdiga ljud – klicka för att ladda in i <em>Eget</em> och provlyssna. Skruva sedan vidare om du vill.</span>
-          </div>
-          <div id="lib-cats"></div>
-          <div id="lib-list"></div>
-        </div>
-        <div id="synth-groups"></div>
+      <!-- Valt ljud överst, sedan färdiga ljud och sist alla reglage (byggs av js/sound.js) -->
+      <fieldset id="sound-now">
+        <legend>Valt ljud</legend>
+        <strong id="sound-now-name"></strong>
+        <p class="hint">Gäller Toner och Ackord – XY har egen klang.</p>
         <div id="synth-actions">
-          <button id="synth-reset" type="button">Återställ preset</button>
+          <button id="synth-reset" type="button">Återställ</button>
           <button id="synth-random" type="button">Slumpa ljud</button>
         </div>
+      </fieldset>
+      <fieldset id="library">
+        <legend>Färdiga ljud</legend>
+        <p class="hint"><span id="lib-count"></span> ljud – klicka för att ladda och provlyssna. Skruva sedan vidare nedan om du vill.</p>
+        <div id="lib-cats"></div>
+        <div id="lib-list"></div>
+      </fieldset>
+      <fieldset id="synth">
+        <legend>Skruva själv</legend>
+        <div id="synth-groups"></div>
       </fieldset>
     </div>
 
@@ -525,25 +528,25 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=50"></script>
-  <script src="js/sound-library.js?v=50"></script>
-  <script src="js/layout.js?v=50"></script>
-  <script src="js/core.js?v=50"></script>
-  <script src="js/audio.js?v=50"></script>
-  <script src="js/pads.js?v=50"></script>
-  <script src="js/osc.js?v=50"></script>
-  <script src="js/arp.js?v=50"></script>
-  <script src="js/xy.js?v=50"></script>
-  <script src="js/vibrato.js?v=50"></script>
-  <script src="js/notes.js?v=50"></script>
-  <script src="js/chords.js?v=50"></script>
-  <script src="js/sound.js?v=50"></script>
-  <script src="js/view.js?v=50"></script>
-  <script src="js/controls.js?v=50"></script>
-  <script src="js/access.js?v=50"></script>
-  <script src="js/settings.js?v=50"></script>
-  <script src="js/user-presets.js?v=50"></script>
-  <script src="js/pwa.js?v=50"></script>
-  <script src="js/main.js?v=50"></script>
+  <script src="js/synth.js?v=53"></script>
+  <script src="js/sound-library.js?v=53"></script>
+  <script src="js/layout.js?v=53"></script>
+  <script src="js/core.js?v=53"></script>
+  <script src="js/audio.js?v=53"></script>
+  <script src="js/pads.js?v=53"></script>
+  <script src="js/osc.js?v=53"></script>
+  <script src="js/arp.js?v=53"></script>
+  <script src="js/xy.js?v=53"></script>
+  <script src="js/vibrato.js?v=53"></script>
+  <script src="js/notes.js?v=53"></script>
+  <script src="js/chords.js?v=53"></script>
+  <script src="js/sound.js?v=53"></script>
+  <script src="js/view.js?v=53"></script>
+  <script src="js/controls.js?v=53"></script>
+  <script src="js/access.js?v=53"></script>
+  <script src="js/settings.js?v=53"></script>
+  <script src="js/user-presets.js?v=53"></script>
+  <script src="js/pwa.js?v=53"></script>
+  <script src="js/main.js?v=53"></script>
 </body>
 </html>

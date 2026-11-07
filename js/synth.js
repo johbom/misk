@@ -60,7 +60,7 @@ const PM_BODIES = {
 };
 
 const SYNTH_PARAMS = [
-  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng (fysisk modell)'], ['modal', 'Resonans (fysisk modell)']] },
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans']] },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
   { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
   { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
@@ -108,6 +108,16 @@ const SYNTH_PARAMS = [
 
 // Reglage som inte gör något i vissa lägen gråas ut.
 const notOsc = (p) => p.model && p.model !== 'osc';
+// Reglage som hör till en annan motor döljs helt (en grupp utan synliga reglage döljs också)
+const SYNTH_HIDDEN_WHEN = {
+  pmExciter: (p) => p.model !== 'string',
+  pmBody: (p) => p.model !== 'modal',
+  pmDecay: (p) => !notOsc(p),
+  pmBright: (p) => !notOsc(p),
+  pmPos: (p) => !notOsc(p),
+  ...Object.fromEntries(['osc1Wave', 'osc1Level', 'unison', 'spread', 'osc2Mode', 'osc2Wave', 'osc2Level',
+    'fmAmount', 'osc2Semi', 'osc2Fine', 'noise'].map((k) => [k, notOsc])),
+};
 const SYNTH_DISABLED_WHEN = {
   pmExciter: (p) => p.model !== 'string',
   pmBody: (p) => p.model !== 'modal',

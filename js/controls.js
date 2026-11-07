@@ -96,4 +96,5 @@ function setupSegments() {
   segmentSelect(ui.arpRate);
   segmentSelect(ui.arpOctaves, 'seg-count');
   segmentSelect(ui.xySound, 'seg-xy', WAVE_ICONS);
+  segmentSelect(synthInputs.model.input);
 }

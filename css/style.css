@@ -297,7 +297,16 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 .cr-field select { min-width: 4.5em; }
 
 /* Ljudmotor-panelen */
-#synth { display: block; }
+#synth { display: block; flex-basis: 100%; }
+/* Valt ljud: namn, kort förklaring och knappar på en rad */
+#sound-now { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; flex-basis: 100%; }
+#sound-now-name { font-size: 1.3rem; font-weight: 700; color: var(--text); }
+#sound-now .hint { margin: 0; }
+#synth-groups > fieldset[hidden] { display: none; }
+.knob.hide { display: none; }
+.knob:has(> .seg) { grid-template-columns: 1fr; gap: 4px; }
+.knob .seg { grid-column: 1 / -1; justify-self: stretch; display: flex; flex-wrap: nowrap; }
+.knob .seg button { flex: 1; padding: 4px 8px; min-height: 32px; }
 #synth-groups {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -316,7 +325,7 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 .knob select { grid-column: 2 / 4; }
 .knob output { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; font-size: 0.8rem; }
 .knob.off { opacity: 0.35; }
-#synth-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; }
+#synth-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
 
 
 @media (max-width: 600px) {
@@ -427,9 +436,8 @@ body:not(.advanced) .adv-only { display: none; }
 .pad-grid[data-formation="strings"] .pad.active .strum i { background: var(--hit); }
 
 /* Presetbibliotek */
-#library { margin-bottom: 14px; }
-.lib-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 8px; }
-.lib-head span { color: var(--muted); font-size: 0.8rem; }
+#library { display: block; flex-basis: 100%; }
+#library > .hint { margin: 0 0 8px; }
 #lib-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
 .lib-cat { border-radius: 999px; padding: 3px 12px; font-size: 0.8rem; color: var(--muted); }
 .lib-cat.on { background: var(--accent); border-color: var(--accent); color: white; }

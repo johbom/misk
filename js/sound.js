@@ -68,7 +68,7 @@ function buildSynthPanel() {
       if (!d.options) output.textContent = d.fmt(v);
       engine && engine.set(d.key, v);
       if (synthPreset === CUSTOM && synthLib.name) synthLib.edited = true;
-      else if (synthPreset !== CUSTOM) synthLib = { name: '', edited: false };
+      else if (synthPreset !== CUSTOM) synthLib = { name: synthPreset, edited: true }; // "Piano (ändrat)"
       synthPreset = CUSTOM;
       updateCustomLabel();
       ui.preset.value = CUSTOM;
@@ -83,14 +83,21 @@ function syncSynthPanel() {
     const v = synthParams[def.key];
     input.value = def.options ? v : toSlider(def, v);
     if (!def.options) output.textContent = def.fmt(v);
+    if (input.segBox) syncSegment(input);
   }
   refreshSynthDisabled();
 }
 
+// Döljer reglage för en annan motor och gråar ut sådana som inte gör något just nu
 function refreshSynthDisabled() {
-  for (const [key, isOff] of Object.entries(SYNTH_DISABLED_WHEN)) {
-    synthInputs[key].row.classList.toggle('off', isOff(synthParams));
+  for (const [key, { row }] of Object.entries(synthInputs)) {
+    const hide = !!SYNTH_HIDDEN_WHEN[key]?.(synthParams);
+    row.classList.toggle('hide', hide);
+    row.classList.toggle('off', !hide && !!SYNTH_DISABLED_WHEN[key]?.(synthParams));
   }
+  document.querySelectorAll('#synth-groups > fieldset').forEach((fs) => {
+    fs.hidden = !fs.querySelector('.knob:not(.hide)');
+  });
 }
 
 function applySynth(params, preset) {
@@ -135,6 +142,11 @@ function updateCustomLabel() {
     opt.textContent = !synthLib.name ? 'Eget (ändrat)'
       : `Eget: ${synthLib.name}${synthLib.edited ? ' (ändrat)' : ''}`;
   }
+  const now = $('sound-now-name');
+  if (now) {
+    now.textContent = synthPreset !== CUSTOM ? synthPreset
+      : synthLib.name ? `${synthLib.name}${synthLib.edited ? ' (ändrat)' : ''}` : 'Eget ljud';
+  }
   const current = synthPreset === CUSTOM ? synthLib.name : '';
   document.querySelectorAll('.lib-preset').forEach((b) =>
     b.classList.toggle('on', b.dataset.name === current));
@@ -144,6 +156,7 @@ function updateCustomLabel() {
 let libCategory = 'Alla';
 
 function buildPresetLibrary() {
+  $('lib-count').textContent = PRESET_LIBRARY.length;
   const cats = $('lib-cats');
   ['Alla', ...PRESET_CATEGORIES.map((c) => c.name)].forEach((cat) => {
     const b = document.createElement('button');

@@ -113,9 +113,9 @@ Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, 
 - Reglage: *Klingtid* (hur länge den ringer), *Ljushet* (mörk/mjuk eller ljus/hård), *Anslagspunkt* (vid kanten = tunnare, mitten = rundare).
 - Filter, volymkurva, LFO, vibrato och alla effekter fungerar som vanligt. Modellerna räknas i ljudtråden (AudioWorklet) och stängs av när de tystnat.
 
-**Presetbibliotek:** överst under *Inställningar → Ljud* finns 110 färdiga ljud i elva kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip, fysisk modell – t.ex. *Nylonsträng*, *Stråkcello*, *Marimbaträ*, *Vibrafonstav*, *Glasklang*, *Handtrumma*). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
+**Presetbibliotek:** under *Inställningar → Ljud → Färdiga ljud* finns 110 färdiga ljud i elva kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip, fysisk modell – t.ex. *Nylonsträng*, *Stråkcello*, *Marimbaträ*, *Vibrafonstav*, *Glasklang*, *Handtrumma*). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
 
-Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ preset* går tillbaka, *Slumpa ljud* hittar på något nytt.
+Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ* går tillbaka, *Slumpa ljud* hittar på något nytt. Överst på fliken *Ljud* syns vilket ljud som är valt (t.ex. *Piano (ändrat)*), och under *Skruva själv* visas bara reglagen för den valda motorn – välj *Oscillatorer*, *Sträng* eller *Resonans* med knapparna under *Motor*.
 Uppladdade ljudfiler går också genom effekterna.
 
 ## App (PWA), mobil och iPad
