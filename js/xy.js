@@ -27,7 +27,7 @@ const xy = {
 // ---------- Tonhöjd och filter ----------
 // Högerkanten är alltid C6; omfånget (oktaver, under Spel) räknas nedåt därifrån.
 const XY_TOP_MIDI = 84; // C6
-const xyOctaves = () => Number(ui.xyOctaves.value) || 3;
+const xyOctaves = () => Number(ui.xyOctaves.value) || 4; // 4 = C2–C6
 const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
 const xyFreq = (nx) => xyLowHz() * Math.pow(2, nx * xyOctaves()); // nx 0..1, vänster..höger
 const xyCut = (ny) => XY_CUT_MIN * Math.pow(XY_CUT_MAX / XY_CUT_MIN, ny); // ny 0..1, nederkant..överkant
@@ -116,6 +116,12 @@ function xyTrail(id, x, y) {
 }
 
 function setupXY() {
+  // En gång: tidigare standard var 3 oktaver (C3–C6), nu C2–C6
+  if (!localStorage.getItem('hoverPadsXyRange2')) {
+    localStorage.setItem('hoverPadsXyRange2', '1');
+    ui.xyOctaves.value = '4';
+    saveSettings();
+  }
   xy.el = $('xy-pad');
   xy.canvas = $('xy-canvas');
   xy.g = xy.canvas.getContext('2d');
