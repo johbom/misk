@@ -1224,6 +1224,7 @@ html.high-contrast #xy-pad { background: #000; border: 2px solid #fff; }
 }
 html.high-contrast .tab-sep { background: #fff; }
 #start-msg { text-align: center; line-height: 1.5; margin: 0 16px; }
+#start-msg:empty { display: none; }
 /* Startrutan: välj var du vill börja (klicket startar också ljudet) */
 #start-title { margin: 0 0 6px; color: var(--text); font-size: 1.35rem; font-weight: 600; }
 #start-choices {
