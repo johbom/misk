@@ -7,7 +7,7 @@ function showTab(tab) {
   allPads().forEach(release);
   document.body.dataset.tab = tab;
   if (tab === 'settings') setLocked(false);
-  document.querySelectorAll('#tabs button').forEach((b) =>
+  document.querySelectorAll('#tabs button[data-tab]').forEach((b) =>
     b.classList.toggle('on', b.dataset.tab === tab)
   );
   localStorage.setItem('hoverPadsTab', tab);

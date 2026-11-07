@@ -639,7 +639,6 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 #install-btn[hidden] { display: none; }
 
 /* Om-rutan */
-#about-btn { border-radius: 999px; font-size: 0.8rem; padding: 4px 12px; }
 #about {
   width: min(600px, calc((100vw - 32px) / var(--ui-zoom)));
   max-height: calc((100dvh - 48px) / var(--ui-zoom));
@@ -968,7 +967,7 @@ html.high-contrast #gaze-dot { border-color: #00e5ff; }
   header { flex-wrap: wrap; row-gap: 6px; }
   .header-right { margin-left: auto; }
 }
-#lock-btn, #about-btn { white-space: nowrap; }
+#lock-btn { white-space: nowrap; }
 html.steppers #play-bar label { flex: 1 1 240px; }
 html.steppers #play-bar .stepper { flex: 1; }
 html.steppers #play-bar .stepper > select { flex: 1; }
@@ -1202,3 +1201,33 @@ html.high-contrast button.danger { border-color: #ff6b6b; color: #ff9b9b; }
 html.fixed-screen #xy-pad { flex: 1 1 0; min-height: 0; margin: 8px 14px 10px; }
 body.locked #xy-pad { margin-top: 56px; }
 html.high-contrast #xy-pad { background: #000; border: 2px solid #fff; }
+
+/* ===== Huvudmenyn med symboler ===== */
+#tabs { align-items: stretch; }
+#tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+#tabs button:hover:not(.on) { color: var(--text); background: #262938; }
+.tab-icon { width: 19px; height: 19px; flex: none; }
+.tab-sep { width: 1px; margin: 6px 2px; background: var(--border); }
+#tabs #about-btn { padding: 6px 12px; }
+/* Smal skärm: symbolen ovanför texten, så att alla får plats */
+@media (max-width: 560px) {
+  #tabs { flex: 1 1 100%; }
+  #tabs button {
+    flex: 1 1 auto; /* bredd efter texten, resten fördelas */
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    padding: 5px 4px !important;
+    font-size: 0.72rem;
+  }
+  .tab-icon { width: 21px; height: 21px; }
+  .tab-sep { margin: 8px 0; }
+}
+html.high-contrast .tab-sep { background: #fff; }

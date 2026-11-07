@@ -52,7 +52,7 @@ ui.midiOut.addEventListener('change', () => { panic(); updateMidiStatus(); saveS
 ui.outMidi.addEventListener('change', () => { if (!ui.outMidi.checked) panic(); });
 ui.midiCh.addEventListener('change', panic);
 ui.panic.addEventListener('click', panic);
-document.querySelectorAll('#tabs button').forEach((b) =>
+document.querySelectorAll('#tabs button[data-tab]').forEach((b) =>
   b.addEventListener('click', () => showTab(b.dataset.tab))
 );
 window.addEventListener('blur', () => { fingers.clear(); resetHover(); allPads().forEach(release); });

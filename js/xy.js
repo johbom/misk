@@ -1,12 +1,12 @@
 // XY-platta: varje muspekare och varje finger är en egen oscillator.
 //   X = tonhöjd, steglöst frekvensglissando (exponentiellt, så att varje oktav är lika bred)
-//   Y = lowcut (högpassfilter): längst ned fullt ljud, uppåt allt tunnare
+//   Y = highcut (lågpassfilter) som öppnar uppåt: längst ned dovt, längst upp helt öppet
 // Musen låter så länge den är över ytan (som resten av appen), fingrar så länge de rör skärmen.
 // Varje pekare ritar ett glödande spår som bleknar bort.
 
 const XY_TRAIL_MS = 1400; // hur länge spåret syns
-const XY_CUT_MIN = 20; // Hz längst ned
-const XY_CUT_MAX = 6000; // Hz längst upp
+const XY_CUT_MIN = 150; // Hz längst ned (dovt)
+const XY_CUT_MAX = 16000; // Hz längst upp (öppet)
 const XY_LEVEL = 0.2;
 
 const xy = {
@@ -43,8 +43,8 @@ function xyVoiceStart(id, nx, ny) {
   const wave = p.model && p.model !== 'osc' ? 'sawtooth' : p.osc1Wave;
   const osc = engine.makeOsc(wave, xyFreq(nx));
   const hp = ctx.createBiquadFilter();
-  hp.type = 'highpass';
-  hp.Q.value = 0.9;
+  hp.type = 'lowpass'; // highcut
+  hp.Q.value = 1.2; // lite karaktär när filtret sveper
   hp.frequency.value = xyCut(ny);
   const amp = ctx.createGain();
   const attack = Math.min(0.5, Math.max(0.01, p.attack));
@@ -226,7 +226,7 @@ function xyDrawGrid(g, W, H, hc) {
   g.translate(14, H / 2);
   g.rotate(-Math.PI / 2);
   g.fillStyle = hc ? '#fff' : 'rgba(170,175,200,0.55)';
-  g.fillText('Lowcut  →', 0, 0);
+  g.fillText('Filter öppnas  →', 0, 0);
   g.restore();
 }
 
