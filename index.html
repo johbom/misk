@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=43" />
+  <link rel="stylesheet" href="css/style.css?v=45" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -100,97 +100,6 @@
     </nav>
 
     <div class="panel" data-panel="play">
-      <fieldset id="play-mode-set">
-        <legend>Spelsätt</legend>
-        <!-- Värdet ligger i den dolda listan; knapparna med symboler byggs av js/view.js -->
-        <select id="play-mode" aria-label="Spelsätt" data-no-stepper hidden>
-          <option value="hold">Håll</option>
-          <option value="shot">One-shot</option>
-          <option value="fixed">Bestämd längd</option>
-          <option value="latch">Ligg kvar</option>
-        </select>
-        <div id="play-mode-buttons" role="radiogroup" aria-label="Spelsätt"></div>
-        <p id="play-mode-desc" class="hint"></p>
-        <label class="only-fixed">Tonlängd
-          <input type="range" id="note-length" min="100" max="3000" step="50" value="300" />
-          <span id="note-length-value" class="val">0,3 s</span>
-        </label>
-      </fieldset>
-
-      <fieldset id="arp-set">
-        <legend>Arpeggiator</legend>
-        <label class="check"><input type="checkbox" id="arp-on" /> <span>Arpeggiator<small>Tonerna i det du spelar spelas en i taget, i takt. Fungerar med alla spelsätt – Håll, One-shot, Längd och Ligg kvar.</small></span></label>
-        <label class="slider">
-          <span class="lbl">Mönster</span>
-          <select id="arp-pattern">
-            <option value="up">Upp</option>
-            <option value="down">Ner</option>
-            <option value="updown">Upp &amp; ner</option>
-            <option value="random">Slump</option>
-            <option value="order">Spelordning</option>
-          </select>
-        </label>
-        <label class="slider">
-          <span class="lbl">Tempo</span>
-          <input type="range" id="arp-bpm" min="40" max="240" step="1" value="120" />
-          <output id="arp-bpm-value" class="val">120 BPM</output>
-        </label>
-        <label class="slider">
-          <span class="lbl">Notvärde</span>
-          <select id="arp-rate">
-            <option value="4">1/4</option>
-            <option value="8" selected>1/8</option>
-            <option value="8t">1/8 triol</option>
-            <option value="16">1/16</option>
-          </select>
-        </label>
-        <label class="slider">
-          <span class="lbl">Oktaver</span>
-          <select id="arp-octaves">
-            <option value="1">1</option>
-            <option value="2" selected>2</option>
-            <option value="3">3</option>
-          </select>
-          <small class="desc">En ensam ton arpeggieras över oktaverna.</small>
-        </label>
-        <label class="slider">
-          <span class="lbl">Tonlängd</span>
-          <input type="range" id="arp-gate" min="10" max="100" step="5" value="60" />
-          <output id="arp-gate-value" class="val">60 %</output>
-          <small class="desc">Hur stor del av varje steg tonen låter – kort = staccato.</small>
-        </label>
-      </fieldset>
-
-      <fieldset id="xy-set">
-        <legend>XY-platta</legend>
-        <label class="slider">
-          <span class="lbl">Omfång</span>
-          <select id="xy-octaves">
-            <option value="1">1 oktav</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5" selected>5</option>
-          </select>
-          <small class="desc">Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7). Filtret (highcut) öppnar uppåt: dovt längst ned, ljust längst upp.</small>
-        </label>
-        <label class="slider">
-          <span class="lbl">Rumsklang</span>
-          <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
-          <output id="xy-reverb-value" class="val">35 %</output>
-          <small class="desc">XY har egen klang och rumsklang – klangen väljs på XY-sidan. Rutornas ljud påverkar inte XY.</small>
-        </label>
-      </fieldset>
-
-      <fieldset id="vibrato-set">
-        <legend>Vibrato</legend>
-        <label title="Vicka pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter">Djup
-          <input type="range" id="vibrato" min="0" max="60" step="5" value="20" />
-          <output id="vibrato-value" class="val">20 cent</output>
-        </label>
-        <p class="hint">Vicka pekaren fram och tillbaka på en ruta som låter.</p>
-      </fieldset>
-
       <fieldset id="formation-set">
         <legend>Formation</legend>
         <input type="hidden" id="formation" value="grid" />
@@ -213,6 +122,95 @@
             <span id="ring-hole-value" class="val">40 %</span>
           </label>
         </div>
+      </fieldset>
+
+      <fieldset id="play-mode-set">
+        <legend>Spelsätt</legend>
+        <!-- Värdet ligger i den dolda listan; knapparna med symboler byggs av js/view.js -->
+        <select id="play-mode" aria-label="Spelsätt" data-no-stepper hidden>
+          <option value="hold">Håll</option>
+          <option value="shot">One-shot</option>
+          <option value="fixed">Bestämd längd</option>
+          <option value="latch">Ligg kvar</option>
+        </select>
+        <div id="play-mode-buttons" role="radiogroup" aria-label="Spelsätt"></div>
+        <p id="play-mode-desc" class="hint"></p>
+        <label class="only-fixed">Tonlängd
+          <input type="range" id="note-length" min="100" max="3000" step="50" value="300" />
+          <span id="note-length-value" class="val">0,3 s</span>
+        </label>
+      </fieldset>
+
+      <fieldset id="arp-set">
+        <legend>Arpeggiator</legend>
+        <label class="check arp-wide"><input type="checkbox" id="arp-on" /> <span>Arpeggiator<small>Tonerna spelas en i taget, i takt – med alla spelsätt.</small></span></label>
+        <label class="slider arp-wide">
+          <span class="lbl">Mönster</span>
+          <select id="arp-pattern">
+            <option value="up">Upp</option>
+            <option value="down">Ner</option>
+            <option value="updown">Upp &amp; ner</option>
+            <option value="random">Slump</option>
+            <option value="order">Spelordning</option>
+          </select>
+        </label>
+        <label class="slider">
+          <span class="lbl">Tempo</span>
+          <input type="range" id="arp-bpm" min="40" max="240" step="1" value="120" />
+          <output id="arp-bpm-value" class="val">120 BPM</output>
+        </label>
+        <label class="slider" title="Hur stor del av varje steg tonen låter – kort = staccato">
+          <span class="lbl">Tonlängd</span>
+          <input type="range" id="arp-gate" min="10" max="100" step="5" value="60" />
+          <output id="arp-gate-value" class="val">60 %</output>
+        </label>
+        <label class="slider">
+          <span class="lbl">Notvärde</span>
+          <select id="arp-rate">
+            <option value="4">1/4</option>
+            <option value="8" selected>1/8</option>
+            <option value="8t">1/8 triol</option>
+            <option value="16">1/16</option>
+          </select>
+        </label>
+        <label class="slider" title="En ensam ton arpeggieras över oktaverna">
+          <span class="lbl">Oktaver</span>
+          <select id="arp-octaves">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset id="xy-set">
+        <legend>XY-platta</legend>
+        <label class="slider">
+          <span class="lbl">Omfång</span>
+          <select id="xy-octaves">
+            <option value="1">1 oktav</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+          </select>
+          <small class="desc">Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7). Uppåt öppnas filtret (dovt längst ned, ljust längst upp); med klangen Sinus blir det i stället mer vibrato.</small>
+        </label>
+        <label class="slider">
+          <span class="lbl">Rumsklang</span>
+          <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
+          <output id="xy-reverb-value" class="val">35 %</output>
+          <small class="desc">XY har egen klang och rumsklang – klangen väljs på XY-sidan. Rutornas ljud påverkar inte XY.</small>
+        </label>
+      </fieldset>
+
+      <fieldset id="vibrato-set">
+        <legend>Vibrato</legend>
+        <label title="Vicka pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter">Djup
+          <input type="range" id="vibrato" min="0" max="60" step="5" value="20" />
+          <output id="vibrato-value" class="val">20 cent</output>
+        </label>
+        <p class="hint">Vicka pekaren fram och tillbaka på en ruta som låter.</p>
       </fieldset>
     </div>
 
@@ -531,25 +529,25 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=43"></script>
-  <script src="js/sound-library.js?v=43"></script>
-  <script src="js/layout.js?v=43"></script>
-  <script src="js/core.js?v=43"></script>
-  <script src="js/audio.js?v=43"></script>
-  <script src="js/pads.js?v=43"></script>
-  <script src="js/osc.js?v=43"></script>
-  <script src="js/arp.js?v=43"></script>
-  <script src="js/xy.js?v=43"></script>
-  <script src="js/vibrato.js?v=43"></script>
-  <script src="js/notes.js?v=43"></script>
-  <script src="js/chords.js?v=43"></script>
-  <script src="js/sound.js?v=43"></script>
-  <script src="js/view.js?v=43"></script>
-  <script src="js/controls.js?v=43"></script>
-  <script src="js/access.js?v=43"></script>
-  <script src="js/settings.js?v=43"></script>
-  <script src="js/user-presets.js?v=43"></script>
-  <script src="js/pwa.js?v=43"></script>
-  <script src="js/main.js?v=43"></script>
+  <script src="js/synth.js?v=45"></script>
+  <script src="js/sound-library.js?v=45"></script>
+  <script src="js/layout.js?v=45"></script>
+  <script src="js/core.js?v=45"></script>
+  <script src="js/audio.js?v=45"></script>
+  <script src="js/pads.js?v=45"></script>
+  <script src="js/osc.js?v=45"></script>
+  <script src="js/arp.js?v=45"></script>
+  <script src="js/xy.js?v=45"></script>
+  <script src="js/vibrato.js?v=45"></script>
+  <script src="js/notes.js?v=45"></script>
+  <script src="js/chords.js?v=45"></script>
+  <script src="js/sound.js?v=45"></script>
+  <script src="js/view.js?v=45"></script>
+  <script src="js/controls.js?v=45"></script>
+  <script src="js/access.js?v=45"></script>
+  <script src="js/settings.js?v=45"></script>
+  <script src="js/user-presets.js?v=45"></script>
+  <script src="js/pwa.js?v=45"></script>
+  <script src="js/main.js?v=45"></script>
 </body>
 </html>

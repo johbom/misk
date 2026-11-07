@@ -1313,7 +1313,10 @@ html.reduce-motion .start-choice { transition: none; }
 #arp-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 html.steppers #arp-toggle { min-height: 46px; padding: 6px 18px; }
 html.high-contrast #arp-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
-#arp-set { display: flex; flex-direction: column; align-items: stretch; gap: 14px; max-width: 520px; }
+/* Kompakt: två kolumner (Tempo | Tonlängd, Notvärde | Oktaver), en kolumn på smal skärm */
+#arp-set { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
+#arp-set > .arp-wide { grid-column: 1 / -1; }
+@media (max-width: 520px) { #arp-set { grid-template-columns: 1fr; } }
 /* Varje arpeggiotton blinkar till på sin ruta */
 .pad.arp-hit { animation: arp-hit 140ms ease-out; }
 @keyframes arp-hit { from { filter: brightness(1.7); } to { filter: none; } }
