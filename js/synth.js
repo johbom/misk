@@ -59,13 +59,40 @@ const PM_BODIES = {
   bar: { name: 'Metallstav', ratios: [1, 2.76, 5.4, 8.93], amps: [1, 0.4, 0.22, 0.1], damp: 0.7 },
 };
 
+// FM-motorn: fyra sinusoperatorer (som klassiska FM-syntar). Algoritmen bestämmer vilka som hörs
+// (bärare) och vilka som i stället moduler­ar andra. mods[k] = operatorerna som modulerar operator k
+// (index 0 = operator 1). Operator 4 kan dessutom återkoppla till sig själv.
+const FM_ALGOS = {
+  1: { name: '1 · 4→3→2→1', mods: [[1], [2], [3], []], car: [0] },
+  2: { name: '2 · (3+4)→2→1', mods: [[1], [2, 3], [], []], car: [0] },
+  3: { name: '3 · 3→2→1 och 4→1', mods: [[1, 3], [2], [], []], car: [0] },
+  4: { name: '4 · 4→3→1 och 2→1', mods: [[1, 2], [], [3], []], car: [0] },
+  5: { name: '5 · Två par: 2→1, 4→3', mods: [[1], [], [3], []], car: [0, 2] },
+  6: { name: '6 · 4→1, 2 och 3', mods: [[3], [3], [3], []], car: [0, 1, 2] },
+  7: { name: '7 · 4→3, 1 och 2 hörs', mods: [[], [], [3], []], car: [0, 1, 2] },
+  8: { name: '8 · Alla fyra hörs (orgel)', mods: [[], [], [], []], car: [0, 1, 2, 3] },
+};
+const ratioFmt = (v) => `${Number(v.toFixed(2))}×`;
+const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
+  { group: `Operator ${k}`, op: k, key: `op${k}Ratio`, label: 'Förhållande', min: 0.5, max: 16, log: true, fmt: ratioFmt },
+  { key: `op${k}Level`, label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: `op${k}Attack`, label: 'Attack', min: 0.001, max: 4, log: true, fmt: sec },
+  { key: `op${k}Decay`, label: 'Decay', min: 0.01, max: 12, log: true, fmt: sec },
+  { key: `op${k}Sustain`, label: 'Sustain', min: 0, max: 1, step: 0.01, fmt: pct },
+]);
+
 const SYNTH_PARAMS = [
-  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans']] },
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM']] },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
   { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
   { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
   { key: 'pmBright', label: 'Ljushet', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'pmPos', label: 'Anslagspunkt', min: 0.02, max: 0.5, step: 0.01, fmt: (v) => (v < 0.1 ? 'Vid kanten' : v > 0.4 ? 'Mitten' : pct(v)) },
+
+  { group: 'FM', key: 'fmAlgo', label: 'Algoritm', options: Object.entries(FM_ALGOS).map(([k, a]) => [k, a.name]) },
+  { key: 'fmFb', label: 'Återkoppling', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'fmDetune', label: 'Svävning', min: 0, max: 30, step: 1, fmt: (v) => `${v} cent` },
+  ...FM_OP_PARAMS,
 
   { group: 'Oscillator 1', key: 'osc1Wave', label: 'Vågform', options: WAVES },
   { key: 'osc1Level', label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -108,15 +135,18 @@ const SYNTH_PARAMS = [
 
 // Reglage som inte gör något i vissa lägen gråas ut.
 const notOsc = (p) => p.model && p.model !== 'osc';
+const notPm = (p) => p.model !== 'string' && p.model !== 'modal';
+const notFm = (p) => p.model !== 'fm';
 // Reglage som hör till en annan motor döljs helt (en grupp utan synliga reglage döljs också)
 const SYNTH_HIDDEN_WHEN = {
   pmExciter: (p) => p.model !== 'string',
   pmBody: (p) => p.model !== 'modal',
-  pmDecay: (p) => !notOsc(p),
-  pmBright: (p) => !notOsc(p),
-  pmPos: (p) => !notOsc(p),
+  pmDecay: notPm,
+  pmBright: notPm,
+  pmPos: notPm,
   ...Object.fromEntries(['osc1Wave', 'osc1Level', 'unison', 'spread', 'osc2Mode', 'osc2Wave', 'osc2Level',
     'fmAmount', 'osc2Semi', 'osc2Fine', 'noise'].map((k) => [k, notOsc])),
+  ...Object.fromEntries(['fmAlgo', 'fmFb', 'fmDetune', ...FM_OP_PARAMS.map((d) => d.key)].map((k) => [k, notFm])),
 };
 const SYNTH_DISABLED_WHEN = {
   pmExciter: (p) => p.model !== 'string',
@@ -150,6 +180,12 @@ const SYNTH_DEFAULTS = {
   model: 'osc', pmExciter: 'pluck', pmBody: 'marimba', pmDecay: 3, pmBright: 0.6, pmPos: 0.2,
   osc1Wave: 'triangle', osc1Level: 1, unison: 1, spread: 0,
   osc2Mode: 'mix', osc2Wave: 'sine', osc2Level: 0, fmAmount: 0, osc2Semi: 0, osc2Fine: 0, noise: 0,
+  // FM-motorn (ett enkelt elpiano som utgångsläge)
+  fmAlgo: '5', fmFb: 0, fmDetune: 3,
+  op1Ratio: 1, op1Level: 1, op1Attack: 0.002, op1Decay: 2.5, op1Sustain: 0.15,
+  op2Ratio: 1, op2Level: 0.3, op2Attack: 0.002, op2Decay: 0.8, op2Sustain: 0.15,
+  op3Ratio: 1, op3Level: 0.45, op3Attack: 0.002, op3Decay: 1.5, op3Sustain: 0.05,
+  op4Ratio: 14, op4Level: 0.2, op4Attack: 0.002, op4Decay: 0.12, op4Sustain: 0,
   filterType: 'lowpass', cutoff: 18000, q: 0.7, fEnv: 0, fAttack: 0.01, fDecay: 0.3, fSustain: 1,
   attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
@@ -280,6 +316,7 @@ const presetParams = (name) => ({ ...SYNTH_DEFAULTS, ...SYNTH_PRESETS[name] });
 
 // ---------- Motorn ----------
 const NOTE_LOOKAHEAD = 0.015; // s, se noteOn
+const FM_MOD_SCALE = 6; // en modulator på full nivå = moduleringsindex 6 (mycket ljust)
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
@@ -472,8 +509,9 @@ class SynthEngine {
   }
 
   // Fysisk modell: en sträng (AudioWorklet) eller en resonanskropp (bandpassfilter som ringer).
-  addModelVoice(p, freq, t, out, detunes, onRelease, onEnd) {
+  addModelVoice(p, freq, t, out, detunes, onRelease, onEnd, level = 1) {
     const { ctx } = this;
+    if (p.model === 'fm') { this.addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level); return; }
     if (p.model === 'string' && this.pmReady) {
       const node = new AudioWorkletNode(ctx, 'pm-string', {
         numberOfInputs: 0,
@@ -547,6 +585,53 @@ class SynthEngine {
     onEnd.push(() => hit.disconnect());
   }
 
+  // FM-motorn: fyra operatorer i ljudtråden (pm-worklet.js, 'fm4'). Moduleringsdjupet minskar en
+  // aning uppåt i registret (som på riktiga FM-syntar) så att höga toner inte blir vassa, och ökar
+  // med anslagets styrka.
+  addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level) {
+    const { ctx } = this;
+    const algo = FM_ALGOS[p.fmAlgo] || FM_ALGOS[1];
+    const ops = [1, 2, 3, 4].map((k) => ({
+      ratio: p[`op${k}Ratio`], level: p[`op${k}Level`], attack: p[`op${k}Attack`],
+      decay: p[`op${k}Decay`], sustain: p[`op${k}Sustain`],
+    }));
+    if (!this.pmReady) {
+      // Reserv de första ögonblicken innan ljudtråden laddats: operator 1 med sin närmaste modulator
+      const car = this.makeOsc('sine', freq * ops[0].ratio);
+      const m = algo.mods[0][0];
+      if (m !== undefined) {
+        const mod = this.makeOsc('sine', freq * ops[m].ratio);
+        const g = ctx.createGain();
+        g.gain.value = ops[m].level * FM_MOD_SCALE * freq * ops[m].ratio * 0.6;
+        mod.connect(g).connect(car.frequency);
+        mod.start(t);
+        onRelease.push((r, end) => mod.stop(end));
+      }
+      const g = ctx.createGain();
+      g.gain.value = 0.7;
+      car.connect(g).connect(out);
+      car.start(t);
+      detunes.push(car.detune);
+      onRelease.push((r, end) => car.stop(end));
+      return;
+    }
+    const keyScale = Math.min(1.25, Math.max(0.35, Math.sqrt(330 / freq)));
+    const node = new AudioWorkletNode(ctx, 'fm4', {
+      numberOfInputs: 0,
+      numberOfOutputs: 1,
+      outputChannelCount: [1],
+      processorOptions: {
+        start: t, ops, mods: algo.mods, car: algo.car, fb: p.fmFb, detune: p.fmDetune,
+        index: FM_MOD_SCALE * keyScale * (0.7 + 0.3 * Math.min(1, level)),
+      },
+    });
+    node.parameters.get('frequency').value = freq;
+    detunes.push(node.parameters.get('detune'));
+    node.connect(out);
+    onRelease.push((r, end) => node.port.postMessage({ end }));
+    onEnd.push(() => node.disconnect());
+  }
+
   // Startar en ton. Returnerar en funktion som släpper den.
   // when (valfritt): ljudklockans tid då tonen ska börja (arpeggiatorn planerar i förväg).
   noteOn(note, level = 1, when = 0) {
@@ -571,8 +656,8 @@ class SynthEngine {
     life.connect(mixer);
     sources.push(life);
 
-    if (p.model === 'string' || p.model === 'modal') {
-      this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd);
+    if (p.model === 'string' || p.model === 'modal' || p.model === 'fm') {
+      this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd, level);
     } else {
     // Oscillator 1, med unison (flera lätt ostämda kopior spridda i stereo)
     const osc1Gain = ctx.createGain();

@@ -40,6 +40,7 @@ function buildSynthPanel() {
     if (d.group) {
       box = document.createElement('fieldset');
       box.innerHTML = `<legend>${d.group}</legend>`;
+      if (d.op) box.dataset.op = d.op;
       root.append(box);
     }
     const row = document.createElement('label');
@@ -98,6 +99,15 @@ function refreshSynthDisabled() {
   document.querySelectorAll('#synth-groups > fieldset').forEach((fs) => {
     fs.hidden = !fs.querySelector('.knob:not(.hide)');
   });
+  // FM: rubriken visar vad varje operator gör i den valda algoritmen
+  const algo = FM_ALGOS[synthParams.fmAlgo] || FM_ALGOS[1];
+  document.querySelectorAll('#synth-groups > fieldset[data-op]').forEach((fs) => {
+    const k = Number(fs.dataset.op) - 1;
+    const targets = algo.mods.map((m, i) => (m.includes(k) ? i + 1 : 0)).filter(Boolean);
+    const role = algo.car.includes(k) ? 'hörs' : `→ modulerar ${targets.join(' och ')}`;
+    fs.querySelector('legend').textContent = `Operator ${k + 1} · ${role}${k === 3 && synthParams.fmFb > 0 ? ' (återkoppling)' : ''}`;
+    fs.classList.toggle('fm-carrier', algo.car.includes(k));
+  });
 }
 
 function applySynth(params, preset) {
@@ -152,17 +162,35 @@ function updateCustomLabel() {
     b.classList.toggle('on', b.dataset.name === current));
 }
 
-// ---------- Presetbibliotek (100 ljud, presets.js) ----------
+// ---------- Presetbibliotek (js/sound-library.js och js/fm-library.js) ----------
+// Grupp (Alla / Klassiska / FM) -> kategori -> ljud, plus sökning på namn och kategori.
+let libGroup = 'Alla';
 let libCategory = 'Alla';
+let libQuery = '';
 
 function buildPresetLibrary() {
   $('lib-count').textContent = PRESET_LIBRARY.length;
+  const groups = $('lib-groups');
+  ['Alla', ...PRESET_GROUPS].forEach((g) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lib-group';
+    b.dataset.group = g;
+    const n = g === 'Alla' ? PRESET_LIBRARY.length : PRESET_LIBRARY.filter((e) => e.group === g).length;
+    b.innerHTML = `${g === 'FM' ? 'FM-motorn' : g} <small>${n}</small>`;
+    b.addEventListener('click', () => { libGroup = g; libCategory = 'Alla'; renderPresetLibrary(); });
+    groups.append(b);
+  });
   const cats = $('lib-cats');
   ['Alla', ...PRESET_CATEGORIES.map((c) => c.name)].forEach((cat) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = 'lib-cat';
-    b.textContent = cat;
+    b.dataset.cat = cat;
+    b.dataset.group = PRESET_CATEGORIES.find((c) => c.name === cat)?.group || '';
+    // Inom FM-gruppen behövs inte "FM-" framför varje kategori
+    const label = b.dataset.group === 'FM' ? cat.replace(/^FM-/, '') : cat;
+    b.textContent = label.charAt(0).toUpperCase() + label.slice(1);
     b.addEventListener('click', () => { libCategory = cat; renderPresetLibrary(); });
     cats.append(b);
   });
@@ -173,21 +201,36 @@ function buildPresetLibrary() {
     b.className = 'lib-preset';
     b.dataset.name = entry.name;
     b.dataset.cat = entry.cat;
+    b.dataset.group = entry.group;
     b.innerHTML = `<span>${entry.name}</span><small>${entry.cat}</small>`;
     b.addEventListener('click', () => loadLibraryPreset(entry, true));
     list.append(b);
   });
+  $('lib-search').addEventListener('input', (e) => { libQuery = e.target.value.trim().toLowerCase(); renderPresetLibrary(); });
   // Visa kategorin för ljudet som är inladdat, annars alla
   const cur = PRESET_LIBRARY.find((e) => e.name === synthLib.name);
-  if (cur && synthPreset === CUSTOM) libCategory = cur.cat;
+  if (cur && synthPreset === CUSTOM) { libGroup = cur.group; libCategory = cur.cat; }
   renderPresetLibrary();
 }
 
 function renderPresetLibrary() {
-  document.querySelectorAll('.lib-cat').forEach((b) => b.classList.toggle('on', b.textContent === libCategory));
-  document.querySelectorAll('.lib-preset').forEach((b) => {
-    b.hidden = libCategory !== 'Alla' && b.dataset.cat !== libCategory;
+  document.querySelectorAll('.lib-group').forEach((b) => b.classList.toggle('on', b.dataset.group === libGroup));
+  // Kategorierna visas när man valt en grupp (alla 28 på en gång blir för många)
+  $('lib-cats').hidden = libGroup === 'Alla';
+  document.querySelectorAll('.lib-cat').forEach((b) => {
+    b.hidden = b.dataset.group && b.dataset.group !== libGroup;
+    b.classList.toggle('on', b.dataset.cat === libCategory);
   });
+  let shown = 0;
+  document.querySelectorAll('.lib-preset').forEach((b) => {
+    // Sökning gäller alla ljud; annars grupp och kategori
+    const hit = libQuery
+      ? b.dataset.name.toLowerCase().includes(libQuery) || b.dataset.cat.toLowerCase().includes(libQuery)
+      : (libGroup === 'Alla' || b.dataset.group === libGroup) && (libCategory === 'Alla' || b.dataset.cat === libCategory);
+    b.hidden = !hit;
+    if (hit) shown++;
+  });
+  $('lib-empty').hidden = shown > 0;
 }
 
 function loadLibraryPreset(entry, preview) {

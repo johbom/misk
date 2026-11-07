@@ -183,7 +183,12 @@ const PRESET_CATEGORIES = [
   },
 ];
 
-// Platt lista: { cat, name, params } – params är kompletta (defaults + kategori + ljud)
-const PRESET_LIBRARY = PRESET_CATEGORIES.flatMap(({ name: cat, base, presets }) =>
-  Object.entries(presets).map(([name, p]) => ({ cat, name, params: { ...SYNTH_DEFAULTS, ...base, ...p } }))
+// FM-motorns ljud (js/fm-library.js) läggs sist, som en egen grupp
+PRESET_CATEGORIES.forEach((c) => { c.group = c.group || 'Klassiska'; });
+if (typeof FM_CATEGORIES !== 'undefined') FM_CATEGORIES.forEach((c) => PRESET_CATEGORIES.push({ ...c, group: 'FM' }));
+
+// Platt lista: { group, cat, name, params } – params är kompletta (defaults + kategori + ljud)
+const PRESET_LIBRARY = PRESET_CATEGORIES.flatMap(({ name: cat, group, base, presets }) =>
+  Object.entries(presets).map(([name, p]) => ({ group, cat, name, params: { ...SYNTH_DEFAULTS, ...base, ...p } }))
 );
+const PRESET_GROUPS = [...new Set(PRESET_CATEGORIES.map((c) => c.group))];

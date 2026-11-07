@@ -99,7 +99,7 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 
 Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljud** och skruva själv:
 
-- **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och FM, allt nedan) eller **fysisk modell**, se nedan.
+- **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och enkel FM, allt nedan), **fysisk modell** eller **FM-motorn**, se nedan.
 - **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.
 - **Oscillator 2:** blandas in eller frekvensmodulerar osc 1 (FM), transponering, fininställning, brus.
 - **Filter:** lågpass/högpass/bandpass med resonans och egen envelope.
@@ -113,9 +113,11 @@ Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, 
 - Reglage: *Klingtid* (hur länge den ringer), *Ljushet* (mörk/mjuk eller ljus/hård), *Anslagspunkt* (vid kanten = tunnare, mitten = rundare).
 - Filter, volymkurva, LFO, vibrato och alla effekter fungerar som vanligt. Modellerna räknas i ljudtråden (AudioWorklet) och stängs av när de tystnat.
 
-**Presetbibliotek:** under *Inställningar → Ljud → Färdiga ljud* finns 110 färdiga ljud i elva kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip, fysisk modell – t.ex. *Nylonsträng*, *Stråkcello*, *Marimbaträ*, *Vibrafonstav*, *Glasklang*, *Handtrumma*). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
+**FM-motorn:** fyra sinusoperatorer, som på klassiska FM-syntar. Varje operator har ett *förhållande* till grundtonen (0,5×–16×), en *nivå* och en egen kurva (*attack, decay, sustain*). **Algoritmen** (1–8) bestämmer vilka operatorer som hörs och vilka som i stället modulerar andra – från en lång kedja (4→3→2→1, mycket övertoner) till fyra bärare som blandas (orgel). Rubriken på varje operator visar vad den gör i den valda algoritmen (*hörs* eller *→ modulerar 1*). *Återkoppling* låter operator 4 modulera sig själv (sågtandslikt, vid högt värde brus), *Svävning* stämmer operatorerna en aning isär. Moduleringen minskar en aning uppåt i registret och växer med anslagets styrka, som på riktiga FM-syntar. Allt räknas sampel för sampel i ljudtråden. Filter, LFO, vibrato och effekterna fungerar som vanligt; i FM-ljuden står volymkurvan öppen och operatorernas kurvor formar ljudet.
 
-Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ* går tillbaka, *Slumpa ljud* hittar på något nytt. Överst på fliken *Ljud* syns vilket ljud som är valt (t.ex. *Piano (ändrat)*), och under *Skruva själv* visas bara reglagen för den valda motorn – välj *Oscillatorer*, *Sträng* eller *Resonans* med knapparna under *Motor*.
+**Presetbibliotek:** under *Inställningar → Ljud → Färdiga ljud* finns **366 ljud**: 110 *klassiska* (oscillatorer och fysisk modell) och **256 för FM-motorn** i 16 kategorier – FM-piano, klockor, stavspel, bas, mässing, mattor, lead, orgel, knäppt, träblås, atmosfär, röster, effekter, glas, pop och slagverk. Välj grupp (*Alla, Klassiska, FM-motorn*) och kategori, eller **sök** på namn. De klassiska finns i elva kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip, fysisk modell – t.ex. *Nylonsträng*, *Stråkcello*, *Marimbaträ*, *Vibrafonstav*, *Glasklang*, *Handtrumma*). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
+
+Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ* går tillbaka, *Slumpa ljud* hittar på något nytt. Överst på fliken *Ljud* syns vilket ljud som är valt (t.ex. *Piano (ändrat)*), och under *Skruva själv* visas bara reglagen för den valda motorn – välj *Oscillatorer*, *Sträng*, *Resonans* eller *FM* med knapparna under *Motor*.
 Uppladdade ljudfiler går också genom effekterna.
 
 ## App (PWA), mobil och iPad
@@ -179,8 +181,9 @@ python3 -m http.server 8080
 - `css/style.css` – utseende
 - `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`)
 - `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
-- `js/sound-library.js` – presetbiblioteket med 110 ljud
-- `js/pm-worklet.js` – fysisk modell i ljudtråden: sträng (Karplus–Strong) och resonanskropp
+- `js/sound-library.js` – presetbiblioteket: 110 klassiska ljud (och samlar ihop FM-ljuden)
+- `js/fm-library.js` – 256 ljud för FM-motorn, byggda av recept per instrumentfamilj
+- `js/pm-worklet.js` – motorer i ljudtråden: sträng (Karplus–Strong), resonanskropp och FM-motorn (fyra operatorer)
 - `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
 - `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
 - `js/audio.js` – ljud- och MIDI-utgång
