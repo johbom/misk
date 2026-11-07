@@ -1,6 +1,8 @@
 // XY-platta: varje muspekare och varje finger är en egen oscillator.
 //   X = tonhöjd, steglöst frekvensglissando (exponentiellt, så att varje oktav är lika bred)
-//   Y = highcut (lågpassfilter) som öppnar uppåt: längst ned dovt, längst upp helt öppet
+//   Y = highcut (lågpassfilter) som öppnar uppåt: längst ned dovt, längst upp helt öppet.
+//       Sinus har inga övertoner att filtrera, så där styr Y i stället vibrato: inget längst ned,
+//       djupt och lite snabbare längst upp.
 // Musen låter så länge den är över ytan (som resten av appen), fingrar så länge de rör skärmen.
 // Varje pekare ritar ett glödande spår som bleknar bort.
 
@@ -35,13 +37,18 @@ const xyOctaves = () => Number(ui.xyOctaves.value) || 5; // 5 = C2–C7
 const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
 const xyFreq = (nx) => xyLowHz() * Math.pow(2, nx * xyOctaves()); // nx 0..1, vänster..höger
 const xyCut = (ny, freq) => Math.min(XY_CUT_MAX, freq * Math.pow(2, ny * XY_CUT_OCTAVES)); // ny 0..1, nederkant..överkant
+// Vibrato på Y (sinus): djup i cent och takt i Hz. Kurvan gör nedre delen nästan rak.
+const XY_VIB_MAX = 55;
+const xyVibDepth = (ny) => XY_VIB_MAX * Math.pow(ny, 1.6);
+const xyVibRate = (ny) => 4 + 3 * ny;
+const xyYIsVibrato = () => (XY_SOUNDS[ui.xySound.value] || {}).y === 'vibrato';
 
 // ---------- Ljud: en röst per pekare ----------
 // XY har egen klang och egen rumsklang, oberoende av rutornas ljud. Nivåerna är utjämnade så att
 // alla klanger låter ungefär lika starkt.
 const XY_SOUNDS = {
   // Uppmätta: övertonsrika klanger låter starkare per energi, så de ligger lite lägre än sinus
-  sine: { level: 0.85 },
+  sine: { level: 0.85, y: 'vibrato' }, // Y styr vibrato (filter hörs inte på en sinus)
   triangle: { level: 0.95 },
   warm: { level: 0.85 },
   sawtooth: { level: 1.05 },
@@ -64,11 +71,14 @@ function xyBus() {
   return xy.bus;
 }
 
-// En röst: XY:s klang -> highcut -> volym. when = ljudklockans starttid (arpeggiatorn planerar i förväg).
-function xyMakeVoice(freq, cut, when = 0) {
+// En röst: XY:s klang -> highcut -> volym. ny = höjd på ytan (filter eller vibrato).
+// when = ljudklockans starttid (arpeggiatorn planerar i förväg).
+function xyMakeVoice(freq, ny, when = 0) {
   const ctx = audioCtx;
   const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
   const snd = XY_SOUNDS[ui.xySound.value] || XY_SOUNDS.sine;
+  const yVib = snd.y === 'vibrato';
+  const cut = yVib ? XY_CUT_MAX : xyCut(ny, freq);
   const mix = ctx.createGain();
   const oscs = (snd.detunes || [0]).map((cents, i, all) => {
     const o = engine.makeOsc(snd.wave || ui.xySound.value, freq);
@@ -101,9 +111,21 @@ function xyMakeVoice(freq, cut, when = 0) {
   vib.gain.value = 0;
   engine.vibLfo.connect(vib);
   oscs.forEach((o) => vib.connect(o.detune));
+  // Vibrato från Y (sinus): en egen LFO per röst, så att varje finger har sitt eget
+  let yLfo = null;
+  let yDepth = null;
+  if (yVib) {
+    yLfo = ctx.createOscillator();
+    yLfo.frequency.value = xyVibRate(ny);
+    yDepth = ctx.createGain();
+    yDepth.gain.value = xyVibDepth(ny);
+    yLfo.connect(yDepth);
+    oscs.forEach((o) => yDepth.connect(o.detune));
+    yLfo.start(t);
+  }
   mix.connect(hp).connect(hp2).connect(amp).connect(xyBus());
   oscs.forEach((o) => o.start(t));
-  return { osc: oscs[0], oscs, hp, hp2, amp, vib, t, attack };
+  return { osc: oscs[0], oscs, hp, hp2, amp, vib, yLfo, yDepth, t, attack };
 }
 
 // Släpp en röst (at = ljudklockans tid, annars så snart som möjligt). Reverb klingar ut ändå.
@@ -120,6 +142,7 @@ function xyVoiceEnd(v, at = 0) {
   v.amp.gain.setTargetAtTime(0, r, rel / 4);
   const end = r + (rel / 4) * 9 + 0.05;
   v.oscs.forEach((o) => o.stop(end));
+  if (v.yLfo) v.yLfo.stop(end);
   v.osc.onended = () => {
     v.amp.disconnect();
     try { engine.vibLfo.disconnect(v.vib); } catch {}
@@ -130,7 +153,7 @@ function xyVoiceStart(id, nx, ny) {
   if (!audioCtx || !engine || !ui.outAudio.checked) return;
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
   if (arpOn()) { xyArpAdd(id, nx, ny); return; } // arpeggio: pekaren blir en ton i arpeggiot
-  xy.voices.set(id, xyMakeVoice(xyFreq(nx), xyCut(ny, xyFreq(nx))));
+  xy.voices.set(id, xyMakeVoice(xyFreq(nx), ny));
 }
 
 function xyVoiceMove(id, nx, ny) {
@@ -141,7 +164,10 @@ function xyVoiceMove(id, nx, ny) {
   const now = audioCtx.currentTime;
   // Kort glidtid: följer pekaren mjukt utan trappsteg mellan mushändelserna
   v.oscs.forEach((o) => o.frequency.setTargetAtTime(xyFreq(nx), now, 0.012));
-  [v.hp, v.hp2].forEach((f) => f.frequency.setTargetAtTime(xyCut(ny, xyFreq(nx)), now, 0.02));
+  if (v.yLfo) {
+    v.yDepth.gain.setTargetAtTime(xyVibDepth(ny), now, 0.03);
+    v.yLfo.frequency.setTargetAtTime(xyVibRate(ny), now, 0.05);
+  } else [v.hp, v.hp2].forEach((f) => f.frequency.setTargetAtTime(xyCut(ny, xyFreq(nx)), now, 0.02));
 }
 
 function xyVoiceStop(id) {
@@ -223,7 +249,7 @@ function xyArpStep(time) {
     p.last = idx;
     p.step++;
     const f = xyFreq(p.nx) * Math.pow(2, seq[idx]);
-    const v = xyMakeVoice(f, xyCut(p.ny, f), time);
+    const v = xyMakeVoice(f, p.ny, time);
     if (p.vib) v.vib.gain.value = p.vib;
     xyVoiceEnd(v, time + dur);
     p.voices.add(v);
@@ -327,7 +353,7 @@ function setupXY() {
   window.addEventListener('blur', xyStopAll);
 
   new ResizeObserver(xyResize).observe(xy.el);
-  [ui.xyOctaves, ui.root, ui.scale].forEach((el) => el.addEventListener('change', xyDraw));
+  [ui.xyOctaves, ui.root, ui.scale, ui.xySound].forEach((el) => el.addEventListener('change', xyDraw));
 }
 
 // Anropas när fliken byts
@@ -388,7 +414,7 @@ function xyDrawGrid(g, W, H, hc) {
   g.translate(14, H / 2);
   g.rotate(-Math.PI / 2);
   g.fillStyle = hc ? '#fff' : 'rgba(170,175,200,0.55)';
-  g.fillText('Filter öppnas  →', 0, 0);
+  g.fillText(xyYIsVibrato() ? 'Mer vibrato  →' : 'Filter öppnas  →', 0, 0);
   g.restore();
 }
 
