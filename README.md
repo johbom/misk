@@ -8,6 +8,8 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 ## Flikar
 
+När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **XY** eller **Inställningar** – med stora knappar. Klicket startar också ljudet (webbläsare kräver ett klick först). Det man använde senast är markerat och har fokus, så Enter eller en kontakt startar direkt där.
+
 I spelläge (**Toner** och **Ackord**) syns bara rutorna, ljudval och volym. Allt annat finns under fliken **Inställningar**.
 
 - **Toner** – 1 till 32 rutor (12 från början), en ton per ruta; antalet väljs under *Inställningar → Sidan Toner*. Välj grundton, oktav och skala (dur, moll, pentatonisk, blues, kromatisk). Rutorna med skalans grundton (i alla oktaver) är ljusare, och markeringen flyttar med när grundton, skala eller antal ändras. Dra en ljudfil (wav/mp3) till en ruta för att byta dess ljud; högerklicka för att ta bort den. Ljudfilen följer spelsättet, precis som tonerna.
@@ -80,7 +82,7 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 
 Tillgänglighetsinställningarna följer med i *Mina presets*, så varje användare kan ha sitt eget.
 
-Ljud i webbläsare kräver ett riktigt klick eller tangenttryck en gång innan något får låta. Den som bara använder blicken behöver därför hjälp att trycka *Starta* en gång.
+Ljud i webbläsare kräver ett riktigt klick eller tangenttryck en gång innan något får låta. Den som bara använder blicken behöver därför hjälp att välja var appen ska börja en gång.
 
 ## Mina presets
 

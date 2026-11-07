@@ -57,13 +57,35 @@ document.querySelectorAll('#tabs button[data-tab]').forEach((b) =>
 );
 window.addEventListener('blur', () => { fingers.clear(); resetHover(); allPads().forEach(release); });
 
-// Start: släpp alltid förbi, även om ljudet inte går att starta (då syns felet i loggen)
-$('start-btn').addEventListener('click', async () => {
+// Start: ett val per flik (samma symboler som i menyn). Klicket startar ljudet och öppnar fliken.
+// Släpp alltid förbi, även om ljudet inte går att starta (då syns felet i loggen).
+async function startApp(tab) {
   $('start-overlay').classList.add('hidden');
   try {
     initAudio();
   } catch (err) {
     log(`Kunde inte starta ljudet: ${err.message}`);
   }
+  showTab(tab);
   await initMidi();
-});
+}
+
+(function buildStartChoices() {
+  const box = $('start-choices');
+  const last = localStorage.getItem('hoverPadsTab') || 'notes';
+  document.querySelectorAll('#tabs button[data-tab]').forEach((t) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'start-choice';
+    b.dataset.tab = t.dataset.tab;
+    b.innerHTML = t.innerHTML;
+    if (t.dataset.tab === last) {
+      b.classList.add('last');
+      b.title = 'Senast använd';
+    }
+    b.addEventListener('click', () => startApp(t.dataset.tab));
+    box.append(b);
+  });
+  // Senast använda har fokus: Enter, mellanslag eller en kontakt startar direkt där
+  box.querySelector('.last')?.focus({ preventScroll: true });
+})();

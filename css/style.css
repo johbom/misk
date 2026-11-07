@@ -187,15 +187,6 @@ footer p { margin: 0; font-family: ui-monospace, Menlo, monospace; }
   color: var(--muted);
 }
 #start-overlay.hidden { display: none; }
-#start-btn {
-  font-size: 1.3rem;
-  padding: 16px 32px;
-  border-radius: 12px;
-  background: var(--accent);
-  border: none;
-  color: white;
-}
-
 /* Flikar: Toner / Ackord / Inställningar */
 #tabs { display: flex; gap: 4px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
 #tabs button { border: none; background: transparent; color: var(--muted); padding: 6px 16px; }
@@ -920,7 +911,7 @@ html.high-contrast :is(select, input[type="number"], button, .file-btn, #up-name
   color: #fff;
 }
 html.high-contrast :is(#tabs button.on, #settings-nav button.on, .lib-cat.on, .cp-grid button.on,
-  .formation-btn.on, .lib-preset.on, .profile.on, #confirm-yes, #start-btn, .step:active) {
+  .formation-btn.on, .lib-preset.on, .profile.on, #confirm-yes, .start-choice.last, .step:active) {
   background: #ffd400 !important;
   border-color: #ffd400 !important;
   color: #000 !important;
@@ -1232,4 +1223,36 @@ html.high-contrast #xy-pad { background: #000; border: 2px solid #fff; }
 }
 html.high-contrast .tab-sep { background: #fff; }
 #start-msg { text-align: center; line-height: 1.5; margin: 0 16px; }
-#start-btn { min-width: 200px; font-size: 1.5rem; font-weight: 600; letter-spacing: 0.02em; }
+/* Startrutan: välj var du vill börja (klicket startar också ljudet) */
+#start-title { margin: 0 0 6px; color: var(--text); font-size: 1.35rem; font-weight: 600; }
+#start-choices {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(110px, 150px));
+  gap: 14px;
+  margin-bottom: 6px;
+}
+.start-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 120px;
+  padding: 18px 10px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(160deg, #262a3a, #1b1d29);
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: transform 80ms, border-color 120ms, background 120ms;
+}
+.start-choice .tab-icon { width: 42px; height: 42px; }
+.start-choice:hover { border-color: var(--accent); background: linear-gradient(160deg, #2c3350, #1f2436); }
+.start-choice:active { transform: scale(0.97); }
+.start-choice.last { border-color: var(--accent); background: linear-gradient(160deg, #3a5bd0, #2b45a8); color: #fff; }
+html.reduce-motion .start-choice { transition: none; }
+@media (max-width: 560px) {
+  #start-choices { grid-template-columns: repeat(2, minmax(120px, 160px)); }
+  .start-choice { min-height: 104px; }
+}

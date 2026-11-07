@@ -397,6 +397,7 @@ const keyPads = new Map(); // tangent -> ruta som hålls
 function setupKeys() {
   document.addEventListener('keydown', (e) => {
     if (!isPlayTab() || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!$('start-overlay').classList.contains('hidden')) return; // startrutan: tangenterna väljer där
     if (inFormField(e.target) || e.target.id === 'unlock-btn' || picker.open) return;
     const isSwitch = e.key === ' ' || e.key === 'Enter';
     if (isSwitch && e.target.matches?.('select')) return; // mellanslag öppnar listan
