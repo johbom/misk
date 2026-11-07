@@ -208,6 +208,61 @@ const SYNTH_PRESETS = {
     lfoTarget: 'pitch', lfoRate: 7, lfoDepth: 0.1,
     delayMix: 0.2, delayTime: 0.16, delayFeedback: 0.3, reverbMix: 0.08, reverbSize: 1,
   },
+  // Vanliga instrument (fysisk modell för de som slås eller knäpps, oscillatorer för resten)
+  'Piano': {
+    model: 'string', pmExciter: 'hammer', pmDecay: 4.5, pmBright: 0.6, pmPos: 0.12,
+    release: 0.5, chorus: 0.1, reverbMix: 0.25, reverbSize: 2.5,
+  },
+  'Gitarr': {
+    model: 'string', pmExciter: 'pluck', pmDecay: 3.5, pmBright: 0.55, pmPos: 0.18,
+    release: 0.4, reverbMix: 0.2, reverbSize: 2,
+  },
+  'Elgitarr': {
+    model: 'string', pmExciter: 'pluck', pmDecay: 6, pmBright: 0.75, pmPos: 0.1,
+    cutoff: 4500, release: 0.3,
+    drive: 0.6, chorus: 0.2, delayMix: 0.2, delayTime: 0.33, delayFeedback: 0.3, reverbMix: 0.2,
+  },
+  'Kontrabas': {
+    model: 'string', pmExciter: 'pluck', pmDecay: 2, pmBright: 0.25, pmPos: 0.25,
+    release: 0.25, reverbMix: 0.1,
+  },
+  'Stråkar': {
+    osc1Wave: 'sawtooth', unison: 5, spread: 12,
+    cutoff: 2600, q: 0.8, fEnv: 0.8, fAttack: 0.3, fDecay: 1, fSustain: 0.7,
+    attack: 0.28, decay: 0.5, sustain: 0.9, release: 0.9,
+    lfoTarget: 'pitch', lfoRate: 5.2, lfoDepth: 0.06,
+    chorus: 0.4, reverbMix: 0.4, reverbSize: 3.5,
+  },
+  'Blås': {
+    osc1Wave: 'sawtooth', unison: 2, spread: 6,
+    cutoff: 650, q: 1.2, fEnv: 2.4, fAttack: 0.06, fDecay: 0.4, fSustain: 0.55,
+    attack: 0.04, decay: 0.3, sustain: 0.85, release: 0.2,
+    lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.04,
+    drive: 0.15, reverbMix: 0.25, reverbSize: 2.2,
+  },
+  'Panflöjt': {
+    osc1Wave: 'sine', osc2Wave: 'triangle', osc2Level: 0.2, osc2Semi: 12, noise: 0.08,
+    cutoff: 3500, attack: 0.07, decay: 0.3, sustain: 0.85, release: 0.3,
+    lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.05,
+    reverbMix: 0.4, reverbSize: 3.5,
+  },
+  'Dragspel': {
+    // Två lätt ostämda röster som svävar mot varandra (musette)
+    osc1Wave: 'sawtooth', osc2Wave: 'sawtooth', osc2Level: 0.8, osc2Fine: 12,
+    cutoff: 2200, q: 1, attack: 0.05, decay: 0.2, sustain: 0.9, release: 0.12,
+    lfoTarget: 'amp', lfoRate: 5.5, lfoDepth: 0.08,
+    reverbMix: 0.2, reverbSize: 2,
+  },
+  'Kör': {
+    osc1Wave: 'vox', unison: 4, spread: 10,
+    cutoff: 3000, attack: 0.3, decay: 0.6, sustain: 0.85, release: 1,
+    lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.04,
+    chorus: 0.4, reverbMix: 0.5, reverbSize: 4,
+  },
+  'Sitar': {
+    model: 'string', pmExciter: 'pluck', pmDecay: 4, pmBright: 0.95, pmPos: 0.05,
+    release: 0.5, delayMix: 0.15, delayTime: 0.4, delayFeedback: 0.3, reverbMix: 0.3, reverbSize: 3,
+  },
   'Enkel': {},
 };
 const DEFAULT_PRESET = 'Elpiano';

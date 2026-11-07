@@ -4,7 +4,19 @@
 
 const segmented = []; // listor som visas som knappar
 
-function segmentSelect(sel, cls = '') {
+// Symboler för vågformerna (XY:s klang)
+const WAVE_ICONS = {
+  sine: '<path d="M2 12c2.5-8 7.5-8 10 0s7.5 8 10 0"/>',
+  triangle: '<path d="M2 12l5-6 10 12 5-6"/>',
+  warm: '<path d="M2 17c4-1 7-5 9-10v10c4-1 7-5 9-10v10"/>',
+  sawtooth: '<path d="M2 17l9-10v10l9-10v10"/>',
+  square: '<path d="M2 17V7h5v10h5V7h5v10h5"/>',
+  supersaw: '<path d="M2 18l9-10v10l9-10v10"/><path d="M4 14l9-10v10l9-10" opacity=".5"/>',
+};
+const segIconSvg = (inner) =>
+  `<svg class="seg-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+
+function segmentSelect(sel, cls = '', icons = null) {
   sel.hidden = true;
   sel.setAttribute('data-no-stepper', ''); // inga − / + på den dolda listan
   const box = document.createElement('div');
@@ -16,7 +28,11 @@ function segmentSelect(sel, cls = '') {
   [...sel.options].forEach((o) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.textContent = o.text;
+    if (icons && icons[o.value]) {
+      b.innerHTML = `${segIconSvg(icons[o.value])}<span>${o.text}</span>`;
+      b.classList.add('has-icon');
+      b.title = o.text;
+    } else b.textContent = o.text;
     b.dataset.value = o.value;
     b.setAttribute('role', 'radio');
     b.addEventListener('click', (e) => {
@@ -70,5 +86,5 @@ function setupSegments() {
   segmentSelect(ui.arpPattern);
   segmentSelect(ui.arpRate);
   segmentSelect(ui.arpOctaves, 'seg-count');
-  segmentSelect(ui.xySound, 'seg-xy');
+  segmentSelect(ui.xySound, 'seg-xy', WAVE_ICONS);
 }

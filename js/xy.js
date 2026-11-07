@@ -5,8 +5,11 @@
 // Varje pekare ritar ett glödande spår som bleknar bort.
 
 const XY_TRAIL_MS = 1400; // hur länge spåret syns
-const XY_CUT_MIN = 150; // Hz längst ned (dovt)
-const XY_CUT_MAX = 16000; // Hz längst upp (öppet)
+// Filtret följer tonhöjden: längst ned ligger brytfrekvensen vid grundtonen (bara den hörs, dovt),
+// längst upp XY_CUT_OCTAVES oktaver över (alla övertoner, öppet). Då blir skillnaden lika tydlig i
+// hela registret, och ingen ton försvinner helt längst ned.
+const XY_CUT_OCTAVES = 7;
+const XY_CUT_MAX = 18000; // Hz
 const XY_LEVEL = 0.2;
 const XY_RELEASE = 0.04; // s: tonen tystnar direkt när fingret släpper (reverb och delay klingar ut ändå)
 
@@ -31,7 +34,7 @@ const XY_TOP_MIDI = 96; // C7
 const xyOctaves = () => Number(ui.xyOctaves.value) || 5; // 5 = C2–C7
 const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
 const xyFreq = (nx) => xyLowHz() * Math.pow(2, nx * xyOctaves()); // nx 0..1, vänster..höger
-const xyCut = (ny) => XY_CUT_MIN * Math.pow(XY_CUT_MAX / XY_CUT_MIN, ny); // ny 0..1, nederkant..överkant
+const xyCut = (ny, freq) => Math.min(XY_CUT_MAX, freq * Math.pow(2, ny * XY_CUT_OCTAVES)); // ny 0..1, nederkant..överkant
 
 // ---------- Ljud: en röst per pekare ----------
 // XY har egen klang och egen rumsklang, oberoende av rutornas ljud. Nivåerna är utjämnade så att
@@ -78,10 +81,16 @@ function xyMakeVoice(freq, cut, when = 0) {
     return o;
   });
   mix.gain.value = snd.level / Math.sqrt(oscs.length);
+  // Highcut i två steg (24 dB/oktav) med lite resonans: tydlig skillnad mellan dovt och öppet,
+  // och ett hörbart svep när fingret rör sig upp och ned
   const hp = ctx.createBiquadFilter();
-  hp.type = 'lowpass'; // highcut
-  hp.Q.value = 1.2; // lite karaktär när filtret sveper
+  hp.type = 'lowpass';
+  hp.Q.value = 2;
   hp.frequency.value = cut;
+  const hp2 = ctx.createBiquadFilter();
+  hp2.type = 'lowpass';
+  hp2.Q.value = 0.7;
+  hp2.frequency.value = cut;
   const amp = ctx.createGain();
   const attack = 0.012; // XY svarar direkt
   amp.gain.value = 0;
@@ -92,9 +101,9 @@ function xyMakeVoice(freq, cut, when = 0) {
   vib.gain.value = 0;
   engine.vibLfo.connect(vib);
   oscs.forEach((o) => vib.connect(o.detune));
-  mix.connect(hp).connect(amp).connect(xyBus());
+  mix.connect(hp).connect(hp2).connect(amp).connect(xyBus());
   oscs.forEach((o) => o.start(t));
-  return { osc: oscs[0], oscs, hp, amp, vib, t, attack };
+  return { osc: oscs[0], oscs, hp, hp2, amp, vib, t, attack };
 }
 
 // Släpp en röst (at = ljudklockans tid, annars så snart som möjligt). Reverb klingar ut ändå.
@@ -121,7 +130,7 @@ function xyVoiceStart(id, nx, ny) {
   if (!audioCtx || !engine || !ui.outAudio.checked) return;
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
   if (arpOn()) { xyArpAdd(id, nx, ny); return; } // arpeggio: pekaren blir en ton i arpeggiot
-  xy.voices.set(id, xyMakeVoice(xyFreq(nx), xyCut(ny)));
+  xy.voices.set(id, xyMakeVoice(xyFreq(nx), xyCut(ny, xyFreq(nx))));
 }
 
 function xyVoiceMove(id, nx, ny) {
@@ -132,7 +141,7 @@ function xyVoiceMove(id, nx, ny) {
   const now = audioCtx.currentTime;
   // Kort glidtid: följer pekaren mjukt utan trappsteg mellan mushändelserna
   v.oscs.forEach((o) => o.frequency.setTargetAtTime(xyFreq(nx), now, 0.012));
-  v.hp.frequency.setTargetAtTime(xyCut(ny), now, 0.02);
+  [v.hp, v.hp2].forEach((f) => f.frequency.setTargetAtTime(xyCut(ny, xyFreq(nx)), now, 0.02));
 }
 
 function xyVoiceStop(id) {
@@ -145,16 +154,14 @@ function xyVoiceStop(id) {
 }
 
 // ---------- Arpeggio på XY ----------
-// Varje pekare är en ton (med sin steglösa tonhöjd och sitt filter). Flera fingrar = arpeggio mellan
-// dem, ett finger = arpeggio över oktaverna (1 oktav = rytmisk upprepning). Samma inställningar som
-// arpeggiatorn för rutorna (js/arp.js).
-const xyArp = { pts: new Map(), timer: 0, nextTime: 0, step: 0, last: -1, emptySince: 0 };
+// Varje finger behåller sin egen ton (steglös tonhöjd och eget filter) och arpeggieras för sig, över
+// oktaverna, i gemensam takt: flera fingrar spelar samtidigt på varje steg. 1 oktav = rytmisk
+// upprepning. Mönster, tempo, notvärde, oktaver och tonlängd är samma som för rutorna (js/arp.js).
+const xyArp = { pts: new Map(), timer: 0, nextTime: 0, emptySince: 0 };
 
 function xyArpAdd(id, nx, ny) {
-  xyArp.pts.set(id, { id, nx, ny, order: performance.now(), vib: 0, voices: new Set() });
+  xyArp.pts.set(id, { id, nx, ny, step: 0, last: -1, vib: 0, voices: new Set() });
   if (!xyArp.timer) {
-    xyArp.step = 0;
-    xyArp.last = -1;
     // Första steget vid nästa runda: fingrar som landar samtidigt hinner med
     xyArp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
     xyArp.timer = setInterval(xyArpTick, ARP_TICK_MS);
@@ -177,14 +184,11 @@ function xyArpReset() {
   xyArp.pts.clear();
 }
 
-function xyArpSequence() {
-  const pts = [...xyArp.pts.values()];
-  if (!pts.length) return [];
+// Oktavföljden för ett finger enligt mönstret (0 = fingrets egen ton, 1 = en oktav upp …)
+function xyArpOctaves() {
+  const n = Number(ui.arpOctaves.value) || 1;
+  let seq = [...Array(n).keys()];
   const pattern = ui.arpPattern.value;
-  pts.sort(pattern === 'order' ? (a, b) => a.order - b.order : (a, b) => a.nx - b.nx);
-  const octaves = Number(ui.arpOctaves.value) || 1;
-  let seq = [];
-  for (let o = 0; o < octaves; o++) seq.push(...pts.map((p) => ({ p, oct: o })));
   if (pattern === 'down') seq.reverse();
   else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
   return seq;
@@ -205,27 +209,32 @@ function xyArpTick() {
 }
 
 function xyArpStep(time) {
-  const seq = xyArpSequence();
-  if (!seq.length) return;
-  let idx;
-  if (ui.arpPattern.value === 'random') {
-    idx = Math.floor(Math.random() * seq.length);
-    if (seq.length > 1 && idx === xyArp.last) idx = (idx + 1) % seq.length;
-  } else idx = xyArp.step % seq.length;
-  xyArp.last = idx;
-  xyArp.step++;
-  const { p, oct } = seq[idx];
+  if (!xyArp.pts.size) return;
+  const seq = xyArpOctaves();
   const dur = arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
-  const v = xyMakeVoice(xyFreq(p.nx) * Math.pow(2, oct), xyCut(p.ny), time);
-  if (p.vib) v.vib.gain.value = p.vib;
-  xyVoiceEnd(v, time + dur);
-  p.voices.add(v);
   const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
+  const hits = [];
+  for (const p of xyArp.pts.values()) {
+    let idx;
+    if (ui.arpPattern.value === 'random') {
+      idx = Math.floor(Math.random() * seq.length);
+      if (seq.length > 1 && idx === p.last) idx = (idx + 1) % seq.length;
+    } else idx = p.step % seq.length;
+    p.last = idx;
+    p.step++;
+    const f = xyFreq(p.nx) * Math.pow(2, seq[idx]);
+    const v = xyMakeVoice(f, xyCut(p.ny, f), time);
+    if (p.vib) v.vib.gain.value = p.vib;
+    xyVoiceEnd(v, time + dur);
+    p.voices.add(v);
+    setTimeout(() => p.voices.delete(v), wait + dur * 1000 + 100);
+    hits.push(p);
+  }
   setTimeout(() => {
-    xy.pulses.push({ x: p.nx, y: 1 - p.ny, t: performance.now(), color: xy.trails.get(p.id)?.color || '#fff' });
+    const t = performance.now();
+    hits.forEach((p) => xy.pulses.push({ x: p.nx, y: 1 - p.ny, t, color: xy.trails.get(p.id)?.color || '#fff' }));
     xyLoop();
   }, wait);
-  setTimeout(() => p.voices.delete(v), wait + dur * 1000 + 100);
 }
 
 // Vibrato för en XY-pekare (anropas av js/vibrato.js)
