@@ -1316,6 +1316,26 @@ html.high-contrast #arp-toggle.on { background: #ffd400 !important; color: #000 
 /* Kompakt: två kolumner (Tempo | Tonlängd, Notvärde | Oktaver), en kolumn på smal skärm */
 #arp-set { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
 #arp-set > .arp-wide { grid-column: 1 / -1; }
+#xy-set { display: grid; grid-template-columns: minmax(170px, auto) minmax(170px, 1fr); gap: 12px 22px; align-content: start; max-width: 560px; }
+#xy-set > .xy-wide { grid-column: 1 / -1; margin: 0; }
+#settings .panel > :is(#xy-set, #arp-set) { flex: 0 1 auto; max-width: min(560px, 100%); }
+@media (max-width: 520px) { #xy-set { grid-template-columns: 1fr; } }
+.arp-tempo { display: flex; align-items: flex-end; gap: 10px; min-width: 0; }
+.arp-tempo > label { flex: 1; min-width: 0; }
+.arp-tap {
+  flex: none;
+  min-width: 56px;
+  min-height: 38px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  touch-action: manipulation;
+}
+.arp-tap.tapped { animation: tap-flash 180ms ease-out; }
+@keyframes tap-flash { from { background: var(--accent); border-color: var(--accent); color: #fff; } }
+html.reduce-motion .arp-tap.tapped { animation-duration: 1ms; }
+html.steppers .arp-tap { min-height: 46px; min-width: 64px; }
+html.high-contrast .arp-tap { background: #000; border: 2px solid #fff; color: #fff; }
 @media (max-width: 520px) { #arp-set { grid-template-columns: 1fr; } }
 /* Varje arpeggiotton blinkar till på sin ruta */
 .pad.arp-hit { animation: arp-hit 140ms ease-out; }

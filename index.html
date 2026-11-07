@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=45" />
+  <link rel="stylesheet" href="css/style.css?v=48" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -154,11 +154,14 @@
             <option value="order">Spelordning</option>
           </select>
         </label>
-        <label class="slider">
-          <span class="lbl">Tempo</span>
-          <input type="range" id="arp-bpm" min="40" max="240" step="1" value="120" />
-          <output id="arp-bpm-value" class="val">120 BPM</output>
-        </label>
+        <div class="arp-tempo">
+          <label class="slider">
+            <span class="lbl">Tempo</span>
+            <input type="range" id="arp-bpm" min="40" max="240" step="1" value="120" />
+            <output id="arp-bpm-value" class="val">120 BPM</output>
+          </label>
+          <button type="button" id="arp-tap" class="arp-tap" title="Tryck i takt – två tryck räcker, fler gör tempot jämnare">Tap</button>
+        </div>
         <label class="slider" title="Hur stor del av varje steg tonen låter – kort = staccato">
           <span class="lbl">Tonlängd</span>
           <input type="range" id="arp-gate" min="10" max="100" step="5" value="60" />
@@ -185,7 +188,7 @@
 
       <fieldset id="xy-set">
         <legend>XY-platta</legend>
-        <label class="slider">
+        <label class="slider" title="Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7)">
           <span class="lbl">Omfång</span>
           <select id="xy-octaves">
             <option value="1">1 oktav</option>
@@ -194,14 +197,13 @@
             <option value="4">4</option>
             <option value="5" selected>5</option>
           </select>
-          <small class="desc">Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7). Uppåt öppnas filtret (dovt längst ned, ljust längst upp); med klangen Sinus blir det i stället mer vibrato.</small>
         </label>
-        <label class="slider">
+        <label class="slider" title="XY har egen rumsklang – rutornas ljud och effekter påverkar inte XY">
           <span class="lbl">Rumsklang</span>
           <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
           <output id="xy-reverb-value" class="val">35 %</output>
-          <small class="desc">XY har egen klang och rumsklang – klangen väljs på XY-sidan. Rutornas ljud påverkar inte XY.</small>
         </label>
+        <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret – med Sinus blir det mer vibrato. Klangen väljs på XY-sidan.</p>
       </fieldset>
 
       <fieldset id="vibrato-set">
@@ -529,25 +531,25 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=45"></script>
-  <script src="js/sound-library.js?v=45"></script>
-  <script src="js/layout.js?v=45"></script>
-  <script src="js/core.js?v=45"></script>
-  <script src="js/audio.js?v=45"></script>
-  <script src="js/pads.js?v=45"></script>
-  <script src="js/osc.js?v=45"></script>
-  <script src="js/arp.js?v=45"></script>
-  <script src="js/xy.js?v=45"></script>
-  <script src="js/vibrato.js?v=45"></script>
-  <script src="js/notes.js?v=45"></script>
-  <script src="js/chords.js?v=45"></script>
-  <script src="js/sound.js?v=45"></script>
-  <script src="js/view.js?v=45"></script>
-  <script src="js/controls.js?v=45"></script>
-  <script src="js/access.js?v=45"></script>
-  <script src="js/settings.js?v=45"></script>
-  <script src="js/user-presets.js?v=45"></script>
-  <script src="js/pwa.js?v=45"></script>
-  <script src="js/main.js?v=45"></script>
+  <script src="js/synth.js?v=48"></script>
+  <script src="js/sound-library.js?v=48"></script>
+  <script src="js/layout.js?v=48"></script>
+  <script src="js/core.js?v=48"></script>
+  <script src="js/audio.js?v=48"></script>
+  <script src="js/pads.js?v=48"></script>
+  <script src="js/osc.js?v=48"></script>
+  <script src="js/arp.js?v=48"></script>
+  <script src="js/xy.js?v=48"></script>
+  <script src="js/vibrato.js?v=48"></script>
+  <script src="js/notes.js?v=48"></script>
+  <script src="js/chords.js?v=48"></script>
+  <script src="js/sound.js?v=48"></script>
+  <script src="js/view.js?v=48"></script>
+  <script src="js/controls.js?v=48"></script>
+  <script src="js/access.js?v=48"></script>
+  <script src="js/settings.js?v=48"></script>
+  <script src="js/user-presets.js?v=48"></script>
+  <script src="js/pwa.js?v=48"></script>
+  <script src="js/main.js?v=48"></script>
 </body>
 </html>

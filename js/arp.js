@@ -142,6 +142,44 @@ function setupArp() {
     log(`Arpeggiator ${arpOn() ? 'på' : 'av'}`);
   });
   sync();
+  setupTapTempo();
   // Byte av mönster börjar om från första tonen
   ui.arpPattern.addEventListener('change', () => { arp.step = 0; });
+}
+
+// Tap-tempo: tryck i takt. Tempot räknas från de senaste trycken (upp till fem); en paus på mer än
+// två sekunder börjar om. Ett tryck spelar in, två eller fler ställer tempot.
+const TAP_RESET_MS = 2000;
+const TAP_KEEP = 5;
+let taps = [];
+
+function tapTempo() {
+  const now = performance.now();
+  if (taps.length && now - taps[taps.length - 1] > TAP_RESET_MS) taps = [];
+  taps.push(now);
+  if (taps.length > TAP_KEEP) taps.shift();
+  const btn = $('arp-tap');
+  btn.classList.remove('tapped');
+  void btn.offsetWidth;
+  btn.classList.add('tapped');
+  if (taps.length < 2) return;
+  const avg = (taps[taps.length - 1] - taps[0]) / (taps.length - 1);
+  const min = Number(ui.arpBpm.min);
+  const max = Number(ui.arpBpm.max);
+  const bpm = Math.round(Math.min(max, Math.max(min, 60000 / avg)));
+  if (String(bpm) === ui.arpBpm.value) return;
+  ui.arpBpm.value = bpm;
+  ui.arpBpm.dispatchEvent(new Event('input', { bubbles: true }));
+  ui.arpBpm.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function setupTapTempo() {
+  // pointerdown: trycket räknas när fingret/knappen går ned, inte när det släpps (stramare takt)
+  const btn = $('arp-tap');
+  btn.addEventListener('pointerdown', (e) => { if (e.button === 0) { btn.dataset.tapped = '1'; tapTempo(); } });
+  btn.addEventListener('click', () => {
+    // Tangentbord, kontakt eller blickklick ger bara click
+    if (btn.dataset.tapped) { delete btn.dataset.tapped; return; }
+    tapTempo();
+  });
 }
