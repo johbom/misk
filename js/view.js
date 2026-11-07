@@ -34,6 +34,7 @@ function setupAbout() {
 
 // ---------- Underflikar i Inställningar ----------
 function showSettingsPanel(panel) {
+  if (panel === 'notes' || panel === 'chords') panel = 'surfaces'; // gamla flikar (före Spelytor)
   if (!document.querySelector(`#settings .panel[data-panel="${panel}"]`)) panel = 'play';
   document.querySelectorAll('#settings-nav button').forEach((b) =>
     b.classList.toggle('on', b.dataset.panel === panel));

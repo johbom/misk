@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=48" />
+  <link rel="stylesheet" href="css/style.css?v=50" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -91,39 +91,14 @@
   <section id="settings" class="only-settings">
     <nav id="settings-nav">
       <button type="button" data-panel="play">Spel</button>
-      <button type="button" data-panel="access">Tillgänglighet</button>
-      <button type="button" data-panel="notes">Toner</button>
-      <button type="button" data-panel="chords">Ackord</button>
+      <button type="button" data-panel="surfaces">Spelytor</button>
       <button type="button" data-panel="sound">Ljud</button>
+      <button type="button" data-panel="access">Tillgänglighet</button>
       <button type="button" data-panel="io">Ut, MIDI &amp; OSC</button>
       <button type="button" data-panel="mine">Mina presets</button>
     </nav>
 
     <div class="panel" data-panel="play">
-      <fieldset id="formation-set">
-        <legend>Formation</legend>
-        <input type="hidden" id="formation" value="grid" />
-        <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
-        <div class="formation-opts">
-          <label class="not-ring" title="Tomrum mellan rutorna, så att musen kan flyttas utan att trigga dem">Mellanrum
-            <input type="range" id="pad-gap" min="0" max="160" step="4" value="48" />
-            <span id="gap-value" class="val">48 px</span>
-          </label>
-          <label class="only-strings">Stränglängd
-            <input type="range" id="string-length" min="20" max="100" step="5" value="100" />
-            <span id="string-length-value" class="val">100 %</span>
-          </label>
-          <label class="only-ring" title="Hur tätt sektorerna ligger">Mellanrum mellan sektorer
-            <input type="range" id="ring-gap" min="0" max="60" step="1" value="12" />
-            <span id="ring-gap-value" class="val">12 px</span>
-          </label>
-          <label class="only-ring" title="Den tomma vilytan i mitten">Hålets storlek
-            <input type="range" id="ring-hole" min="15" max="70" step="1" value="40" />
-            <span id="ring-hole-value" class="val">40 %</span>
-          </label>
-        </div>
-      </fieldset>
-
       <fieldset id="play-mode-set">
         <legend>Spelsätt</legend>
         <!-- Värdet ligger i den dolda listan; knapparna med symboler byggs av js/view.js -->
@@ -186,6 +161,92 @@
         </label>
       </fieldset>
 
+      <fieldset id="vibrato-set">
+        <legend>Vibrato</legend>
+        <label title="Vicka pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter">Djup
+          <input type="range" id="vibrato" min="0" max="60" step="5" value="20" />
+          <output id="vibrato-value" class="val">20 cent</output>
+        </label>
+        <p class="hint">Vicka pekaren fram och tillbaka på en ruta som låter.</p>
+      </fieldset>
+    </div>
+
+    <!-- Spelytor: hur sidorna Toner, Ackord och XY ser ut -->
+    <div class="panel" data-panel="surfaces">
+      <fieldset id="formation-set">
+        <legend>Formation</legend>
+        <p class="hint">Hur rutorna på Toner och Ackord ligger.</p>
+        <input type="hidden" id="formation" value="grid" />
+        <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
+        <div class="formation-opts">
+          <label class="not-ring" title="Tomrum mellan rutorna, så att musen kan flyttas utan att trigga dem">Mellanrum
+            <input type="range" id="pad-gap" min="0" max="160" step="4" value="48" />
+            <span id="gap-value" class="val">48 px</span>
+          </label>
+          <label class="only-strings">Stränglängd
+            <input type="range" id="string-length" min="20" max="100" step="5" value="100" />
+            <span id="string-length-value" class="val">100 %</span>
+          </label>
+          <label class="only-ring" title="Hur tätt sektorerna ligger">Mellanrum mellan sektorer
+            <input type="range" id="ring-gap" min="0" max="60" step="1" value="12" />
+            <span id="ring-gap-value" class="val">12 px</span>
+          </label>
+          <label class="only-ring" title="Den tomma vilytan i mitten">Hålets storlek
+            <input type="range" id="ring-hole" min="15" max="70" step="1" value="40" />
+            <span id="ring-hole-value" class="val">40 %</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset id="notes-set">
+        <legend>Toner</legend>
+        <label>Antal
+          <select id="note-count" data-spin></select>
+        </label>
+        <label>Grundton
+          <select id="root"></select>
+        </label>
+        <label>Oktav
+          <input type="number" id="octave" min="0" max="8" value="4" />
+        </label>
+        <label>Skala
+          <select id="scale">
+            <option value="major">Dur</option>
+            <option value="minor">Moll</option>
+            <option value="pentatonic">Pentatonisk</option>
+            <option value="blues">Blues</option>
+            <option value="chromatic">Kromatisk</option>
+          </select>
+        </label>
+      </fieldset>
+
+      <fieldset id="chord-settings">
+        <legend>Ackord</legend>
+        <div class="row">
+          <label>Antal
+            <select id="chord-count">
+              <option>2</option><option>3</option><option selected>4</option><option>5</option>
+              <option>6</option><option>7</option><option>8</option>
+            </select>
+          </label>
+          <label>Oktav
+            <input type="number" id="chord-octave" min="1" max="7" value="4" />
+          </label>
+          <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
+          <label title="Visar voicing och oktavläge per ackord"><input type="checkbox" id="chord-advanced" /> Avancerat (voicing)</label>
+        </div>
+        <div class="row" id="chord-colors">
+          <span>Färger</span>
+          <button type="button" id="chord-colors-preset" title="1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos">
+            <span class="swatches"><i style="background:#e5484d"></i><i style="background:#f5c518"></i><i style="background:#3fb950"></i><i style="background:#3b82f6"></i><i style="background:#f97316"></i><i style="background:#a855f7"></i><i style="background:#ec4899"></i><i style="background:#14b8a6"></i></span>
+            Standardfärger
+          </button>
+          <button type="button" id="chord-colors-none">Ingen färg</button>
+        </div>
+        <!-- Ett ackordval per ruta (byggs av js/chords.js) -->
+        <div id="chord-editor"></div>
+      </fieldset>
+
       <fieldset id="xy-set">
         <legend>XY-platta</legend>
         <label class="slider" title="Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7)">
@@ -204,15 +265,6 @@
           <output id="xy-reverb-value" class="val">35 %</output>
         </label>
         <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret – med Sinus blir det mer vibrato. Klangen väljs på XY-sidan.</p>
-      </fieldset>
-
-      <fieldset id="vibrato-set">
-        <legend>Vibrato</legend>
-        <label title="Vicka pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter">Djup
-          <input type="range" id="vibrato" min="0" max="60" step="5" value="20" />
-          <output id="vibrato-value" class="val">20 cent</output>
-        </label>
-        <p class="hint">Vicka pekaren fram och tillbaka på en ruta som låter.</p>
       </fieldset>
     </div>
 
@@ -246,25 +298,15 @@
           <small class="desc">Samma ruta kan inte spelas om förrän tiden gått.</small>
         </label>
         <label class="slider">
-          <span class="lbl">Synlig pekare</span>
-          <select id="show-pointer">
-            <option value="off">Av</option>
-            <option value="small">Liten</option>
-            <option value="large">Stor</option>
-            <option value="xlarge">Extra stor</option>
-          </select>
-          <small class="desc">En ring som följer pekaren och fylls under väntetiden.</small>
-        </label>
-      </fieldset>
-
-      <fieldset class="access-set">
-        <legend>Knappar och reglage</legend>
-        <label class="slider">
           <span class="lbl">Klicka genom att titta</span>
           <input type="range" id="dwell-click" min="0" max="3000" step="100" value="0" />
           <output id="dwell-click-value" class="val">Av</output>
           <small class="desc">Knappar trycks när pekaren vilat på dem. Av om ögonstyrningen redan klickar.</small>
         </label>
+      </fieldset>
+
+      <fieldset class="access-set">
+        <legend>Visning och reglage</legend>
         <label class="slider">
           <span class="lbl">Storlek</span>
           <select id="ui-size">
@@ -274,13 +316,20 @@
           </select>
           <small class="desc">Större flikar, knappar och text.</small>
         </label>
-        <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar<small>Ändra alla värden utan att dra eller öppna listor.</small></span></label>
-      </fieldset>
-
-      <fieldset class="access-set">
-        <legend>Visning</legend>
+        <label class="slider">
+          <span class="lbl">Synlig pekare</span>
+          <select id="show-pointer">
+            <option value="off">Av</option>
+            <option value="small">Liten</option>
+            <option value="large">Stor</option>
+            <option value="xlarge">Extra stor</option>
+          </select>
+          <small class="desc">En ring som följer pekaren och fylls under väntetiden.</small>
+        </label>
         <label class="check"><input type="checkbox" id="high-contrast" /> <span>Hög kontrast<small>Svart bakgrund, vita kanter, gul markering.</small></span></label>
         <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter.</small></span></label>
+        <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar<small>Ändra alla värden utan att dra eller öppna listor.</small></span></label>
+        <p class="hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i två sekunder.</p>
       </fieldset>
 
       <fieldset class="access-set">
@@ -301,70 +350,15 @@
           <small class="desc">Tid på varje ruta.</small>
         </label>
         <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
-        <ul class="hint keys">
-          <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
-          <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
-          <li>Två kontakter: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.</li>
-          <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
-        </ul>
-      </fieldset>
-
-      <fieldset class="access-set">
-        <legend>Lås spelytan</legend>
-        <p class="hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i hörnet i två sekunder – en blick eller ett klick räcker inte.</p>
-      </fieldset>
-    </div>
-
-    <div class="panel" data-panel="notes">
-      <fieldset>
-        <legend>Sidan Toner</legend>
-        <label>Antal
-          <select id="note-count" data-spin></select>
-        </label>
-        <label>Grundton
-          <select id="root"></select>
-        </label>
-        <label>Oktav
-          <input type="number" id="octave" min="0" max="8" value="4" />
-        </label>
-        <label>Skala
-          <select id="scale">
-            <option value="major">Dur</option>
-            <option value="minor">Moll</option>
-            <option value="pentatonic">Pentatonisk</option>
-            <option value="blues">Blues</option>
-            <option value="chromatic">Kromatisk</option>
-          </select>
-        </label>
-      </fieldset>
-    </div>
-
-    <div class="panel" data-panel="chords">
-      <fieldset id="chord-settings">
-        <legend>Sidan Ackord</legend>
-        <div class="row">
-          <label>Antal
-            <select id="chord-count">
-              <option>2</option><option>3</option><option selected>4</option><option>5</option>
-              <option>6</option><option>7</option><option>8</option>
-            </select>
-          </label>
-          <label>Oktav
-            <input type="number" id="chord-octave" min="1" max="7" value="4" />
-          </label>
-          <label><input type="checkbox" id="chord-bass" checked /> Bas</label>
-          <label title="Visar voicing och oktavläge per ackord"><input type="checkbox" id="chord-advanced" /> Avancerat (voicing)</label>
-        </div>
-        <div class="row" id="chord-colors">
-          <span>Färger</span>
-          <button type="button" id="chord-colors-preset" title="1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos">
-            <span class="swatches"><i style="background:#e5484d"></i><i style="background:#f5c518"></i><i style="background:#3fb950"></i><i style="background:#3b82f6"></i><i style="background:#f97316"></i><i style="background:#a855f7"></i><i style="background:#ec4899"></i><i style="background:#14b8a6"></i></span>
-            Standardfärger
-          </button>
-          <button type="button" id="chord-colors-none">Ingen färg</button>
-        </div>
-        <!-- Ett ackordval per ruta (byggs av js/chords.js) -->
-        <div id="chord-editor"></div>
+        <details class="help">
+          <summary>Vilka tangenter gör vad?</summary>
+          <ul class="hint keys">
+            <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
+            <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
+            <li>Två kontakter: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.</li>
+            <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
+          </ul>
+        </details>
       </fieldset>
     </div>
 
@@ -531,25 +525,25 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=48"></script>
-  <script src="js/sound-library.js?v=48"></script>
-  <script src="js/layout.js?v=48"></script>
-  <script src="js/core.js?v=48"></script>
-  <script src="js/audio.js?v=48"></script>
-  <script src="js/pads.js?v=48"></script>
-  <script src="js/osc.js?v=48"></script>
-  <script src="js/arp.js?v=48"></script>
-  <script src="js/xy.js?v=48"></script>
-  <script src="js/vibrato.js?v=48"></script>
-  <script src="js/notes.js?v=48"></script>
-  <script src="js/chords.js?v=48"></script>
-  <script src="js/sound.js?v=48"></script>
-  <script src="js/view.js?v=48"></script>
-  <script src="js/controls.js?v=48"></script>
-  <script src="js/access.js?v=48"></script>
-  <script src="js/settings.js?v=48"></script>
-  <script src="js/user-presets.js?v=48"></script>
-  <script src="js/pwa.js?v=48"></script>
-  <script src="js/main.js?v=48"></script>
+  <script src="js/synth.js?v=50"></script>
+  <script src="js/sound-library.js?v=50"></script>
+  <script src="js/layout.js?v=50"></script>
+  <script src="js/core.js?v=50"></script>
+  <script src="js/audio.js?v=50"></script>
+  <script src="js/pads.js?v=50"></script>
+  <script src="js/osc.js?v=50"></script>
+  <script src="js/arp.js?v=50"></script>
+  <script src="js/xy.js?v=50"></script>
+  <script src="js/vibrato.js?v=50"></script>
+  <script src="js/notes.js?v=50"></script>
+  <script src="js/chords.js?v=50"></script>
+  <script src="js/sound.js?v=50"></script>
+  <script src="js/view.js?v=50"></script>
+  <script src="js/controls.js?v=50"></script>
+  <script src="js/access.js?v=50"></script>
+  <script src="js/settings.js?v=50"></script>
+  <script src="js/user-presets.js?v=50"></script>
+  <script src="js/pwa.js?v=50"></script>
+  <script src="js/main.js?v=50"></script>
 </body>
 </html>

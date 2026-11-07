@@ -80,7 +80,8 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
 #settings .panel.on { display: flex; }
 #settings .panel > fieldset { flex: 1 1 auto; }
 /* Små paneler: rutorna blir bara så breda som innehållet (inte hela skärmen i helskärm) */
-#settings .panel:is([data-panel="play"], [data-panel="io"], [data-panel="notes"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
+#settings .panel:is([data-panel="play"], [data-panel="io"], [data-panel="surfaces"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
+#settings .panel > #chord-settings { flex-basis: 100%; }
 /* Speltoner (▶ C …) i loggen hör till spelsidorna, inte inställningarna */
 body[data-tab="settings"] #log[data-kind="play"] { visibility: hidden; }
 /* Tipset om ljudfiler gäller bara rutorna på Toner-sidan */
@@ -354,6 +355,11 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 }
 .osc-help { flex-basis: 100%; color: var(--muted); font-size: 0.8rem; }
 .osc-help summary { cursor: pointer; }
+/* Hjälptexter som fälls ut vid behov */
+details.help summary { cursor: pointer; color: var(--muted); font-size: 0.88rem; padding: 4px 0; }
+details.help summary:hover { color: var(--text); }
+details.help[open] summary { margin-bottom: 6px; }
+details.help ul { margin: 0; }
 .osc-help ul { margin: 6px 0 0; padding-left: 18px; line-height: 1.7; }
 code { font: 0.85em ui-monospace, Menlo, monospace; }
 #vibrato-set .hint { margin: 0; flex-basis: 100%; }
@@ -1158,8 +1164,8 @@ button.danger { border-color: #8a3a3a; color: #ffb0b0; }
 button.danger:hover { background: #4a1f1f; border-color: #e5484d; }
 
 /* Sidan Toner/Ackord i Inställningar: varje val på egen rad med rubrik */
-#settings .panel[data-panel="notes"] > fieldset { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px 14px; }
-#settings .panel[data-panel="notes"] > fieldset > label { display: contents; }
+#notes-set { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 10px 14px; }
+#notes-set > label { display: contents; }
 
 /* Hög kontrast */
 html.high-contrast .seg { background: #000; border: 2px solid #fff; }
