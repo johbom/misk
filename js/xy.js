@@ -8,6 +8,7 @@ const XY_TRAIL_MS = 1400; // hur länge spåret syns
 const XY_CUT_MIN = 150; // Hz längst ned (dovt)
 const XY_CUT_MAX = 16000; // Hz längst upp (öppet)
 const XY_LEVEL = 0.2;
+const XY_RELEASE = 0.04; // s: tonen tystnar direkt när fingret släpper (reverb och delay klingar ut ändå)
 
 const xy = {
   el: null,
@@ -24,12 +25,10 @@ const xy = {
 };
 
 // ---------- Tonhöjd och filter ----------
-// Lägsta frekvens = grundtonen och oktaven från sidan Toner; omfånget väljs under Spel.
-function xyLowHz() {
-  const midi = 12 * (Number(ui.octave.value) + 1) + Number(ui.root.value) - 12; // en oktav under Toner-sidan
-  return 440 * Math.pow(2, (midi - 69) / 12);
-}
+// Högerkanten är alltid C6; omfånget (oktaver, under Spel) räknas nedåt därifrån.
+const XY_TOP_MIDI = 84; // C6
 const xyOctaves = () => Number(ui.xyOctaves.value) || 3;
+const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
 const xyFreq = (nx) => xyLowHz() * Math.pow(2, nx * xyOctaves()); // nx 0..1, vänster..höger
 const xyCut = (ny) => XY_CUT_MIN * Math.pow(XY_CUT_MAX / XY_CUT_MIN, ny); // ny 0..1, nederkant..överkant
 
@@ -76,7 +75,7 @@ function xyVoiceStop(id) {
   if (!v) return;
   xy.voices.delete(id);
   const ctx = audioCtx;
-  const rel = Math.min(3, Math.max(0.03, engine.p.release));
+  const rel = XY_RELEASE;
   // Aldrig före rösten börjat (den ligger en aning framåt)
   const r = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, v.t + 0.005);
   if (v.amp.gain.cancelAndHoldAtTime) v.amp.gain.cancelAndHoldAtTime(r);
@@ -165,7 +164,7 @@ function setupXY() {
   window.addEventListener('blur', xyStopAll);
 
   new ResizeObserver(xyResize).observe(xy.el);
-  [ui.xyOctaves, ui.root, ui.octave].forEach((el) => el.addEventListener('change', xyDraw));
+  [ui.xyOctaves, ui.root, ui.scale].forEach((el) => el.addEventListener('change', xyDraw));
 }
 
 // Anropas när fliken byts
