@@ -165,9 +165,16 @@ const LAYOUTS = {
     });
   },
 
-  // Långa lodräta strängar sida vid sida, från vänster (lägst) till höger.
-  // opts.stringLength = strängarnas längd som andel av höjden (centrerade lodrätt).
+  // Långa strängar. Lodrätt (standard): sida vid sida, från vänster (lägst) till höger.
+  // Vågrätt (opts.stringDir 'h'): staplade, nerifrån (lägst) och upp.
+  // opts.stringLength = strängarnas längd som andel av höjden (eller bredden, vågrätt).
   strings(n, W, H, gap, opts) {
+    if (opts.stringDir === 'h') {
+      // Samma uträkning med ytan vriden ett kvarts varv
+      return LAYOUTS.strings(n, H, W, gap, { ...opts, stringDir: 'v' }).map((r) => ({
+        x: r.y, y: H - r.x - r.w, w: r.h, h: r.w, font: r.font,
+      }));
+    }
     const MAX = 120;
     const { g, s: fitted } = fitGap(gap, MIN_STRING, (g) => (W - g * (n - 1)) / n);
     let s = Math.max(12, Math.min(fitted, MAX));

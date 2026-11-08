@@ -19,6 +19,11 @@ const ORDER_ICONS = {
   snake: '<path d="M4 5.5h13.5a3.25 3.25 0 0 1 0 6.5H6.5a3.25 3.25 0 0 0 0 6.5H20"/><path d="M17 15.5l3 3-3 3"/>',
   cols: '<path d="M7 4v15M4 16l3 3 3-3M17 4v15M14 16l3 3 3-3"/>',
 };
+// Symboler för strängarnas riktning
+const STRING_DIR_ICONS = {
+  v: '<path d="M6 4v16M12 4v16M18 4v16"/>',
+  h: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+};
 // Symboler för arpeggiatorns mönster
 const arpDot = (x, y) => `<circle cx="${x}" cy="${y}" r="2.3" fill="currentColor" stroke="none"/>`;
 const ARP_ICONS = {
@@ -103,6 +108,7 @@ function setupSegments() {
   segmentSelect(ui.arpPattern, '', ARP_ICONS);
   segmentSelect(ui.arpRate);
   segmentSelect(ui.hexOrder, '', ORDER_ICONS);
+  segmentSelect(ui.stringDir, '', STRING_DIR_ICONS);
   segmentSelect(ui.arpOctaves, 'seg-count');
   segmentSelect(ui.arpRetrig, 'seg-count');
   segmentSelect(ui.xySound, 'seg-xy', WAVE_ICONS);

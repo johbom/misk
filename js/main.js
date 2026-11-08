@@ -45,6 +45,7 @@ ui.noteCount.addEventListener('change', buildNotePads);
 ui.padGap.addEventListener('input', applyGap);
 [ui.stringLength, ui.ringGap, ui.ringHole].forEach((el) => el.addEventListener('input', applyFormationOpts));
 ui.hexOrder.addEventListener('change', layoutPads);
+ui.stringDir.addEventListener('change', () => { layoutPads(); chordPads.forEach(renderChordPad); });
 document.querySelectorAll('#settings-nav button').forEach((b) =>
   b.addEventListener('click', () => showSettingsPanel(b.dataset.panel)));
 ui.formation.addEventListener('change', layoutPads);

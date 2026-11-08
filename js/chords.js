@@ -197,7 +197,7 @@ function renderChordPad(pad) {
   // En prick per ton längs strängen (syns bara i formationen Strängar)
   const n = pad.strumNotes().length;
   pad.el.querySelector('.strum').innerHTML = Array.from({ length: n }, (_, k) =>
-    `<i style="bottom:${((k + 0.5) / n) * 100}%"></i>`).join('');
+    `<i style="--k:${(k + 0.5) / n}"></i>`).join(''); // läget sätts i CSS (lodrätt eller vågrätt)
 }
 
 // Ackordets egen färg (tom = ingen färg). Sätts som CSS-variabler som style.css använder.
@@ -235,11 +235,13 @@ const PLUCK_LEVEL = 0.5;
 // pad: strängen man är på, idx: senaste höjd, harp: har harpläget börjat på den här strängen?
 const strum = { active: false, pad: null, idx: -1, harp: false };
 
-// Vilken ton (prick) på strängen som ligger närmast höjden y
-function strumIndex(pad, y) {
+// Vilken ton (prick) på strängen som ligger närmast pekaren: nerifrån och upp på lodräta strängar,
+// från vänster till höger på vågräta
+function strumIndex(pad, e) {
   const r = pad.el.querySelector('.strum').getBoundingClientRect();
   const n = pad.strumNotes().length;
-  return Math.max(0, Math.min(n - 1, Math.floor(((r.bottom - y) / r.height) * n)));
+  const pos = ui.stringDir.value === 'h' ? (e.clientX - r.left) / r.width : (r.bottom - e.clientY) / r.height;
+  return Math.max(0, Math.min(n - 1, Math.floor(pos * n)));
 }
 
 function pluck(pad, idx) {
@@ -270,7 +272,7 @@ function strumMove(e) {
   const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.chord-pad');
   const pad = chordPads.find((p) => p.el === el);
   if (!pad) { strum.pad = null; return; } // i mellanrummet mellan strängarna
-  const idx = strumIndex(pad, e.clientY);
+  const idx = strumIndex(pad, e);
   if (pad !== strum.pad) {
     // Första anslaget på en sträng spelar hela ackordet (det sköter hover);
     // här noteras bara var på strängen man kom in.

@@ -272,7 +272,7 @@ function syncSoundSelect() {
   ui.preset.value = onNotes && drumKitOn() ? DRUM_OPT + ui.drumKit.value : synthPreset;
 }
 
-// Trumset av/på från listan Ljud (samma val som under Inställningar → Spelytor → Toner)
+// Trumset av/på från listan Ljud (samma val som under Inställningar → Spel → Toner)
 function setNotesKind(kit) {
   ui.notesKind.value = kit ? 'drums' : 'tones';
   if (kit) ui.drumKit.value = kit;

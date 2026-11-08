@@ -79,6 +79,7 @@ const ui = {
   ringGap: $('ring-gap'),
   ringHole: $('ring-hole'),
   hexOrder: $('hex-order'),
+  stringDir: $('string-dir'),
   formation: $('formation'),
   root: $('root'),
   notesKind: $('notes-kind'),

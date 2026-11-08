@@ -35,7 +35,7 @@ function setupAbout() {
 
 // ---------- Underflikar i Inställningar ----------
 function showSettingsPanel(panel) {
-  if (panel === 'notes' || panel === 'chords') panel = 'surfaces'; // gamla flikar (före Spelytor)
+  if (['notes', 'chords', 'surfaces'].includes(panel)) panel = 'play'; // gamla flikar (Spelytor ligger nu under Spel)
   if (!document.querySelector(`#settings .panel[data-panel="${panel}"]`)) panel = 'play';
   document.querySelectorAll('#settings-nav button').forEach((b) =>
     b.classList.toggle('on', b.dataset.panel === panel));
@@ -140,6 +140,7 @@ function formationOpts() {
     ringGap: Number(ui.ringGap.value),
     ringHole: Number(ui.ringHole.value) / 100,
     hexOrder: ui.hexOrder.value,
+    stringDir: ui.stringDir.value,
   };
 }
 
@@ -162,6 +163,7 @@ function layoutPads() {
   const container = tab === 'notes' ? ui.pads : tab === 'chords' ? ui.chordPads : null;
   if (!container) return; // fliken Inställningar: inget att placera
   const pads = container === ui.pads ? notePads : chordPads;
+  ui.pads.dataset.dir = ui.chordPads.dataset.dir = ui.stringDir.value; // strängarnas riktning (CSS)
   if (!pads.length) return; // vid uppstart finns inga rutor än
   pads.forEach((p) => {
     p.el.removeAttribute('style');

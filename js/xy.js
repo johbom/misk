@@ -341,7 +341,7 @@ function setupXY() {
     ui.xyOctaves.value = '5';
     saveSettings();
   }
-  // Reverben finns både i spelraden på XY-sidan och under Spelytor – de följs åt
+  // Reverben finns både i spelraden på XY-sidan och under Inställningar → Spel – de följs åt
   const revBar = $('xy-reverb-bar');
   revBar.value = ui.xyReverb.value;
   ui.xyReverb.addEventListener('input', () => {

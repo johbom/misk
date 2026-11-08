@@ -80,7 +80,7 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
 #settings .panel.on { display: flex; }
 #settings .panel > fieldset { flex: 1 1 auto; }
 /* Små paneler: rutorna blir bara så breda som innehållet (inte hela skärmen i helskärm) */
-#settings .panel:is([data-panel="play"], [data-panel="io"], [data-panel="surfaces"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
+#settings .panel:is([data-panel="play"], [data-panel="io"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
 #settings .panel > #chord-settings { flex-basis: 100%; }
 /* Speltoner (▶ C …) i loggen hör till spelsidorna, inte inställningarna */
 body[data-tab="settings"] #log[data-kind="play"] { visibility: hidden; }
@@ -242,19 +242,27 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
   border-radius: 999px;
   border-color: transparent;
   background:
-    linear-gradient(90deg, transparent calc(50% - 1.5px), #8d93ad calc(50% - 1.5px),
+    linear-gradient(var(--str-line, 90deg), transparent calc(50% - 1.5px), #8d93ad calc(50% - 1.5px),
       #8d93ad calc(50% + 1.5px), transparent calc(50% + 1.5px)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+    linear-gradient(var(--str-fade, 180deg), rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
 }
 .pad-grid[data-formation="strings"] .pad small { display: none; }
+/* Vågräta strängar: linjen går tvärs över, namnet står till vänster */
+.pad-grid[data-dir="h"] { --str-line: 180deg; --str-fade: 90deg; }
+.pad-grid[data-formation="strings"][data-dir="h"] .pad {
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0 0 1.5em 16px; /* namnet står strax ovanför strängen */
+}
+.pad-grid[data-formation="strings"][data-dir="h"] .chord-pad .strum { top: 0; bottom: 0; left: 64px; right: 14px; }
 .pad-grid[data-formation="strings"] .pad .chord-name { font-size: 1.2em; }
 .pad-grid[data-formation="strings"] .pad.active {
   transform: none;
   color: var(--hit);
   background:
-    linear-gradient(90deg, transparent calc(50% - 3px), var(--hit) calc(50% - 3px),
+    linear-gradient(var(--str-line, 90deg), transparent calc(50% - 3px), var(--hit) calc(50% - 3px),
       var(--hit) calc(50% + 3px), transparent calc(50% + 3px)),
-    linear-gradient(180deg, rgba(255, 181, 71, 0.18), rgba(255, 122, 69, 0.06));
+    linear-gradient(var(--str-fade, 180deg), rgba(255, 181, 71, 0.18), rgba(255, 122, 69, 0.06));
   box-shadow: 0 0 24px rgba(255, 181, 71, 0.35);
 }
 
@@ -429,6 +437,7 @@ body:not(.advanced) .adv-only { display: none; }
 .strum i {
   position: absolute;
   left: 50%;
+  bottom: calc(var(--k) * 100%);
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -436,6 +445,7 @@ body:not(.advanced) .adv-only { display: none; }
   transform: translate(-50%, 50%);
 }
 .pad-grid[data-formation="strings"] .pad.active .strum i { background: var(--hit); }
+.pad-grid[data-dir="h"] .strum i { left: calc(var(--k) * 100%); bottom: 50%; }
 
 /* Presetbibliotek */
 #library { display: block; flex-basis: 100%; }
@@ -615,16 +625,16 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 .pad-grid[data-formation="strings"] .pad.colored {
   color: var(--c);
   background:
-    linear-gradient(90deg, transparent calc(50% - 1.5px), var(--c) calc(50% - 1.5px),
+    linear-gradient(var(--str-line, 90deg), transparent calc(50% - 1.5px), var(--c) calc(50% - 1.5px),
       var(--c) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
-    linear-gradient(180deg, rgba(var(--c-rgb), 0.08), rgba(var(--c-rgb), 0.02));
+    linear-gradient(var(--str-fade, 180deg), rgba(var(--c-rgb), 0.08), rgba(var(--c-rgb), 0.02));
 }
 .pad-grid[data-formation="strings"] .pad.colored.active {
   color: var(--c);
   background:
-    linear-gradient(90deg, transparent calc(50% - 3px), var(--c) calc(50% - 3px),
+    linear-gradient(var(--str-line, 90deg), transparent calc(50% - 3px), var(--c) calc(50% - 3px),
       var(--c) calc(50% + 3px), transparent calc(50% + 3px)),
-    linear-gradient(180deg, rgba(var(--c-rgb), 0.3), rgba(var(--c-rgb), 0.08));
+    linear-gradient(var(--str-fade, 180deg), rgba(var(--c-rgb), 0.3), rgba(var(--c-rgb), 0.08));
   box-shadow: 0 0 24px rgba(var(--c-rgb), 0.4);
 }
 .pad-grid[data-formation="strings"] .pad.colored .strum i { background: rgba(var(--c-rgb), 0.8); }
@@ -968,17 +978,17 @@ html.high-contrast .pad-grid[data-formation="ring"] .pad.colored.active { backgr
 html.high-contrast .pad-grid[data-formation="strings"] .pad {
   border: none !important;
   color: #fff;
-  background: linear-gradient(90deg, transparent calc(50% - 3px), #fff calc(50% - 3px),
+  background: linear-gradient(var(--str-line, 90deg), transparent calc(50% - 3px), #fff calc(50% - 3px),
     #fff calc(50% + 3px), transparent calc(50% + 3px)) !important;
 }
 html.high-contrast .pad-grid[data-formation="strings"] .pad.colored {
   color: var(--c);
-  background: linear-gradient(90deg, transparent calc(50% - 4px), var(--c) calc(50% - 4px),
+  background: linear-gradient(var(--str-line, 90deg), transparent calc(50% - 4px), var(--c) calc(50% - 4px),
     var(--c) calc(50% + 4px), transparent calc(50% + 4px)) !important;
 }
 html.high-contrast .pad-grid[data-formation="strings"] .pad.active {
   color: #ffd400 !important;
-  background: linear-gradient(90deg, transparent calc(50% - 7px), #ffd400 calc(50% - 7px),
+  background: linear-gradient(var(--str-line, 90deg), transparent calc(50% - 7px), #ffd400 calc(50% - 7px),
     #ffd400 calc(50% + 7px), transparent calc(50% + 7px)) !important;
 }
 html.high-contrast .pad-grid[data-formation="ring"]::before { border: 2px dashed #fff; }
@@ -1060,18 +1070,18 @@ html.high-contrast .cr-num { background: #fff; color: #000; }
 .pad-grid[data-formation="strings"] .pad.root:not(.active) {
   color: #fff;
   background:
-    linear-gradient(90deg, transparent calc(50% - 2.5px), #e6e9f7 calc(50% - 2.5px),
+    linear-gradient(var(--str-line, 90deg), transparent calc(50% - 2.5px), #e6e9f7 calc(50% - 2.5px),
       #e6e9f7 calc(50% + 2.5px), transparent calc(50% + 2.5px)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
+    linear-gradient(var(--str-fade, 180deg), rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
 }
 .pad-grid[data-formation="strings"] .pad.root:not(.active) .strum i { background: #e6e9f7; }
 html.high-contrast .pad.root:not(.active) { background: #444 !important; }
 html.high-contrast .pad-grid[data-formation="ring"] .pad.root:not(.active) { background: #6a6a6a !important; }
 html.high-contrast .pad-grid[data-formation="strings"] .pad.root:not(.active) {
   background:
-    linear-gradient(90deg, transparent calc(50% - 5px), #fff calc(50% - 5px),
+    linear-gradient(var(--str-line, 90deg), transparent calc(50% - 5px), #fff calc(50% - 5px),
       #fff calc(50% + 5px), transparent calc(50% + 5px)),
-    linear-gradient(180deg, #333, #222) !important;
+    linear-gradient(var(--str-fade, 180deg), #333, #222) !important;
 }
 
 /* ===================================================================
