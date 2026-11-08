@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=84" />
+  <link rel="stylesheet" href="css/style.css?v=85" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -83,6 +83,10 @@
         <option value="supersaw">Bred</option>
       </select>
     </label>
+    <!-- Snabbknappar: formation och tonart (js/quick.js) -->
+    <button type="button" id="quick-formation" class="quick-btn not-xy" aria-haspopup="true" aria-expanded="false" title="Formation"></button>
+    <button type="button" id="quick-key" class="quick-btn" aria-haspopup="true" aria-expanded="false" title="Tonart"></button>
+    <div id="quick-pop" role="dialog" hidden></div>
     <!-- XY-plattans egen reverb (samma som under Inställningar → Spel → XY-platta) -->
     <label class="only-xy xy-reverb-bar">Reverb
       <input type="range" id="xy-reverb-bar" min="0" max="1" step="0.05" value="0.35" aria-label="Reverb för XY" />
@@ -597,31 +601,32 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=84"></script>
-  <script src="js/fm-library.js?v=84"></script>
-  <script src="js/pm-library.js?v=84"></script>
-  <script src="js/wt-library.js?v=84"></script>
-  <script src="js/lib-levels.js?v=84"></script>
-  <script src="js/sound-library.js?v=84"></script>
-  <script src="js/layout.js?v=84"></script>
-  <script src="js/core.js?v=84"></script>
-  <script src="js/audio.js?v=84"></script>
-  <script src="js/drums.js?v=84"></script>
-  <script src="js/pads.js?v=84"></script>
-  <script src="js/osc.js?v=84"></script>
-  <script src="js/arp.js?v=84"></script>
-  <script src="js/xy.js?v=84"></script>
-  <script src="js/vibrato.js?v=84"></script>
-  <script src="js/notes.js?v=84"></script>
-  <script src="js/chords.js?v=84"></script>
-  <script src="js/sound.js?v=84"></script>
-  <script src="js/view.js?v=84"></script>
-  <script src="js/controls.js?v=84"></script>
-  <script src="js/access.js?v=84"></script>
-  <script src="js/settings.js?v=84"></script>
-  <script src="js/user-presets.js?v=84"></script>
-  <script src="js/wizard.js?v=84"></script>
-  <script src="js/pwa.js?v=84"></script>
-  <script src="js/main.js?v=84"></script>
+  <script src="js/synth.js?v=85"></script>
+  <script src="js/fm-library.js?v=85"></script>
+  <script src="js/pm-library.js?v=85"></script>
+  <script src="js/wt-library.js?v=85"></script>
+  <script src="js/lib-levels.js?v=85"></script>
+  <script src="js/sound-library.js?v=85"></script>
+  <script src="js/layout.js?v=85"></script>
+  <script src="js/core.js?v=85"></script>
+  <script src="js/audio.js?v=85"></script>
+  <script src="js/drums.js?v=85"></script>
+  <script src="js/pads.js?v=85"></script>
+  <script src="js/osc.js?v=85"></script>
+  <script src="js/arp.js?v=85"></script>
+  <script src="js/xy.js?v=85"></script>
+  <script src="js/vibrato.js?v=85"></script>
+  <script src="js/notes.js?v=85"></script>
+  <script src="js/chords.js?v=85"></script>
+  <script src="js/sound.js?v=85"></script>
+  <script src="js/view.js?v=85"></script>
+  <script src="js/controls.js?v=85"></script>
+  <script src="js/access.js?v=85"></script>
+  <script src="js/settings.js?v=85"></script>
+  <script src="js/user-presets.js?v=85"></script>
+  <script src="js/wizard.js?v=85"></script>
+  <script src="js/quick.js?v=85"></script>
+  <script src="js/pwa.js?v=85"></script>
+  <script src="js/main.js?v=85"></script>
 </body>
 </html>

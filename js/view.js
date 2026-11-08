@@ -3,6 +3,7 @@
 // ---------- Flikar ----------
 function showTab(tab) {
   closeChordPicker();
+  if (typeof closeQuick === 'function') closeQuick();
   resetHover();
   allPads().forEach(release);
   arpReset();

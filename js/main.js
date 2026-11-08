@@ -29,6 +29,7 @@ setupUserPresets();
 setupPwa();
 setupAbout();
 setupWizard();
+setupQuick();
 setupSegments();
 setupAccess();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');

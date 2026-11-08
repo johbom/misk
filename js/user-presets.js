@@ -65,6 +65,7 @@ function applySnapshot(data) {
   buildNotePads();
   buildChordPads();
   ui.xyReverb.dispatchEvent(new Event('input')); // XY:s reverb: ljud, värdetext och spelraden
+  syncQuick(); // snabbknapparna formation och tonart
 }
 
 function describe(data) {

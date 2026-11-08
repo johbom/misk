@@ -51,6 +51,33 @@ h1 { margin: 0; font-size: 1.4rem; letter-spacing: 0.02em; }
   padding: 14px 24px 6px;
 }
 #play-bar select { min-width: 160px; }
+#play-bar { position: relative; }
+
+/* Snabbknappar: formation och tonart, med en liten ruta för valen */
+.quick-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 4px 12px; border-radius: 999px; font-weight: 600;
+}
+.quick-btn svg { width: 26px; height: 20px; flex: none; }
+.quick-btn b { font-size: 1.05em; }
+.quick-btn span { color: var(--muted); font-weight: 500; }
+#quick-formation span { color: inherit; font-weight: 600; }
+.quick-btn[aria-expanded="true"] { border-color: var(--accent); }
+html.steppers .quick-btn { min-height: 46px; padding: 6px 16px; }
+body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen tonart */
+#quick-pop {
+  position: absolute; z-index: 30; max-width: calc(100% - 16px);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+  padding: 10px; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+}
+#quick-pop .hint { margin: 8px 2px 0; }
+.quick-forms { display: grid; grid-template-columns: repeat(3, minmax(84px, 1fr)); gap: 6px; }
+.quick-roots { display: grid; grid-template-columns: repeat(6, minmax(42px, 1fr)); gap: 6px; }
+.quick-scales { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.quick-roots button, .quick-scales button { min-height: 38px; padding: 4px 10px; font-weight: 600; }
+.quick-roots button.on, .quick-scales button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+html.steppers .quick-roots button, html.steppers .quick-scales button { min-height: 50px; }
+html.high-contrast .quick-roots button.on, html.high-contrast .quick-scales button.on { background: #ffd400 !important; color: #000 !important; }
 
 /* Fliken Inställningar */
 #settings {
@@ -226,12 +253,14 @@ body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Bollar */
 .pad-grid[data-formation="circle"] .pad,
-.pad-grid[data-formation="hex"] .pad {
+.pad-grid[data-formation="hex"] .pad,
+.pad-grid[data-formation="arc"] .pad {
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, #343a52, #1b1d29 70%);
 }
 .pad-grid[data-formation="circle"] .pad.active,
-.pad-grid[data-formation="hex"] .pad.active {
+.pad-grid[data-formation="hex"] .pad.active,
+.pad-grid[data-formation="arc"] .pad.active {
   background: radial-gradient(circle at 35% 30%, #ffd08a, var(--hit) 45%, #ff7a45);
 }
 
@@ -565,7 +594,8 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 .pad-grid[data-formation="ring"] .pad.editing {
   background: radial-gradient(circle closest-side, #1f2a4d 40%, #304274 100%);
 }
-.pad-grid[data-formation="ring"]::before {
+.pad-grid[data-formation="ring"]::before,
+.pad-grid[data-formation="arc"]::before {
   content: '';
   position: absolute;
   left: calc(var(--hole-x) - var(--hole-r) * 0.55);
@@ -576,6 +606,8 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   border: 1px dashed #343850;
   pointer-events: none;
 }
+/* Bågen: viloplatsen är en halvcirkel längst ned i mitten */
+.pad-grid[data-formation="arc"]::before { clip-path: inset(0 0 50% 0); }
 
 /* ===== Färg per ackord (--c, --c-rgb, --c-ink sätts av app.js) ===== */
 #chord-colors { align-items: center; gap: 8px; }
@@ -603,12 +635,14 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 }
 /* Bollar */
 .pad-grid[data-formation="circle"] .pad.colored,
-.pad-grid[data-formation="hex"] .pad.colored {
+.pad-grid[data-formation="hex"] .pad.colored,
+.pad-grid[data-formation="arc"] .pad.colored {
   border: 4px solid var(--c); /* ren, otonad färg runt bollen */
   background: radial-gradient(circle at 35% 30%, rgba(var(--c-rgb), 0.6), rgba(var(--c-rgb), 0.16) 70%);
 }
 .pad-grid[data-formation="circle"] .pad.colored.active,
-.pad-grid[data-formation="hex"] .pad.colored.active {
+.pad-grid[data-formation="hex"] .pad.colored.active,
+.pad-grid[data-formation="arc"] .pad.colored.active {
   color: var(--c-ink);
   background: radial-gradient(circle at 35% 30%, #fff, var(--c) 40%, rgba(var(--c-rgb), 0.8));
   box-shadow: 0 0 26px rgba(var(--c-rgb), 0.65);
@@ -991,7 +1025,8 @@ html.high-contrast .pad-grid[data-formation="strings"] .pad.active {
   background: linear-gradient(var(--str-line, 90deg), transparent calc(50% - 7px), #ffd400 calc(50% - 7px),
     #ffd400 calc(50% + 7px), transparent calc(50% + 7px)) !important;
 }
-html.high-contrast .pad-grid[data-formation="ring"]::before { border: 2px dashed #fff; }
+html.high-contrast .pad-grid[data-formation="ring"]::before,
+html.high-contrast .pad-grid[data-formation="arc"]::before { border: 2px dashed #fff; }
 html.high-contrast #gaze-dot { border-color: #00e5ff; }
 
 /* Smal skärm: rubrik och spelrad får inte växa ur skärmen (inställningarna scrollar, de får vara stora) */
@@ -1061,7 +1096,8 @@ html.high-contrast .cr-num { background: #fff; color: #000; }
 }
 .pad.root:not(.active) small { color: #b3b9d6; }
 .pad-grid[data-formation="circle"] .pad.root:not(.active),
-.pad-grid[data-formation="hex"] .pad.root:not(.active) {
+.pad-grid[data-formation="hex"] .pad.root:not(.active),
+.pad-grid[data-formation="arc"] .pad.root:not(.active) {
   background: radial-gradient(circle at 35% 30%, #5d6690, #2f3450 70%);
 }
 .pad-grid[data-formation="ring"] .pad.root:not(.active) {

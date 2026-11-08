@@ -12,6 +12,7 @@ const FORMATIONS = {
   ring: 'Ring',
   hex: 'Bikupa',
   strings: 'Strängar',
+  arc: 'Båge',
 };
 
 // Hörn för en ringsektor (tårtbit med hål i mitten) runt (cx, cy), från vinkel a0 till a1.
@@ -46,6 +47,10 @@ const FORMATION_ICONS = {
   }).join('')),
   hex: svgIcon([0, 1, 2].flatMap((r) => [0, 1, 2].map((c) =>
     `<circle cx="${12 + c * 10 + (r % 2) * 5}" cy="${8 + r * 10}" r="4.2" stroke="none"/>`)).join('')),
+  arc: svgIcon([[15, 7], [9, 5]].flatMap(([R, k]) => Array.from({ length: k }, (_, i) => {
+    const a = Math.PI + (i * Math.PI) / (k - 1);
+    return `<circle cx="${(24 + R * Math.cos(a)).toFixed(1)}" cy="${(31 + R * Math.sin(a)).toFixed(1)}" r="2.8" stroke="none"/>`;
+  })).join('')),
   strings: svgIcon([0, 1, 2, 3, 4].map((i) =>
     `<line x1="${8 + i * 8}" y1="4" x2="${8 + i * 8}" y2="32" stroke-width="2" stroke-linecap="round"/>`).join('')),
 };
@@ -163,6 +168,55 @@ const LAYOUTS = {
       if (opts.hexOrder === 'cols') { c = Math.floor(i / colRows); r = i % colRows; }
       return { x: x0 + c * step + (r % 2) * shift * step, y: y0 + r * ROW * step, w: s, h: s, font: s * 0.2 };
     });
+  },
+
+  // Bollar i halvcirklar (bågar) ovanför en viloplats längst ned i mitten: alla bollar på en båge
+  // ligger lika långt från viloplatsen. Yttersta bågen först, från vänster till höger, sedan inåt.
+  arc(n, W, H, gap) {
+    // Hur många bollar ryms med storleken s (och mellanrummet g)? Bågarna räknas utifrån och in.
+    const arcsFor = (s, g) => {
+      const R = Math.min(W / 2 - s / 2, H - s); // yttersta bågens radie (bollarnas mitt)
+      const arcs = [];
+      let total = 0;
+      for (let r = R; r >= s * 1.6 && total < n; r -= s + g) {
+        const fit = Math.floor((Math.PI * r) / (s + g)) + 1;
+        arcs.push({ r, fit });
+        total += fit;
+      }
+      return { arcs, total };
+    };
+    // Största bollen där alla får plats (binärsökning), mellanrummet krymps vid behov
+    const best = (g) => {
+      let lo = 12;
+      let hi = Math.min(W / 2, H, 200);
+      for (let k = 0; k < 30; k++) {
+        const mid = (lo + hi) / 2;
+        if (arcsFor(mid, g).total >= n) lo = mid; else hi = mid;
+      }
+      return lo;
+    };
+    const { g, s } = fitGap(gap, MIN_BALL, best);
+    const { arcs } = arcsFor(s, g);
+    // Fördela bollarna på bågarna i proportion till hur många som ryms, de yttre fylls först
+    const cap = arcs.reduce((a, b) => a + b.fit, 0);
+    let left = n;
+    const counts = arcs.map((a, j) => {
+      const c = j === arcs.length - 1 ? left : Math.min(a.fit, left, Math.round((n * a.fit) / cap));
+      left -= c;
+      return c;
+    });
+    const cx = W / 2;
+    const cy = H - s / 2; // bågarnas mittpunkt (viloplatsen), i höjd med de nedersta bollarna
+    const out = [];
+    arcs.forEach((a, j) => {
+      const c = counts[j];
+      for (let i = 0; i < c; i++) {
+        const ang = c === 1 ? -Math.PI / 2 : Math.PI + (i * Math.PI) / (c - 1);
+        out.push({ x: cx + a.r * Math.cos(ang) - s / 2, y: cy + a.r * Math.sin(ang) - s / 2, w: s, h: s, font: s * 0.2 });
+      }
+    });
+    out.hole = { x: cx, y: cy, r: Math.max(s * 0.6, (arcs.at(-1)?.r ?? s) - s / 2 - g) };
+    return out;
   },
 
   // Långa strängar. Lodrätt (standard): sida vid sida, från vänster (lägst) till höger.
