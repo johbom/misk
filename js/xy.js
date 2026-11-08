@@ -191,6 +191,20 @@ function xyArpAdd(id, nx, ny) {
     // Första steget vid nästa runda: fingrar som landar samtidigt hinner med
     xyArp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
     xyArp.timer = setInterval(xyArpTick, ARP_TICK_MS);
+  } else if (arpRetrig()) {
+    // Retrigg: alla fingrar börjar om från första steget, nu. Planerat men inte hört stryks.
+    const now = audioCtx.currentTime;
+    for (const p of xyArp.pts.values()) {
+      p.step = 0;
+      p.last = -1;
+      p.voices.forEach((v) => {
+        if (v.t > now) {
+          try { v.amp.disconnect(); v.oscs.forEach((o) => o.stop()); v.yLfo?.stop(); } catch {}
+          p.voices.delete(v);
+        }
+      });
+    }
+    xyArp.nextTime = now + NOTE_LOOKAHEAD + 0.03;
   }
 }
 

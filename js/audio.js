@@ -47,6 +47,11 @@ function playSample(buffer, when = 0, rate = 1) {
     g.gain.setTargetAtTime(0, t, 0.015); // kort uttoning, inget klick
     src.stop(t + 0.12);
   };
+  stop.cancel = () => {
+    if (audioCtx.currentTime >= t0) return false;
+    try { g.disconnect(); src.stop(); } catch {}
+    return true;
+  };
   stop.vibrato = (cents, rate) => {
     if (!vib) return;
     const now = audioCtx.currentTime;

@@ -59,6 +59,7 @@ const ui = {
   arpRate: $('arp-rate'),
   arpOctaves: $('arp-octaves'),
   arpGate: $('arp-gate'),
+  arpRetrig: $('arp-retrig'),
   xySound: $('xy-sound'),
   xyReverb: $('xy-reverb'),
   dwell: $('dwell'),

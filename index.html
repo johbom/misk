@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=57" />
+  <link rel="stylesheet" href="css/style.css?v=58" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -160,6 +160,14 @@
             <option value="2" selected>2</option>
             <option value="3">3</option>
           </select>
+        </label>
+        <label class="slider" title="På: varje ny ruta, nytt ackord eller nytt finger på XY börjar om mönstret och takten från första tonen. Av: takten löper vidare och nya rutor hakar på i takt.">
+          <span class="lbl">Retrigg</span>
+          <select id="arp-retrig">
+            <option value="off">Av</option>
+            <option value="on">På</option>
+          </select>
+          <small class="arp-note">På: varje ny ruta börjar om från första tonen, direkt.</small>
         </label>
       </fieldset>
 
@@ -550,27 +558,27 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=57"></script>
-  <script src="js/fm-library.js?v=57"></script>
-  <script src="js/sound-library.js?v=57"></script>
-  <script src="js/layout.js?v=57"></script>
-  <script src="js/core.js?v=57"></script>
-  <script src="js/audio.js?v=57"></script>
-  <script src="js/pads.js?v=57"></script>
-  <script src="js/osc.js?v=57"></script>
-  <script src="js/arp.js?v=57"></script>
-  <script src="js/xy.js?v=57"></script>
-  <script src="js/vibrato.js?v=57"></script>
-  <script src="js/notes.js?v=57"></script>
-  <script src="js/chords.js?v=57"></script>
-  <script src="js/sound.js?v=57"></script>
-  <script src="js/view.js?v=57"></script>
-  <script src="js/controls.js?v=57"></script>
-  <script src="js/access.js?v=57"></script>
-  <script src="js/settings.js?v=57"></script>
-  <script src="js/user-presets.js?v=57"></script>
-  <script src="js/wizard.js?v=57"></script>
-  <script src="js/pwa.js?v=57"></script>
-  <script src="js/main.js?v=57"></script>
+  <script src="js/synth.js?v=58"></script>
+  <script src="js/fm-library.js?v=58"></script>
+  <script src="js/sound-library.js?v=58"></script>
+  <script src="js/layout.js?v=58"></script>
+  <script src="js/core.js?v=58"></script>
+  <script src="js/audio.js?v=58"></script>
+  <script src="js/pads.js?v=58"></script>
+  <script src="js/osc.js?v=58"></script>
+  <script src="js/arp.js?v=58"></script>
+  <script src="js/xy.js?v=58"></script>
+  <script src="js/vibrato.js?v=58"></script>
+  <script src="js/notes.js?v=58"></script>
+  <script src="js/chords.js?v=58"></script>
+  <script src="js/sound.js?v=58"></script>
+  <script src="js/view.js?v=58"></script>
+  <script src="js/controls.js?v=58"></script>
+  <script src="js/access.js?v=58"></script>
+  <script src="js/settings.js?v=58"></script>
+  <script src="js/user-presets.js?v=58"></script>
+  <script src="js/wizard.js?v=58"></script>
+  <script src="js/pwa.js?v=58"></script>
+  <script src="js/main.js?v=58"></script>
 </body>
 </html>

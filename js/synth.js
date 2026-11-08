@@ -804,6 +804,13 @@ class SynthEngine {
         try { this.vibLfo.disconnect(vib); } catch {}
       };
     };
+    // Avbryt en ton som är planerad men inte har börjat än (arpeggiatorns retrigg). Tyst, utan klick.
+    stop.cancel = () => {
+      if (ctx.currentTime >= t) return false;
+      try { amp.disconnect(); } catch {}
+      sources.forEach((s) => { try { s.stop(); } catch {} });
+      return true;
+    };
     // Djup i cent (mjukt in/ut) och takt i Hz
     stop.vibrato = (cents, rate) => {
       const now = ctx.currentTime;

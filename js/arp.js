@@ -10,8 +10,13 @@ const ARP_LOOKAHEAD = 0.12; // s som planeras i förväg
 const ARP_TICK_MS = 25;
 const ARP_RATES = { 4: 1, 8: 0.5, '8t': 1 / 3, 16: 0.25 }; // andel av ett taktslag
 
-const arp = { pool: [], timer: 0, nextTime: 0, step: 0, last: -1, emptySince: 0 };
+const arp = { pool: [], timer: 0, nextTime: 0, step: 0, last: -1, emptySince: 0, pending: [] };
 const arpOn = () => ui.arpOn.checked;
+// Retrigg: varje ny ruta (eller nytt finger på XY) börjar om mönstret och takten från första tonen.
+// Av: takten löper vidare och nya rutor hakar på i takt.
+const arpRetrig = () => ui.arpRetrig.value === 'on';
+// MIDI skickas så här långt före tonen (med tidsstämpel), så att den kan strykas vid retrigg ända till dess
+const ARP_MIDI_AHEAD = 0.025;
 const arpStepDur = () => (60 / (Number(ui.arpBpm.value) || 120)) * (ARP_RATES[ui.arpRate.value] || 0.5);
 
 // En ruta börjar låta: lägg till dess toner
@@ -19,6 +24,22 @@ function arpAdd(pad, notes) {
   notes.forEach((note, i) => arp.pool.push({ note, pad, order: performance.now() + i * 1e-3 }));
   pad.arpVib = 0;
   if (!arp.timer) arpStart();
+  else if (arpRetrig()) arpRestart();
+}
+
+// Börja om från första tonen, nu. Det som redan planerats men inte hörts än stryks.
+function arpRestart() {
+  arpCancelPending();
+  arp.step = 0;
+  arp.last = -1;
+  // Som vid start: fingrar/tangenter som landar samtidigt hinner med på första slaget
+  arp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
+}
+
+function arpCancelPending() {
+  const now = audioCtx.currentTime;
+  arp.pending.forEach((e) => { if (e.time > now) e.cancel(); });
+  arp.pending = [];
 }
 
 // En ruta släpps: ta bort dess toner. Takten fortsätter ett steg till, så att ett ackordbyte
@@ -39,6 +60,7 @@ function arpStart() {
 function arpStop() {
   clearInterval(arp.timer);
   arp.timer = 0;
+  arp.pending = [];
 }
 
 // Slår av arpeggiatorn helt (t.ex. när den stängs av eller fliken byts)
@@ -93,6 +115,8 @@ function arpPlayStep(time) {
   const { note, pad } = seq[idx];
   const dur = arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
   const off = time + dur;
+  const timers = [];
+  let audioStop = null;
 
   if (ui.outAudio.checked) {
     let stop;
@@ -100,24 +124,39 @@ function arpPlayStep(time) {
     else stop = engine.noteOn(note, 0.8, time);
     if (pad.arpVib && stop.vibrato) stop.vibrato(pad.arpVib);
     stop(off);
+    audioStop = stop;
     // Vibrato (vickning) når också toner som redan klingar
     (pad.arpStops || (pad.arpStops = new Set())).add(stop);
     setTimeout(() => pad.arpStops.delete(stop), (off - audioCtx.currentTime) * 1000 + 50);
   }
+  const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
   if (ui.outMidi.checked) {
+    // Skickas strax före tonen (med exakt tidsstämpel), så att retrigg hinner stryka den
     const ch = midiChannel();
-    noteOn(note, ch, time);
-    noteOff(note, ch, off);
+    timers.push(setTimeout(() => {
+      noteOn(note, ch, time);
+      noteOff(note, ch, off);
+    }, Math.max(0, wait - ARP_MIDI_AHEAD * 1000)));
   }
   // OSC och ljusblink på rutan, så nära tonen som möjligt
-  const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
-  setTimeout(() => {
+  timers.push(setTimeout(() => {
     oscSend('note', note, Number(ui.velocity.value) || 100);
     pad.el.classList.remove('arp-hit');
     void pad.el.offsetWidth;
     pad.el.classList.add('arp-hit');
-  }, wait);
-  setTimeout(() => oscSend('note', note, 0), wait + dur * 1000);
+    timers.push(setTimeout(() => oscSend('note', note, 0), dur * 1000));
+  }, wait));
+
+  // Planerad men inte hörd än: kan strykas vid retrigg
+  const now = audioCtx.currentTime;
+  arp.pending = arp.pending.filter((e) => e.time > now);
+  arp.pending.push({
+    time,
+    cancel: () => {
+      timers.forEach(clearTimeout);
+      if (audioStop?.cancel) audioStop.cancel();
+    },
+  });
 }
 
 // Vibrato för en ruta som arpeggieras

@@ -1341,6 +1341,7 @@ html.high-contrast #arp-toggle.on { background: #ffd400 !important; color: #000 
 /* Kompakt: två kolumner (Tempo | Tonlängd, Notvärde | Oktaver), en kolumn på smal skärm */
 #arp-set { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
 #arp-set > .arp-wide { grid-column: 1 / -1; }
+.arp-note { display: block; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
 #xy-set { display: grid; grid-template-columns: minmax(170px, auto) minmax(170px, 1fr); gap: 12px 22px; align-content: start; max-width: 560px; }
 #xy-set > .xy-wide { grid-column: 1 / -1; margin: 0; }
 #settings .panel > :is(#xy-set, #arp-set) { flex: 0 1 auto; max-width: min(560px, 100%); }
