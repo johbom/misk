@@ -545,7 +545,7 @@ html.fixed-screen .pad-grid {
   min-height: 0;
   padding: 8px 14px 10px;
   grid-auto-rows: 1fr;
-  gap: min(var(--pad-gap), 6vw, 6vh);
+  gap: var(--pad-gap); /* räknas fram av view.js (procent av rutans storlek) */
 }
 html.fixed-screen .pad-grid:not([data-formation="grid"]) { flex: 1 1 0; min-height: 0; }
 html.fixed-screen .pad { min-height: 0; }

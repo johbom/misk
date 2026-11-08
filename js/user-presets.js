@@ -40,6 +40,7 @@ function applySnapshot(data) {
     else ui[k].value = normalizeSetting(k, v);
   }
   migrateNotesKind(data.settings || {});
+  migrateSpace(data.settings || {});
   saveSettings();
 
   // Ackord

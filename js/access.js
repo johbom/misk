@@ -67,7 +67,7 @@ const ACCESS_PROFILES = [
   },
   {
     name: 'Ögon – utforska', desc: 'Första stegen, orsak och verkan. Låter direkt där blicken landar, tål darr och har stor pekare.',
-    set: { dwell: 0, releaseDelay: 400, lockout: 600, showPointer: 'xlarge', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', padGap: 96, vibrato: 0 },
+    set: { dwell: 0, releaseDelay: 400, lockout: 600, showPointer: 'xlarge', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', padSpace: 65, vibrato: 0 },
   },
   {
     name: 'Ögon – spela', desc: 'Van användare. Kort vilotid så man hinner sikta. Ögonstyrningen sköter klicken.',
@@ -104,7 +104,7 @@ function applyProfile(p) {
     else ui[k].value = v;
   }
   saveSettings();
-  if ('padGap' in p.set) applyGap();
+  if ('padSpace' in p.set) applyGap();
   refreshAccess();
   log(`Tillgänglighet: ${p.name}`);
 }

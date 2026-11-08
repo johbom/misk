@@ -43,8 +43,8 @@ $('chord-colors-preset').addEventListener('click', () => setChordColors(CHORD_PA
 $('chord-colors-none').addEventListener('click', () => setChordColors(CHORD_PALETTE.map(() => '')));
 ui.noteCount.addEventListener('change', buildNotePads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
-ui.padGap.addEventListener('input', applyGap);
-[ui.stringLength, ui.ringGap, ui.ringHole].forEach((el) => el.addEventListener('input', applyFormationOpts));
+ui.padSpace.addEventListener('input', applyGap);
+[ui.stringLength, ui.ringSpace, ui.ringHole].forEach((el) => el.addEventListener('input', applyFormationOpts));
 ui.hexOrder.addEventListener('change', layoutPads);
 ui.stringDir.addEventListener('change', () => { layoutPads(); chordPads.forEach(renderChordPad); });
 document.querySelectorAll('#settings-nav button').forEach((b) =>

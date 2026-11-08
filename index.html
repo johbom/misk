@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=86" />
+  <link rel="stylesheet" href="css/style.css?v=87" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -115,9 +115,9 @@
         <input type="hidden" id="formation" value="grid" />
         <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
         <div class="formation-opts">
-          <label class="not-ring" title="Tomrum mellan rutorna, så att musen kan flyttas utan att trigga dem">Mellanrum
-            <input type="range" id="pad-gap" min="0" max="400" step="4" value="48" />
-            <span id="gap-value" class="val">48 px</span>
+          <label class="not-ring" title="Tomrum mellan rutorna, i procent av rutornas storlek (50 % = halva rutan). Musen kan flyttas där utan att trigga något. Följer med när skärmen är större eller mindre.">Mellanrum
+            <input type="range" id="pad-space" min="0" max="300" step="5" value="30" />
+            <span id="gap-value" class="val">30 %</span>
           </label>
           <label class="only-strings" title="Lodrätt: lägsta tonen till vänster. Vågrätt: lägsta tonen längst ned.">Riktning
             <select id="string-dir" aria-label="Strängarnas riktning">
@@ -136,9 +136,9 @@
               <option value="cols">Lodrätt</option>
             </select>
           </label>
-          <label class="only-ring" title="Hur tätt sektorerna ligger">Mellanrum mellan sektorer
-            <input type="range" id="ring-gap" min="0" max="200" step="2" value="12" />
-            <span id="ring-gap-value" class="val">12 px</span>
+          <label class="only-ring" title="Hur tätt sektorerna ligger, i procent av sektorns bredd">Mellanrum mellan sektorer
+            <input type="range" id="ring-space" min="0" max="75" step="1" value="10" />
+            <span id="ring-gap-value" class="val">10 %</span>
           </label>
           <label class="only-ring" title="Den tomma vilytan i mitten">Hålets storlek
             <input type="range" id="ring-hole" min="15" max="70" step="1" value="40" />
@@ -601,32 +601,32 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=86"></script>
-  <script src="js/fm-library.js?v=86"></script>
-  <script src="js/pm-library.js?v=86"></script>
-  <script src="js/wt-library.js?v=86"></script>
-  <script src="js/lib-levels.js?v=86"></script>
-  <script src="js/sound-library.js?v=86"></script>
-  <script src="js/layout.js?v=86"></script>
-  <script src="js/core.js?v=86"></script>
-  <script src="js/audio.js?v=86"></script>
-  <script src="js/drums.js?v=86"></script>
-  <script src="js/pads.js?v=86"></script>
-  <script src="js/osc.js?v=86"></script>
-  <script src="js/arp.js?v=86"></script>
-  <script src="js/xy.js?v=86"></script>
-  <script src="js/vibrato.js?v=86"></script>
-  <script src="js/notes.js?v=86"></script>
-  <script src="js/chords.js?v=86"></script>
-  <script src="js/sound.js?v=86"></script>
-  <script src="js/view.js?v=86"></script>
-  <script src="js/controls.js?v=86"></script>
-  <script src="js/access.js?v=86"></script>
-  <script src="js/settings.js?v=86"></script>
-  <script src="js/user-presets.js?v=86"></script>
-  <script src="js/wizard.js?v=86"></script>
-  <script src="js/quick.js?v=86"></script>
-  <script src="js/pwa.js?v=86"></script>
-  <script src="js/main.js?v=86"></script>
+  <script src="js/synth.js?v=87"></script>
+  <script src="js/fm-library.js?v=87"></script>
+  <script src="js/pm-library.js?v=87"></script>
+  <script src="js/wt-library.js?v=87"></script>
+  <script src="js/lib-levels.js?v=87"></script>
+  <script src="js/sound-library.js?v=87"></script>
+  <script src="js/layout.js?v=87"></script>
+  <script src="js/core.js?v=87"></script>
+  <script src="js/audio.js?v=87"></script>
+  <script src="js/drums.js?v=87"></script>
+  <script src="js/pads.js?v=87"></script>
+  <script src="js/osc.js?v=87"></script>
+  <script src="js/arp.js?v=87"></script>
+  <script src="js/xy.js?v=87"></script>
+  <script src="js/vibrato.js?v=87"></script>
+  <script src="js/notes.js?v=87"></script>
+  <script src="js/chords.js?v=87"></script>
+  <script src="js/sound.js?v=87"></script>
+  <script src="js/view.js?v=87"></script>
+  <script src="js/controls.js?v=87"></script>
+  <script src="js/access.js?v=87"></script>
+  <script src="js/settings.js?v=87"></script>
+  <script src="js/user-presets.js?v=87"></script>
+  <script src="js/wizard.js?v=87"></script>
+  <script src="js/quick.js?v=87"></script>
+  <script src="js/pwa.js?v=87"></script>
+  <script src="js/main.js?v=87"></script>
 </body>
 </html>

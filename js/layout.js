@@ -2,7 +2,7 @@
 // och placeras med absoluta positioner inne i sin behållare.
 //
 // Varje funktion får: n (antal rutor), W och H (ytan i px), gap (mellanrum i px),
-// opts ({ stringLength, ringGap, ringHole } från inställningarna)
+// opts ({ stringLength, ringSpace, ringHole, … } från inställningarna)
 // och returnerar en lista med { x, y, w, h, font } – en per ruta, i spelordning.
 // Ringen lägger dessutom till clip (formen) och label (var texten ska stå).
 
@@ -112,14 +112,14 @@ const LAYOUTS = {
 
   // Ring delad i sektorer, med ett tomt hål i mitten där muspekaren kan vila.
   // Första rutan högst upp, sedan medurs.
-  // opts.ringGap = mellanrum mellan sektorerna (px), opts.ringHole = hålets radie (andel av ringens).
+  // opts.ringSpace = mellanrum mellan sektorerna (andel av sektorns bredd mitt på), opts.ringHole = hålets radie (andel av ringens).
   ring(n, W, H, gap, opts) {
     const R = Math.min(W, H) / 2;
     const r = R * opts.ringHole;
     const step = (2 * Math.PI) / n;
     const mid = (R + r) / 2;
     // Mellanrummet får ta högst tre fjärdedelar av bågen, annars försvinner sektorerna
-    const g = n === 1 ? 0 : Math.min(opts.ringGap, mid * step * 0.75); // en sektor = hel ring, ingen glipa
+    const g = n === 1 ? 0 : Math.min(opts.ringSpace, 0.75) * mid * step; // en sektor = hel ring, ingen glipa
     const font = Math.min(28, (R - r) * 0.28, (mid * step - g) * 0.3);
     const rects = Array.from({ length: n }, (_, i) => {
       const a = -Math.PI / 2 + i * step; // sektorns mitt

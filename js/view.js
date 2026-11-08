@@ -46,14 +46,13 @@ function showSettingsPanel(panel) {
 }
 
 // ---------- Formation (layout.js räknar ut positionerna) ----------
-// Antal kolumner i rutnätet.
-function gridColumns(container, n) {
+// Rutnätet med mellanrummet gap (px): antal kolumner och rutornas bredd.
+function gridFit(container, n, gap) {
+  const cs = getComputedStyle(container);
+  const W = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
   if (FIXED_SCREEN) {
     // Fast skärm: välj det kolumnantal som ger störst rutor på den yta som finns
-    const cs = getComputedStyle(container);
-    const W = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     const H = container.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-    const gap = parseFloat(cs.columnGap) || 0;
     let best = 1;
     let bestSide = 0;
     for (let cols = 1; cols <= n; cols++) {
@@ -61,14 +60,26 @@ function gridColumns(container, n) {
       const side = Math.min((W - (cols - 1) * gap) / cols, (H - (rows - 1) * gap) / rows);
       if (side > bestSide + 0.5) { bestSide = side; best = cols; }
     }
-    return best;
+    return { cols: best, size: Math.max(0, bestSide) };
   }
   const wanted = n <= 4 ? n : n <= 8 ? Math.ceil(n / 2) : n <= 16 ? 4 : n <= 24 ? 6 : 8;
   // Men aldrig så många att rutorna blir smalare än ca 60 px med valt mellanrum
-  const cs = getComputedStyle(container);
-  const W = container.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-  const gap = parseFloat(cs.columnGap) || 0;
-  return Math.max(1, Math.min(wanted, Math.floor((W + gap) / (60 + gap))));
+  const cols = Math.max(1, Math.min(wanted, Math.floor((W + gap) / (60 + gap))));
+  return { cols, size: Math.max(0, (W - (cols - 1) * gap) / cols) };
+}
+
+// Mellanrummet anges i procent av rutornas storlek. Rutorna krymper när mellanrummet växer,
+// så rätt mellanrum i px (gap = andel × storlek) letas fram med halvering.
+function solveGap(sizeFor, max) {
+  const share = Number(ui.padSpace.value) / 100;
+  if (!(share > 0)) return 0;
+  let lo = 0;
+  let hi = max;
+  for (let k = 0; k < 24; k++) {
+    const mid = (lo + hi) / 2;
+    if (share * sizeFor(mid) > mid) lo = mid; else hi = mid;
+  }
+  return lo;
 }
 
 // Knappar med en liten bild per formation; valet sparas i det dolda fältet #formation.
@@ -138,7 +149,7 @@ function syncFormationButtons() {
 function formationOpts() {
   return {
     stringLength: Number(ui.stringLength.value) / 100,
-    ringGap: Number(ui.ringGap.value),
+    ringSpace: Number(ui.ringSpace.value) / 100,
     ringHole: Number(ui.ringHole.value) / 100,
     hexOrder: ui.hexOrder.value,
     stringDir: ui.stringDir.value,
@@ -148,7 +159,7 @@ function formationOpts() {
 // Visar värdena bredvid reglagen och placerar om
 function applyFormationOpts() {
   $('string-length-value').textContent = `${ui.stringLength.value} %`;
-  $('ring-gap-value').textContent = `${ui.ringGap.value} px`;
+  $('ring-gap-value').textContent = `${ui.ringSpace.value} %`;
   $('ring-hole-value').textContent = `${ui.ringHole.value} %`;
   layoutPads();
 }
@@ -173,7 +184,10 @@ function layoutPads() {
 
   if (f === 'grid') {
     container.style.height = '';
-    container.style.gridTemplateColumns = `repeat(${gridColumns(container, pads.length)}, 1fr)`;
+    const n = pads.length;
+    const gap = solveGap((g) => gridFit(container, n, g).size, container.clientWidth);
+    container.style.setProperty('--pad-gap', `${gap.toFixed(1)}px`);
+    container.style.gridTemplateColumns = `repeat(${gridFit(container, n, gap).cols}, 1fr)`;
     return;
   }
 
@@ -196,7 +210,11 @@ function layoutPads() {
   const topPad = parseFloat(cs.paddingTop);
   const W = container.clientWidth - left - parseFloat(cs.paddingRight);
   const H = height - topPad - parseFloat(cs.paddingBottom);
-  const rects = LAYOUTS[f](pads.length, W, H, Number(ui.padGap.value), formationOpts());
+  const opts = formationOpts();
+  const layout = (g) => LAYOUTS[f](pads.length, W, H, g, opts);
+  // Rutans storlek = den kortaste sidan (bollens diameter, strängens bredd)
+  const gap = f === 'ring' ? 0 : solveGap((g) => { const r = layout(g)[0]; return Math.min(r.w, r.h); }, Math.max(W, H));
+  const rects = layout(gap);
   pads.forEach((p, i) => {
     const r = rects[i];
     Object.assign(p.el.style, {
@@ -236,7 +254,6 @@ function layoutPads() {
 
 // Tomrum mellan rutorna – där kan musen röra sig utan att något spelas.
 function applyGap() {
-  document.documentElement.style.setProperty('--pad-gap', `${ui.padGap.value}px`);
-  $('gap-value').textContent = `${ui.padGap.value} px`;
+  $('gap-value').textContent = `${ui.padSpace.value} %`;
   layoutPads();
 }

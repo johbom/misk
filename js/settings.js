@@ -1,7 +1,7 @@
 // Inställningar som sparas i webbläsaren.
 
 // ---------- Inställningar ----------
-const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'hexOrder', 'stringDir', 'formation', 'noteCount', 'notesKind', 'drumKit', 'root', 'octave', 'scale',
+const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padSpace', 'stringLength', 'ringSpace', 'ringHole', 'hexOrder', 'stringDir', 'formation', 'noteCount', 'notesKind', 'drumKit', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
   'noteLength', 'vibrato', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'xyOctaves', 'xySound', 'xyReverb', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
@@ -14,6 +14,13 @@ function normalizeSetting(k, v) {
   return v;
 }
 
+// Förr angavs mellanrummen i px; nu i procent av rutans (eller sektorns) storlek.
+// Omräkningen utgår från en vanlig rutstorlek (ca 150 px) och sektorbredd (ca 120 px).
+function migrateSpace(s) {
+  if (!('padSpace' in s) && 'padGap' in s) ui.padSpace.value = Math.round(Number(s.padGap) / 1.5 / 5) * 5;
+  if (!('ringSpace' in s) && 'ringGap' in s) ui.ringSpace.value = Math.min(75, Math.round(Number(s.ringGap) / 1.2));
+}
+
 function loadSettings() {
   const s = JSON.parse(localStorage.getItem('hoverPads') || '{}');
   for (const k of SAVED) {
@@ -22,6 +29,7 @@ function loadSettings() {
     else ui[k].value = normalizeSetting(k, s[k]);
   }
   migrateNotesKind(s);
+  migrateSpace(s);
 }
 
 // Förr låg "toner" och trumseten i samma val: ett valt trumset betydde trummor
