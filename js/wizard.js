@@ -110,7 +110,7 @@ function openWizard(fromStart = false) {
     playMode: ui.playMode.value,
     arpOn: ui.arpOn.checked,
     formation: ui.formation.value,
-    sound: synthPreset in SYNTH_PRESETS ? synthPreset : null,
+    sound: QUICK_NAMES.includes(synthPreset) ? synthPreset : null,
     drumKit: drumKitOn() ? ui.drumKit.value : '',
     xySound: ui.xySound.value,
     xyOctaves: Number(ui.xyOctaves.value),
@@ -304,9 +304,10 @@ function renderWizard() {
         Object.entries(DRUM_KITS).map(([id, k]) => wizOption('drumKit', id, k.name, d.drumKit === id)).join('')}</div>
         <h4>Toner</h4>` : '';
       const cur = d.sound === null && !d.drumKit ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
-      html = `${drums}${cur}<div class="wiz-sounds" role="radiogroup" aria-label="Ljud">${
-        Object.keys(SYNTH_PRESETS).map((n) => wizOption('sound', n, n, !d.drumKit && d.sound === n)).join('')}</div>
-        <p class="wiz-hint">Tryck för att lyssna. Fler än 350 ljud finns under Inställningar → Ljud.</p>`;
+      html = `${drums}${cur}${QUICK_SOUNDS.map(([engineName, names]) => `<h5 class="wiz-engine">${engineName}</h5>
+        <div class="wiz-sounds" role="radiogroup" aria-label="Ljud: ${engineName}">${
+        names.map((n) => wizOption('sound', n, n, !d.drumKit && d.sound === n)).join('')}</div>`).join('')}
+        <p class="wiz-hint">Tryck för att lyssna. Alla 500 ljud finns under Inställningar → Ljud.</p>`;
     }
   } else if (step === 'xyfeel') {
     title = 'Omfång och rumsklang';

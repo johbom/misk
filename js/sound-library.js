@@ -178,3 +178,18 @@ const PRESET_LIBRARY = PRESET_CATEGORIES.flatMap(({ name: cat, group, base, pres
   Object.entries(presets).map(([name, p]) => ({ group, cat, name, params: { ...SYNTH_DEFAULTS, ...base, ...p } }))
 );
 const PRESET_GROUPS = [...new Set(PRESET_CATEGORIES.map((c) => c.group))];
+
+// ---------- Snabbvalet (listan Ljud i spelraden) ----------
+// Fem ljud från varje motor, i grupper. Biblioteksljud som står här blir egna snabbval.
+const QUICK_SOUNDS = [
+  ['Oscillatorer', ['Elpiano', 'Varm pad', 'Supersaw-lead', 'Bas', 'Orgel']],
+  ['Sträng', ['Gitarr', 'Piano', 'Elgitarr', 'Kontrabas', 'Sitar']],
+  ['Resonans', ['Marimbaträ', 'Vibrafonstav', 'Tumkalimba', 'Trinidadpan', 'Klangskål']],
+  ['FM', ['Klassiskt FM-piano', 'FM-klocka', 'Slapbas FM', 'FM-brass', 'Jazz-FM']],
+  ['Vågtabell', ['Morfmatta', 'Synklead', 'Reesebas', 'Vågpiano', 'Vokalsvep']],
+];
+QUICK_SOUNDS.forEach(([, names]) => names.forEach((name) => {
+  if (!(name in SYNTH_PRESETS)) SYNTH_PRESETS[name] = { ...PRESET_LIBRARY.find((e) => e.name === name).params };
+}));
+const QUICK_NAMES = QUICK_SOUNDS.flatMap(([, names]) => names);
+

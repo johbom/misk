@@ -1440,6 +1440,7 @@ html.reduce-motion .pad.arp-hit { animation-duration: 60ms; }
 .wiz-listen { border-radius: 999px; padding: 6px 16px; }
 .wiz-wave { flex-direction: row !important; gap: 8px !important; }
 .wiz-wave .seg-icon { width: 22px; height: 22px; }
+.wiz-engine { margin: 10px 0 5px; font-size: 0.8rem; font-weight: 600; color: var(--muted); }
 .wiz-sounds { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
 
 /* Ackordmallar */

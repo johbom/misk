@@ -1,4 +1,4 @@
-// Ljudmotorns reglage, de tio snabbpreseten och presetbiblioteket.
+// Ljudmotorns reglage, snabbvalet (fem ljud per motor) och presetbiblioteket.
 
 // ---------- Ljudmotor: presets och reglage ----------
 const CUSTOM = '__custom';
@@ -15,6 +15,11 @@ let synthLib = { name: '', edited: false };
       synthPreset = saved.preset in SYNTH_PRESETS || saved.preset === CUSTOM ? saved.preset : CUSTOM;
       synthParams = { ...SYNTH_DEFAULTS, ...saved.params };
       if (saved.lib && synthPreset === CUSTOM) synthLib = saved.lib;
+      // Ett äldre snabbval som inte längre står i listan blir "Eget: namnet"
+      if (synthPreset !== CUSTOM && !QUICK_NAMES.includes(synthPreset)) {
+        synthLib = { name: synthPreset, edited: false };
+        synthPreset = CUSTOM;
+      }
       return;
     }
   } catch {}
@@ -112,6 +117,10 @@ function refreshSynthDisabled() {
 
 function applySynth(params, preset) {
   allPads().forEach(release);
+  if (preset !== CUSTOM && !QUICK_NAMES.includes(preset)) { // (t.ex. från ett äldre sparat preset)
+    synthLib = { name: preset, edited: false };
+    preset = CUSTOM;
+  }
   synthParams = { ...params };
   synthPreset = preset;
   updateCustomLabel();
@@ -158,7 +167,7 @@ function updateCustomLabel() {
     now.textContent = synthPreset !== CUSTOM ? synthPreset
       : synthLib.name ? `${synthLib.name}${synthLib.edited ? ' (ändrat)' : ''}` : 'Eget ljud';
   }
-  const current = synthPreset === CUSTOM ? synthLib.name : '';
+  const current = synthPreset === CUSTOM ? synthLib.name : synthPreset;
   document.querySelectorAll('.lib-preset').forEach((b) =>
     b.classList.toggle('on', b.dataset.name === current));
 }
@@ -246,7 +255,13 @@ function loadLibraryPreset(entry, preview) {
 }
 
 function setupSynthUi() {
-  Object.keys(SYNTH_PRESETS).forEach((name) => ui.preset.append(new Option(name, name)));
+  // Fem ljud från varje motor, i grupper
+  QUICK_SOUNDS.forEach(([engineName, names]) => {
+    const group = document.createElement('optgroup');
+    group.label = engineName;
+    names.forEach((name) => group.append(new Option(name, name)));
+    ui.preset.append(group);
+  });
   ui.preset.append(new Option('Eget (ändrat)', CUSTOM));
   buildSynthPanel();
   buildPresetLibrary();
@@ -268,6 +283,10 @@ function setupSynthUi() {
     // Laddat från biblioteket? Då går "Återställ" tillbaka till det biblioteksljudet.
     const lib = synthPreset === CUSTOM && PRESET_LIBRARY.find((e) => e.name === synthLib.name);
     if (lib) loadLibraryPreset(lib, false);
+    else if (synthPreset === CUSTOM && synthLib.name in SYNTH_PRESETS) {
+      synthLib = { name: synthLib.name, edited: false };
+      applySynth(presetParams(synthLib.name), CUSTOM);
+    }
     else { synthLib = { name: '', edited: false }; applySynth(presetParams(lastPreset), lastPreset); }
   });
   $('synth-random').addEventListener('click', randomSynth);
