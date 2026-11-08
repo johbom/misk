@@ -26,6 +26,7 @@ setupArp();
 setupUserPresets();
 setupPwa();
 setupAbout();
+setupWizard();
 setupSegments();
 setupAccess();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
@@ -63,7 +64,7 @@ window.addEventListener('blur', () => { fingers.clear(); resetHover(); allPads()
 async function startApp(tab) {
   $('start-overlay').classList.add('hidden');
   try {
-    initAudio();
+    if (!audioCtx) initAudio(); // startguiden kan redan ha startat ljudet
   } catch (err) {
     log(`Kunde inte starta ljudet: ${err.message}`);
   }

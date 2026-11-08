@@ -10,6 +10,20 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **XY** eller **Inställningar** – med stora knappar. Klicket startar också ljudet (webbläsare kräver ett klick först). Det man använde senast är markerat och har fokus, så Enter eller en kontakt startar direkt där.
 
+### Startguide
+
+Knappen **Startguide** på startsidan (och **Guide** i menyraden) frågar steg för steg om det viktigaste och ställer sedan in allt på en gång:
+
+1. **Vad vill du spela?** – Toner, Ackord eller XY (stegen nedan anpassas efter valet).
+2. **Tonart** – grundton och dur/moll (för Toner även pentatonisk, blues och kromatisk, och antal rutor). *Lyssna* spelar en kort slinga.
+3. **Ackordmall** (bara Ackord) – färdiga ackordföljder som räknas ut från tonarten med funktionsbeteckningar: T = tonika, S = subdominant, D = dominant och parallellerna Tp, Sp, Dp. I dur: *Grundackorden* (T S D), *Pop* (T D Tp S), *50-tal* (T Tp S D), *Visa* (T S D⁷ Tp), *Alla sex*, *Jazz II–V–I*, *Blues* och *Hela tonarten* (8 rutor med D⁷ och dubbeldominant). I moll (små bokstäver = mollackord): *Grundackorden* (t s D), *Moll-pop* (t sP tP dP), *Andalusisk* (t dP sP D), *Ballad*, *Alla sex* och *Hela tonarten*. Mallen spelas upp när man väljer den. *Behåll mina ackord* ändrar inget.
+4. **Spelsätt** – Håll, One-shot, Längd eller Ligg kvar, och arpeggiatorn av/på.
+5. **Formation** (Toner och Ackord) – Rutnät, Cirkel, Ring, Bikupa eller Strängar.
+6. **Ljud** – de färdiga ljuden (provlyssnas direkt), eller klangen för XY.
+7. **Klart** – en sammanfattning, val av ljud i appen och MIDI, och *Börja spela*.
+
+Avbryter man (✕ eller Esc) ändras ingenting. Knapparna Tillbaka och Nästa ligger på samma ställe i alla steg.
+
 I spelläge (**Toner** och **Ackord**) syns bara rutorna, ljudval och volym. Allt annat finns under fliken **Inställningar**.
 
 - **Toner** – 1 till 32 rutor (12 från början), en ton per ruta; antalet väljs under *Inställningar → Spelytor → Toner*. Välj grundton, oktav och skala (dur, moll, pentatonisk, blues, kromatisk). Rutorna med skalans grundton (i alla oktaver) är ljusare, och markeringen flyttar med när grundton, skala eller antal ändras. Dra en ljudfil (wav/mp3) till en ruta för att byta dess ljud; högerklicka för att ta bort den. Ljudfilen följer spelsättet, precis som tonerna.
@@ -201,5 +215,6 @@ python3 -m http.server 8080
 - `js/access.js` – tillgänglighet: profiler, synlig pekare, klicka genom att titta, − / + knappar, lås, stegning och tangentbord
 - `js/settings.js` – sparade inställningar
 - `js/user-presets.js` – Mina presets (spara/ladda/exportera)
+- `js/wizard.js` – Startguiden och ackordmallarna (funktionsanalys utifrån tonarten)
 - `js/pwa.js` – service worker och Installera-knapp
 - `js/main.js` – uppstart

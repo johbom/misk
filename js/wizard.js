@@ -1,0 +1,355 @@
+// Startguide: frågar steg för steg om det viktigaste (vad man spelar, tonart, ackordmall,
+// spelsätt, formation och ljud) och ställer sedan in allt på en gång.
+// Ackordmallarna räknas ut från tonarten med funktionsanalys:
+// T = tonika, S = subdominant, D = dominant, p/P = parallell (dur: mollparallellerna Tp Sp Dp).
+
+// Funktion -> [halvtoner från tonartens grundton, ackordtyp]
+const FUNC_MAJOR = {
+  T: [0, ''], S: [5, ''], D: [7, ''],
+  Tp: [9, 'm'], Sp: [2, 'm'], Dp: [4, 'm'],
+  D7: [7, '7'], DD: [2, ''], T7: [0, '7'], S7: [5, '7'],
+  Tmaj7: [0, 'maj7'], Sp7: [2, 'm7'], Tp7: [9, 'm7'],
+};
+// Moll: små bokstäver för mollackord, dominanten är dur (harmonisk moll), parallellerna är dur
+const FUNC_MINOR = {
+  t: [0, 'm'], s: [5, 'm'], D: [7, ''], d: [7, 'm'],
+  tP: [3, ''], sP: [8, ''], dP: [10, ''], D7: [7, '7'],
+};
+
+const PROGRESSIONS = {
+  major: [
+    { name: 'Grundackorden', funcs: ['T', 'S', 'D'], desc: 'Tonika, subdominant och dominant – grunden i nästan all musik.' },
+    { name: 'Pop', funcs: ['T', 'D', 'Tp', 'S'], desc: 'Den vanligaste poplåten: grundackorden och mollparallellen.' },
+    { name: '50-tal', funcs: ['T', 'Tp', 'S', 'D'], desc: 'Doo-wop och ballader. Tonikan går till sin mollparallell.' },
+    { name: 'Visa', funcs: ['T', 'S', 'D7', 'Tp'], desc: 'Snälla visackord med dominantseptima som leder hem.' },
+    { name: 'Alla sex', funcs: ['T', 'Sp', 'Dp', 'S', 'D', 'Tp'], desc: 'Hela tonarten: grundackorden och alla tre mollparallellerna.' },
+    { name: 'Jazz II–V–I', funcs: ['Sp7', 'D7', 'Tmaj7', 'Tp7'], desc: 'Subdominantparallell, dominant och tonika med septimor.' },
+    { name: 'Blues', funcs: ['T7', 'S7', 'D7'], desc: 'Tre septimackord för tolvtaktsblues.' },
+    { name: 'Hela tonarten', funcs: ['T', 'S', 'D', 'Tp', 'Sp', 'Dp', 'D7', 'DD'], desc: 'Åtta rutor: grundackord, mollparalleller, D7 och dubbeldominanten.' },
+  ],
+  minor: [
+    { name: 'Grundackorden', funcs: ['t', 's', 'D'], desc: 'Moll-tonika, moll-subdominant och dur-dominant.' },
+    { name: 'Moll-pop', funcs: ['t', 'sP', 'tP', 'dP'], desc: 'Vemodig pop med durparallellerna.' },
+    { name: 'Andalusisk', funcs: ['t', 'dP', 'sP', 'D'], desc: 'Nedåtgående flamencokadens.' },
+    { name: 'Ballad', funcs: ['t', 'sP', 's', 'D'], desc: 'Tonika, parallell, subdominant och en dominant som drar hem.' },
+    { name: 'Alla sex', funcs: ['t', 's', 'D', 'tP', 'sP', 'dP'], desc: 'Hela molltonarten: grundackorden och alla tre parallellerna.' },
+    { name: 'Hela tonarten', funcs: ['t', 's', 'D', 'tP', 'sP', 'dP', 'D7', 'd'], desc: 'Åtta rutor: grundackord, paralleller, D7 och moll-dominanten.' },
+  ],
+};
+const KEEP_CHORDS = -1; // "Behåll mina ackord"
+
+const WIZ_NOTE_COUNTS = [5, 7, 8, 12, 16, 24];
+const WIZ_SCALES = { major: 'Dur', minor: 'Moll', pentatonic: 'Pentatonisk', blues: 'Blues', chromatic: 'Kromatisk' };
+const WIZ_TABS = { notes: 'Toner', chords: 'Ackord', xy: 'XY' };
+
+const progMode = (scale) => (scale === 'minor' || scale === 'blues' ? 'minor' : 'major');
+const funcTable = (mode) => (mode === 'minor' ? FUNC_MINOR : FUNC_MAJOR);
+// Funktionsnamnet med upphöjd siffra/tillägg, t.ex. D⁷
+const funcLabel = (f) => f.replace(/^([A-Za-z]+?)(maj7|7)$/, '$1<sup>$2</sup>');
+
+function progChords(prog, mode, root) {
+  const table = funcTable(mode);
+  return prog.funcs.map((f) => ({ root: (root + table[f][0]) % 12, type: table[f][1] }));
+}
+
+// Mallen fyller de första rutorna; resten fylls med andra ackord i tonarten (om man ökar antalet senare)
+function progFill(prog, mode, root) {
+  const used = progChords(prog, mode, root);
+  const all = progChords(PROGRESSIONS[mode].at(-1), mode, root);
+  const key = (c) => `${c.root}${c.type}`;
+  const rest = all.filter((c) => !used.some((u) => key(u) === key(c)));
+  while (used.length + rest.length < MAX_CHORDS) rest.push(...all);
+  return [...used, ...rest].slice(0, MAX_CHORDS);
+}
+
+const wiz = {
+  el: null,
+  step: 0,
+  draft: null,
+  orig: null, // ljudet innan guiden (återställs om man avbryter)
+  fromStart: false,
+  stops: [],
+};
+
+// Stegen beror på vad man valt att spela
+function wizSteps() {
+  const t = wiz.draft.tab;
+  return ['tab', 'key', ...(t === 'chords' ? ['prog'] : []), 'mode',
+    ...(t === 'xy' ? [] : ['formation']), 'sound', 'done'];
+}
+
+function openWizard(fromStart = false) {
+  allPads().forEach(release);
+  if (!audioCtx) {
+    try { initAudio(); } catch {}
+  }
+  const last = localStorage.getItem('hoverPadsPlayTab') || 'notes';
+  const scale = ui.scale.value in WIZ_SCALES ? ui.scale.value : 'major';
+  wiz.draft = {
+    tab: last in WIZ_TABS ? last : 'notes',
+    root: Number(ui.root.value),
+    scale,
+    noteCount: Number(ui.noteCount.value),
+    prog: 1, // Pop / Moll-pop
+    playMode: ui.playMode.value,
+    arpOn: ui.arpOn.checked,
+    formation: ui.formation.value,
+    sound: synthPreset in SYNTH_PRESETS ? synthPreset : null,
+    xySound: ui.xySound.value,
+    outAudio: ui.outAudio.checked,
+    outMidi: ui.outMidi.checked,
+  };
+  wiz.orig = { params: { ...synthParams }, preset: synthPreset, lib: { ...synthLib } };
+  wiz.step = 0;
+  wiz.fromStart = fromStart;
+  renderWizard();
+  wiz.el.showModal();
+}
+
+function wizStopPreview() {
+  wiz.stops.forEach((s) => s());
+  wiz.stops = [];
+}
+
+// Spelar en följd ackord (listor med toner), ett i taget
+function wizPlay(seq, dur = 0.6) {
+  if (!engine || !audioCtx) return;
+  if (audioCtx.state !== 'running') audioCtx.resume();
+  wizStopPreview();
+  const t0 = audioCtx.currentTime + 0.05;
+  seq.forEach((notes, i) => {
+    notes.forEach((n) => {
+      const stop = engine.noteOn(n, 0.45, t0 + i * dur);
+      stop(t0 + (i + 0.92) * dur);
+      wiz.stops.push(() => stop());
+    });
+  });
+  setTimeout(() => { wiz.stops = []; }, (seq.length * dur + 0.5) * 1000);
+}
+
+const wizChordNotes = (c) => {
+  const base = 48 + c.root;
+  return [base - 12, ...CHORD_INTERVALS[c.type].map((i) => base + i)].map(clampNote);
+};
+
+function wizPreviewSound() {
+  const d = wiz.draft;
+  const mode = progMode(d.scale);
+  if (d.tab === 'chords' && d.prog !== KEEP_CHORDS) {
+    wizPlay(progChords(PROGRESSIONS[mode][d.prog], mode, d.root).slice(0, 2).map(wizChordNotes), 0.7);
+  } else {
+    // En kort skalslinga i tonarten
+    const sc = SCALES[d.scale];
+    const notes = [0, 2, 4, 7].map((k) => 60 + d.root + 12 * Math.floor(k / sc.length) + sc[k % sc.length]);
+    wizPlay([...notes.map((n) => [n]), [notes[0], notes[2]]], 0.22);
+  }
+}
+
+// Knapp i en valgrupp
+function wizOption(key, value, inner, on, extra = '') {
+  return `<button type="button" class="wiz-opt ${extra}" role="radio" aria-checked="${on}" data-key="${key}" data-value="${value}">${inner}</button>`;
+}
+
+function renderWizard() {
+  const d = wiz.draft;
+  const steps = wizSteps();
+  const step = steps[wiz.step];
+  const body = $('wiz-body');
+  const mode = progMode(d.scale);
+  let title = '';
+  let html = '';
+
+  if (step === 'tab') {
+    title = 'Vad vill du spela?';
+    html = `<div class="wiz-grid wiz-big" role="radiogroup" aria-label="Spela">${
+      Object.entries(WIZ_TABS).map(([t, name]) => {
+        const icon = document.querySelector(`#tabs button[data-tab="${t}"] svg`).outerHTML;
+        const sub = { notes: 'En ton per ruta', chords: 'Ett ackord per ruta', xy: 'Glid fritt i tonhöjd' }[t];
+        return wizOption('tab', t, `${icon}<b>${name}</b><small>${sub}</small>`, d.tab === t);
+      }).join('')}</div>`;
+  } else if (step === 'key') {
+    title = 'Vilken tonart?';
+    const scales = d.tab === 'chords' ? { major: 'Dur', minor: 'Moll' } : WIZ_SCALES;
+    if (!(d.scale in scales)) d.scale = 'major';
+    html = `<h4>Grundton</h4><div class="wiz-keys" role="radiogroup" aria-label="Grundton">${
+      CHORD_ROOTS.map((n, r) => wizOption('root', r, n, d.root === r)).join('')}</div>
+      <h4>${d.tab === 'chords' ? 'Dur eller moll' : 'Skala'}</h4>
+      <div class="wiz-row" role="radiogroup" aria-label="Skala">${
+      Object.entries(scales).map(([s, name]) => wizOption('scale', s, name, d.scale === s)).join('')}</div>`;
+    if (d.tab === 'notes') {
+      html += `<h4>Antal rutor</h4><div class="wiz-row" role="radiogroup" aria-label="Antal rutor">${
+        WIZ_NOTE_COUNTS.map((n) => wizOption('noteCount', n, n, d.noteCount === n)).join('')}</div>`;
+    }
+    html += `<p class="wiz-now">Tonart: <b>${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}</b>
+      <button type="button" class="wiz-listen" data-act="listen">▶ Lyssna</button></p>`;
+  } else if (step === 'prog') {
+    title = `Ackordmall i ${CHORD_ROOTS[d.root]} ${mode === 'minor' ? 'moll' : 'dur'}`;
+    const list = PROGRESSIONS[mode];
+    if (d.prog >= list.length) d.prog = 1;
+    html = `<p class="wiz-hint">T = tonika, S = subdominant, D = dominant, p = parallell${
+      mode === 'minor' ? '. Små bokstäver är mollackord.' : ' (mollparallellerna).'} Tryck för att lyssna.</p>
+      <div class="wiz-progs" role="radiogroup" aria-label="Ackordmall">${
+      list.map((p, i) => {
+        const cs = progChords(p, mode, d.root);
+        const cells = cs.map((c, k) => `<span class="wiz-chord"><i style="background:${chords[k].color || '#3a3f55'}"></i><b>${chordName({ root: c.root, type: c.type, bass: BASS_ROOT })}</b><em>${funcLabel(p.funcs[k])}</em></span>`).join('');
+        return wizOption('prog', i, `<span class="wiz-prog-head"><b>${p.name}</b><small>${cs.length} ackord</small></span>
+          <span class="wiz-chords">${cells}</span><small class="wiz-desc">${p.desc}</small>`, d.prog === i, 'wiz-prog');
+      }).join('')}
+      ${wizOption('prog', KEEP_CHORDS, `<span class="wiz-prog-head"><b>Behåll mina ackord</b></span>
+        <span class="wiz-chords wiz-plain">${chords.slice(0, Number(ui.chordCount.value)).map(chordName).join('  ')}</span>`, d.prog === KEEP_CHORDS, 'wiz-prog')}
+      </div>`;
+  } else if (step === 'mode') {
+    title = 'Hur ska tonerna låta när du spelar?';
+    html = `<div class="wiz-grid" role="radiogroup" aria-label="Spelsätt">${
+      Object.entries(PLAY_MODES).map(([v, m]) =>
+        wizOption('playMode', v, `${m.icon}<b>${m.name}</b><small>${m.desc}</small>`, d.playMode === v)).join('')}</div>
+      <button type="button" class="wiz-toggle" role="switch" aria-checked="${d.arpOn}" data-act="arp">
+        ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Tonerna spelas en i taget, i takt.</small></span><i class="wiz-switch"></i>
+      </button>`;
+  } else if (step === 'formation') {
+    title = 'Hur ska rutorna ligga?';
+    html = `<div class="wiz-grid wiz-forms" role="radiogroup" aria-label="Formation">${
+      Object.entries(FORMATIONS).map(([v, name]) =>
+        wizOption('formation', v, `${FORMATION_ICONS[v]}<b>${name}</b>`, d.formation === v)).join('')}</div>`;
+    if (d.formation === 'strings' && d.tab === 'chords') {
+      html += '<p class="wiz-hint">Strängar: dra över ackordet som på en harpa.</p>';
+    }
+  } else if (step === 'sound') {
+    if (d.tab === 'xy') {
+      title = 'Vilken klang på XY-plattan?';
+      html = `<div class="wiz-row wiz-wrap" role="radiogroup" aria-label="Klang">${
+        [...ui.xySound.options].map((o) => wizOption('xySound', o.value,
+          `${WAVE_ICONS?.[o.value] ? segIconSvg(WAVE_ICONS[o.value]) : ''}${o.textContent}`, d.xySound === o.value, 'wiz-wave')).join('')}</div>`;
+    } else {
+      title = 'Vilket ljud?';
+      const cur = d.sound === null ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
+      html = `${cur}<div class="wiz-sounds" role="radiogroup" aria-label="Ljud">${
+        Object.keys(SYNTH_PRESETS).map((n) => wizOption('sound', n, n, d.sound === n)).join('')}</div>
+        <p class="wiz-hint">Tryck för att lyssna. Fler än 350 ljud finns under Inställningar → Ljud.</p>`;
+    }
+  } else if (step === 'done') {
+    title = 'Klart att spela!';
+    const rows = [
+      ['Spela', WIZ_TABS[d.tab]],
+      ['Tonart', `${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}`],
+    ];
+    if (d.tab === 'notes') rows.push(['Rutor', d.noteCount]);
+    if (d.tab === 'chords') {
+      rows.push(['Ackord', d.prog === KEEP_CHORDS ? chords.slice(0, Number(ui.chordCount.value)).map(chordName).join(' ')
+        : progChords(PROGRESSIONS[mode][d.prog], mode, d.root).map((c) => chordName({ ...c, bass: BASS_ROOT })).join(' ')]);
+    }
+    rows.push(['Spelsätt', PLAY_MODES[d.playMode].name + (d.arpOn ? ' + arpeggiator' : '')]);
+    if (d.tab !== 'xy') rows.push(['Formation', FORMATIONS[d.formation]]);
+    rows.push(['Ljud', d.tab === 'xy' ? ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent
+      : d.sound || $('sound-now-name')?.textContent || 'eget ljud']);
+    html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+      <h4>Ut</h4>
+      <div class="wiz-row">
+        <button type="button" class="wiz-toggle small" role="switch" aria-checked="${d.outAudio}" data-act="outAudio"><span><b>Ljud i appen</b></span><i class="wiz-switch"></i></button>
+        <button type="button" class="wiz-toggle small" role="switch" aria-checked="${d.outMidi}" data-act="outMidi"><span><b>Skicka MIDI</b></span><i class="wiz-switch"></i></button>
+      </div>
+      <p class="wiz-hint">Allt går att ändra senare under Inställningar, och guiden finns kvar under knappen Guide.</p>`;
+  }
+
+  $('wiz-title').textContent = title;
+  $('wiz-progress').innerHTML = steps.map((_, i) =>
+    `<i class="${i < wiz.step ? 'past' : i === wiz.step ? 'now' : ''}"></i>`).join('');
+  $('wiz-progress').setAttribute('aria-label', `Steg ${wiz.step + 1} av ${steps.length}`);
+  $('wiz-count').textContent = `Steg ${wiz.step + 1} av ${steps.length}`;
+  body.innerHTML = html;
+  body.dataset.step = step;
+  $('wiz-back').disabled = wiz.step === 0;
+  $('wiz-next').textContent = step === 'done' ? 'Börja spela' : 'Nästa →';
+}
+
+function wizChoose(key, raw) {
+  const d = wiz.draft;
+  const num = ['root', 'noteCount', 'prog'].includes(key);
+  d[key] = num ? Number(raw) : raw;
+  if (key === 'tab' && raw === 'chords' && !(d.scale in { major: 1, minor: 1 })) d.scale = progMode(d.scale);
+  if (key === 'scale') d.prog = 1;
+  if (key === 'sound') {
+    synthLib = { name: '', edited: false };
+    applySynth(presetParams(raw), raw);
+  }
+  renderWizard();
+  // Fokus kvar på det valda (tangentbord och kontakt)
+  $('wiz-body').querySelector(`.wiz-opt[data-key="${key}"][data-value="${CSS.escape(String(d[key]))}"]`)?.focus();
+  if (key === 'root' || key === 'scale') wizPreviewSound();
+  if (key === 'prog' && d.prog !== KEEP_CHORDS) {
+    const mode = progMode(d.scale);
+    wizPlay(progChords(PROGRESSIONS[mode][d.prog], mode, d.root).map(wizChordNotes));
+  }
+  if (key === 'sound') wizPreviewSound();
+}
+
+function wizAct(act) {
+  const d = wiz.draft;
+  if (act === 'listen') { wizPreviewSound(); return; }
+  if (act === 'arp') d.arpOn = !d.arpOn;
+  if (act === 'outAudio') d.outAudio = !d.outAudio;
+  if (act === 'outMidi') d.outMidi = !d.outMidi;
+  renderWizard();
+  $('wiz-body').querySelector(`[data-act="${act}"]`)?.focus();
+}
+
+// Ställer in allt på en gång (samma väg som när ett sparat preset laddas)
+function finishWizard() {
+  const d = wiz.draft;
+  wizStopPreview();
+  const data = snapshot();
+  Object.assign(data.settings, {
+    root: String(d.root), scale: d.scale, playMode: d.playMode, arpOn: d.arpOn,
+    xySound: d.xySound, outAudio: d.outAudio, outMidi: d.outMidi,
+  });
+  if (d.tab === 'notes') data.settings.noteCount = String(d.noteCount);
+  if (d.tab !== 'xy') data.settings.formation = d.formation;
+  if (d.tab === 'chords' && d.prog !== KEEP_CHORDS) {
+    const mode = progMode(d.scale);
+    const prog = PROGRESSIONS[mode][d.prog];
+    data.settings.chordCount = String(prog.funcs.length);
+    data.chords = progFill(prog, mode, d.root).map((c, i) => ({
+      ...chords[i], root: c.root, type: c.type, voicing: 'root', shift: 0, bass: BASS_ROOT,
+    }));
+  }
+  applySnapshot(data);
+  // Det är inte längre det sparade presetet
+  localStorage.removeItem(USER_PRESET_ACTIVE_KEY);
+  renderUserPresets();
+  closeWizard(true);
+  if (wiz.fromStart) startApp(d.tab);
+  else showTab(d.tab);
+  log(`Guiden klar: ${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}, ${WIZ_TABS[d.tab]}`);
+}
+
+function setupWizard() {
+  wiz.el = $('wizard');
+  $('wizard-btn').addEventListener('click', () => openWizard(false));
+  $('start-wizard').addEventListener('click', () => openWizard(true));
+  $('wiz-body').addEventListener('click', (e) => {
+    const opt = e.target.closest('.wiz-opt');
+    if (opt) { wizChoose(opt.dataset.key, opt.dataset.value); return; }
+    const act = e.target.closest('[data-act]');
+    if (act) wizAct(act.dataset.act);
+  });
+  $('wiz-back').addEventListener('click', () => {
+    if (wiz.step > 0) { wiz.step--; renderWizard(); }
+  });
+  $('wiz-next').addEventListener('click', () => {
+    if (wiz.step < wizSteps().length - 1) { wiz.step++; renderWizard(); $('wiz-next').focus(); }
+    else finishWizard();
+  });
+  $('wiz-cancel').addEventListener('click', () => closeWizard(false));
+  // Esc
+  wiz.el.addEventListener('cancel', (e) => { e.preventDefault(); closeWizard(false); });
+}
+
+// Avbruten: ljudet man provlyssnade på återställs
+function closeWizard(finished) {
+  wizStopPreview();
+  if (!finished) {
+    synthLib = { ...wiz.orig.lib };
+    applySynth(wiz.orig.params, wiz.orig.preset);
+  }
+  wiz.el.close();
+}
