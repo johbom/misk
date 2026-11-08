@@ -64,6 +64,7 @@ function applySnapshot(data) {
   refreshAccess();
   buildNotePads();
   buildChordPads();
+  ui.xyReverb.dispatchEvent(new Event('input')); // XY:s rumsklang: ljud, värdetext och spelraden
 }
 
 function describe(data) {

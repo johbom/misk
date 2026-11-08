@@ -318,7 +318,18 @@ function setupXY() {
     ui.xyOctaves.value = '5';
     saveSettings();
   }
-  ui.xyReverb.addEventListener('input', () => { if (xy.send) xy.send.gain.setTargetAtTime(Number(ui.xyReverb.value), audioCtx.currentTime, 0.05); });
+  // Rumsklangen finns både i spelraden på XY-sidan och under Spelytor – de följs åt
+  const revBar = $('xy-reverb-bar');
+  revBar.value = ui.xyReverb.value;
+  ui.xyReverb.addEventListener('input', () => {
+    revBar.value = ui.xyReverb.value;
+    if (xy.send) xy.send.gain.setTargetAtTime(Number(ui.xyReverb.value), audioCtx.currentTime, 0.05);
+  });
+  revBar.addEventListener('input', () => {
+    ui.xyReverb.value = revBar.value;
+    ui.xyReverb.dispatchEvent(new Event('input')); // ljud och värdetext
+  });
+  revBar.addEventListener('change', () => ui.xyReverb.dispatchEvent(new Event('change'))); // sparar
   xy.el = $('xy-pad');
   xy.canvas = $('xy-canvas');
   xy.g = xy.canvas.getContext('2d');
@@ -373,6 +384,7 @@ function setupXY() {
 // Anropas när fliken byts
 function xyShow(on) {
   if (!on) { xyStopAll(); return; }
+  $('xy-reverb-bar').value = ui.xyReverb.value; // om värdet bytts av ett preset
   xyResize();
 }
 

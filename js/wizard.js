@@ -463,8 +463,7 @@ function finishWizard() {
     }));
   }
   applySnapshot(data);
-  // XY:s rumsklang och stödlinjer följer med direkt
-  ui.xyReverb.dispatchEvent(new Event('input'));
+  // XY:s stödlinjer följer med direkt (rumsklangen sköter applySnapshot)
   ui.xyOctaves.dispatchEvent(new Event('change'));
   // Det är inte längre det sparade presetet
   localStorage.removeItem(USER_PRESET_ACTIVE_KEY);
