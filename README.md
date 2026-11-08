@@ -14,13 +14,15 @@ När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **
 
 Knappen **Startguide** på startsidan (och **Guide** i menyraden) frågar steg för steg om det viktigaste och ställer sedan in allt på en gång:
 
-1. **Vad vill du spela?** – Toner, Ackord eller XY (stegen nedan anpassas efter valet).
+1. **Vad vill du spela?** – Toner, Ackord eller XY. Stegen nedan gäller Toner och Ackord; XY har egna steg (se nedan).
 2. **Tonart** – grundton och dur/moll (för Toner även pentatonisk, blues och kromatisk, och antal rutor). *Lyssna* spelar en kort slinga.
-3. **Ackordmall** (bara Ackord) – färdiga ackordföljder som räknas ut från tonarten med funktionsbeteckningar: T = tonika, S = subdominant, D = dominant och parallellerna Tp, Sp, Dp. I dur: *Grundackorden* (T S D), *Pop* (T D Tp S), *50-tal* (T Tp S D), *Visa* (T S D⁷ Tp), *Alla sex*, *Jazz II–V–I*, *Blues* och *Hela tonarten* (8 rutor med D⁷ och dubbeldominant). I moll (små bokstäver = mollackord): *Grundackorden* (t s D), *Moll-pop* (t sP tP dP), *Andalusisk* (t dP sP D), *Ballad*, *Alla sex* och *Hela tonarten*. Mallen spelas upp när man väljer den. *Behåll mina ackord* ändrar inget.
+3. **Ackordmall** (bara Ackord) – färdiga ackordföljder som räknas ut från tonarten med funktionsbeteckningar: T = tonika, S = subdominant, D = dominant och parallellerna Tp, Sp, Dp. I dur: *Grundackorden* (T S D), *Pop* (T D Tp S), *50-tal* (T Tp S D), *Visa* (T S D⁷ Tp), *Alla sex*, *Jazz II–V–I*, *Blues* och *Hela tonarten* (8 rutor med D⁷ och dubbeldominant). I moll (små bokstäver = mollackord): *Grundackorden* (t s D), *Moll-pop* (t sP tP dP), *Andalusisk* (t dP sP D), *Ballad*, *Alla sex* och *Hela tonarten*. Mallen spelas upp när man väljer den. Överst ligger *Behåll mina ackord*, som inte ändrar något.
 4. **Spelsätt** – Håll, One-shot, Längd eller Ligg kvar, och arpeggiatorn av/på.
 5. **Formation** (Toner och Ackord) – Rutnät, Cirkel, Ring, Bikupa eller Strängar.
 6. **Ljud** – de färdiga ljuden (provlyssnas direkt), eller klangen för XY.
 7. **Klart** – en sammanfattning, val av ljud i appen och MIDI, och *Börja spela*.
+
+**För XY** frågar guiden bara om det XY använder: *Klang* (provlyssnas med en kort glidning), *Omfång* i oktaver (1–5, högerkanten är C7), *Rumsklang* (Torr, Lite, Mellan, Mycket) och arpeggiatorn av/på. Tonart, spelsätt, formation och utgångar lämnas orörda, eftersom XY glider steglöst i tonhöjd och inte skickar MIDI.
 
 Avbryter man (✕ eller Esc) ändras ingenting. Knapparna Tillbaka och Nästa ligger på samma ställe i alla steg.
 

@@ -41,6 +41,10 @@ const KEEP_CHORDS = -1; // "Behåll mina ackord"
 const WIZ_NOTE_COUNTS = [5, 7, 8, 12, 16, 24];
 const WIZ_SCALES = { major: 'Dur', minor: 'Moll', pentatonic: 'Pentatonisk', blues: 'Blues', chromatic: 'Kromatisk' };
 const WIZ_TABS = { notes: 'Toner', chords: 'Ackord', xy: 'XY' };
+// XY: rumsklangens nivåer i guiden (reglaget under Inställningar är steglöst)
+const WIZ_REVERBS = [[0, 'Torr'], [0.2, 'Lite'], [0.35, 'Mellan'], [0.6, 'Mycket']];
+// XY:s högerkant är C7; omfånget räknas nedåt därifrån
+const xyRangeName = (n) => `C${7 - n}–C7`;
 
 const progMode = (scale) => (scale === 'minor' || scale === 'blues' ? 'minor' : 'major');
 const funcTable = (mode) => (mode === 'minor' ? FUNC_MINOR : FUNC_MAJOR);
@@ -71,9 +75,11 @@ const wiz = {
   stops: [],
 };
 
-// Stegen beror på vad man valt att spela
+// Stegen beror på vad man valt att spela. XY glider steglöst i tonhöjd och har egen klang:
+// där frågas inte om tonart, spelsätt, formation eller MIDI, utan om klang, omfång och rumsklang.
 function wizSteps() {
   const t = wiz.draft.tab;
+  if (t === 'xy') return ['tab', 'sound', 'xyfeel', 'done'];
   return ['tab', 'key', ...(t === 'chords' ? ['prog'] : []), 'mode',
     ...(t === 'xy' ? [] : ['formation']), 'sound', 'done'];
 }
@@ -96,10 +102,13 @@ function openWizard(fromStart = false) {
     formation: ui.formation.value,
     sound: synthPreset in SYNTH_PRESETS ? synthPreset : null,
     xySound: ui.xySound.value,
+    xyOctaves: Number(ui.xyOctaves.value),
+    xyReverb: WIZ_REVERBS.reduce((a, b) =>
+      (Math.abs(b[0] - Number(ui.xyReverb.value)) < Math.abs(a[0] - Number(ui.xyReverb.value)) ? b : a))[0],
     outAudio: ui.outAudio.checked,
     outMidi: ui.outMidi.checked,
   };
-  wiz.orig = { params: { ...synthParams }, preset: synthPreset, lib: { ...synthLib } };
+  wiz.orig = { params: { ...synthParams }, preset: synthPreset, lib: { ...synthLib }, xySound: ui.xySound.value };
   wiz.step = 0;
   wiz.fromStart = fromStart;
   renderWizard();
@@ -145,6 +154,19 @@ function wizPreviewSound() {
   }
 }
 
+// XY: en kort glidning med vald klang, nerifrån och upp på ytan (filtret öppnas)
+function wizPreviewXY() {
+  if (!audioCtx) return;
+  if (audioCtx.state !== 'running') audioCtx.resume();
+  wizStopPreview();
+  const t = audioCtx.currentTime + 0.05;
+  const v = xyMakeVoice(220, 0.3, t);
+  v.oscs.forEach((o) => o.frequency.exponentialRampToValueAtTime(440, t + 0.9));
+  xyVoiceEnd(v, t + 1.2);
+  wiz.stops.push(() => xyVoiceEnd(v));
+  setTimeout(() => { wiz.stops = []; }, 1700);
+}
+
 // Knapp i en valgrupp
 function wizOption(key, value, inner, on, extra = '') {
   return `<button type="button" class="wiz-opt ${extra}" role="radio" aria-checked="${on}" data-key="${key}" data-value="${value}">${inner}</button>`;
@@ -188,15 +210,15 @@ function renderWizard() {
     if (d.prog >= list.length) d.prog = 1;
     html = `<p class="wiz-hint">T = tonika, S = subdominant, D = dominant, p = parallell${
       mode === 'minor' ? '. Små bokstäver är mollackord.' : ' (mollparallellerna).'} Tryck för att lyssna.</p>
-      <div class="wiz-progs" role="radiogroup" aria-label="Ackordmall">${
-      list.map((p, i) => {
+      <div class="wiz-progs" role="radiogroup" aria-label="Ackordmall">
+      ${wizOption('prog', KEEP_CHORDS, `<span class="wiz-prog-head"><b>Behåll mina ackord</b></span>
+        <span class="wiz-chords wiz-plain">${chords.slice(0, Number(ui.chordCount.value)).map(chordName).join('  ')}</span>`, d.prog === KEEP_CHORDS, 'wiz-prog')}
+      ${list.map((p, i) => {
         const cs = progChords(p, mode, d.root);
         const cells = cs.map((c, k) => `<span class="wiz-chord"><i style="background:${chords[k].color || '#3a3f55'}"></i><b>${chordName({ root: c.root, type: c.type, bass: BASS_ROOT })}</b><em>${funcLabel(p.funcs[k])}</em></span>`).join('');
         return wizOption('prog', i, `<span class="wiz-prog-head"><b>${p.name}</b><small>${cs.length} ackord</small></span>
           <span class="wiz-chords">${cells}</span><small class="wiz-desc">${p.desc}</small>`, d.prog === i, 'wiz-prog');
       }).join('')}
-      ${wizOption('prog', KEEP_CHORDS, `<span class="wiz-prog-head"><b>Behåll mina ackord</b></span>
-        <span class="wiz-chords wiz-plain">${chords.slice(0, Number(ui.chordCount.value)).map(chordName).join('  ')}</span>`, d.prog === KEEP_CHORDS, 'wiz-prog')}
       </div>`;
   } else if (step === 'mode') {
     title = 'Hur ska tonerna låta när du spelar?';
@@ -217,7 +239,8 @@ function renderWizard() {
   } else if (step === 'sound') {
     if (d.tab === 'xy') {
       title = 'Vilken klang på XY-plattan?';
-      html = `<div class="wiz-row wiz-wrap" role="radiogroup" aria-label="Klang">${
+      html = `<p class="wiz-hint">På XY glider tonhöjden steglöst från vänster till höger, och uppåt blir ljudet ljusare. Tryck för att lyssna.</p>
+        <div class="wiz-row wiz-wrap" role="radiogroup" aria-label="Klang">${
         [...ui.xySound.options].map((o) => wizOption('xySound', o.value,
           `${WAVE_ICONS?.[o.value] ? segIconSvg(WAVE_ICONS[o.value]) : ''}${o.textContent}`, d.xySound === o.value, 'wiz-wave')).join('')}</div>`;
     } else {
@@ -227,6 +250,29 @@ function renderWizard() {
         Object.keys(SYNTH_PRESETS).map((n) => wizOption('sound', n, n, d.sound === n)).join('')}</div>
         <p class="wiz-hint">Tryck för att lyssna. Fler än 350 ljud finns under Inställningar → Ljud.</p>`;
     }
+  } else if (step === 'xyfeel') {
+    title = 'Omfång och rumsklang';
+    html = `<h4>Omfång i oktaver</h4><p class="wiz-hint">Hur många oktaver plattan räcker över. Färre oktaver gör det lättare att träffa rätt ton.</p>
+      <div class="wiz-octs" role="radiogroup" aria-label="Omfång i oktaver">${
+      [1, 2, 3, 4, 5].map((n) => wizOption('xyOctaves', n,
+        `<b>${n}</b><small>${xyRangeName(n)}</small>`, d.xyOctaves === n)).join('')}</div>
+      <h4>Rumsklang</h4>
+      <div class="wiz-row" role="radiogroup" aria-label="Rumsklang">${
+      WIZ_REVERBS.map(([v, name]) => wizOption('xyReverb', v, name, d.xyReverb === v)).join('')}</div>
+      <button type="button" class="wiz-toggle" role="switch" aria-checked="${d.arpOn}" data-act="arp">
+        ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Varje finger upprepas i takt, över oktaverna.</small></span><i class="wiz-switch"></i>
+      </button>`;
+  } else if (step === 'done' && d.tab === 'xy') {
+    title = 'Klart att spela!';
+    const rows = [
+      ['Spela', 'XY'],
+      ['Klang', ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent],
+      ['Omfång', `${d.xyOctaves} oktav${d.xyOctaves > 1 ? 'er' : ''} (${xyRangeName(d.xyOctaves)})`],
+      ['Rumsklang', WIZ_REVERBS.find(([v]) => v === d.xyReverb)?.[1] || ''],
+      ['Arpeggiator', d.arpOn ? 'På' : 'Av'],
+    ];
+    html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
+      <p class="wiz-hint">Allt går att ändra senare: klangen på XY-sidan, resten under Inställningar. Guiden finns kvar under knappen Guide.</p>`;
   } else if (step === 'done') {
     title = 'Klart att spela!';
     const rows = [
@@ -264,7 +310,7 @@ function renderWizard() {
 
 function wizChoose(key, raw) {
   const d = wiz.draft;
-  const num = ['root', 'noteCount', 'prog'].includes(key);
+  const num = ['root', 'noteCount', 'prog', 'xyOctaves', 'xyReverb'].includes(key);
   d[key] = num ? Number(raw) : raw;
   if (key === 'tab' && raw === 'chords' && !(d.scale in { major: 1, minor: 1 })) d.scale = progMode(d.scale);
   if (key === 'scale') d.prog = 1;
@@ -281,6 +327,10 @@ function wizChoose(key, raw) {
     wizPlay(progChords(PROGRESSIONS[mode][d.prog], mode, d.root).map(wizChordNotes));
   }
   if (key === 'sound') wizPreviewSound();
+  if (key === 'xySound') {
+    ui.xySound.value = raw; // provlyssning; sparas först när guiden är klar
+    wizPreviewXY();
+  }
 }
 
 function wizAct(act) {
@@ -298,10 +348,17 @@ function finishWizard() {
   const d = wiz.draft;
   wizStopPreview();
   const data = snapshot();
-  Object.assign(data.settings, {
-    root: String(d.root), scale: d.scale, playMode: d.playMode, arpOn: d.arpOn,
-    xySound: d.xySound, outAudio: d.outAudio, outMidi: d.outMidi,
-  });
+  if (d.tab === 'xy') {
+    // XY: bara det XY använder (tonart, spelsätt, formation och utgångar lämnas orörda)
+    Object.assign(data.settings, {
+      arpOn: d.arpOn, xySound: d.xySound, xyOctaves: String(d.xyOctaves), xyReverb: String(d.xyReverb),
+    });
+  } else {
+    Object.assign(data.settings, {
+      root: String(d.root), scale: d.scale, playMode: d.playMode, arpOn: d.arpOn,
+      outAudio: d.outAudio, outMidi: d.outMidi,
+    });
+  }
   if (d.tab === 'notes') data.settings.noteCount = String(d.noteCount);
   if (d.tab !== 'xy') data.settings.formation = d.formation;
   if (d.tab === 'chords' && d.prog !== KEEP_CHORDS) {
@@ -313,13 +370,17 @@ function finishWizard() {
     }));
   }
   applySnapshot(data);
+  // XY:s rumsklang och stödlinjer följer med direkt
+  ui.xyReverb.dispatchEvent(new Event('input'));
+  ui.xyOctaves.dispatchEvent(new Event('change'));
   // Det är inte längre det sparade presetet
   localStorage.removeItem(USER_PRESET_ACTIVE_KEY);
   renderUserPresets();
   closeWizard(true);
   if (wiz.fromStart) startApp(d.tab);
   else showTab(d.tab);
-  log(`Guiden klar: ${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}, ${WIZ_TABS[d.tab]}`);
+  log(d.tab === 'xy' ? 'Guiden klar: XY'
+    : `Guiden klar: ${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}, ${WIZ_TABS[d.tab]}`);
 }
 
 function setupWizard() {
@@ -349,6 +410,7 @@ function closeWizard(finished) {
   wizStopPreview();
   if (!finished) {
     synthLib = { ...wiz.orig.lib };
+    ui.xySound.value = wiz.orig.xySound;
     applySynth(wiz.orig.params, wiz.orig.preset);
   }
   wiz.el.close();
