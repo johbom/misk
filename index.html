@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=81" />
+  <link rel="stylesheet" href="css/style.css?v=82" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -298,7 +298,7 @@
           <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
           <output id="xy-reverb-value" class="val">35 %</output>
         </label>
-        <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret – med Sinus blir det mer vibrato. Klang och reverb går också att ställa på XY-sidan. Reverb under <em>Ljud</em> gäller bara rutorna.</p>
+        <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret. Sinus, Triangel och Varm får också FM uppåt (fler övertoner), och Sinus även vibrato. Klang och reverb går också att ställa på XY-sidan. Reverb under <em>Ljud</em> gäller bara rutorna.</p>
       </fieldset>
     </div>
 
@@ -530,6 +530,22 @@
       från <strong>MISK</strong> – ett projekt med stöd av Allmänna Arvsfonden. MISK drevs av Eldorado
       Resurscenter Göteborg Stad, Furuboda Folkhögskola och Certec.
     </p>
+    <h3>Installera som app</h3>
+    <p>
+      Hover Pads kan installeras som en app. Den startar då från hemskärmen eller programlistan,
+      visas i helskärm utan webbläsarlist och fungerar <strong>utan internet</strong> efter första besöket.
+    </p>
+    <p id="about-install-status" hidden></p>
+    <ul class="about-install">
+      <li><strong>iPhone och iPad:</strong> öppna sidan i <em>Safari</em>, tryck på <em>Dela</em>
+        (fyrkanten med en pil uppåt) och välj <em>Lägg till på hemskärmen</em>.</li>
+      <li><strong>Android:</strong> öppna sidan i <em>Chrome</em>, tryck på menyn ⋮ och välj
+        <em>Installera app</em> (eller <em>Lägg till på startskärmen</em>).</li>
+      <li><strong>Dator med Chrome eller Edge:</strong> tryck på <em>Installera</em> uppe till höger i Hover Pads,
+        eller på installera-ikonen i adressfältet.</li>
+      <li><strong>Mac med Safari:</strong> välj <em>Arkiv → Lägg till i Dock</em>.</li>
+    </ul>
+    <p>När du är uppkopplad hämtar appen själv den senaste versionen.</p>
     <h3>TFH Sensory</h3>
     <p>
       Appen har idag utvecklats med stöd av TFH Sensory,
@@ -582,31 +598,31 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=81"></script>
-  <script src="js/fm-library.js?v=81"></script>
-  <script src="js/pm-library.js?v=81"></script>
-  <script src="js/wt-library.js?v=81"></script>
-  <script src="js/lib-levels.js?v=81"></script>
-  <script src="js/sound-library.js?v=81"></script>
-  <script src="js/layout.js?v=81"></script>
-  <script src="js/core.js?v=81"></script>
-  <script src="js/audio.js?v=81"></script>
-  <script src="js/drums.js?v=81"></script>
-  <script src="js/pads.js?v=81"></script>
-  <script src="js/osc.js?v=81"></script>
-  <script src="js/arp.js?v=81"></script>
-  <script src="js/xy.js?v=81"></script>
-  <script src="js/vibrato.js?v=81"></script>
-  <script src="js/notes.js?v=81"></script>
-  <script src="js/chords.js?v=81"></script>
-  <script src="js/sound.js?v=81"></script>
-  <script src="js/view.js?v=81"></script>
-  <script src="js/controls.js?v=81"></script>
-  <script src="js/access.js?v=81"></script>
-  <script src="js/settings.js?v=81"></script>
-  <script src="js/user-presets.js?v=81"></script>
-  <script src="js/wizard.js?v=81"></script>
-  <script src="js/pwa.js?v=81"></script>
-  <script src="js/main.js?v=81"></script>
+  <script src="js/synth.js?v=82"></script>
+  <script src="js/fm-library.js?v=82"></script>
+  <script src="js/pm-library.js?v=82"></script>
+  <script src="js/wt-library.js?v=82"></script>
+  <script src="js/lib-levels.js?v=82"></script>
+  <script src="js/sound-library.js?v=82"></script>
+  <script src="js/layout.js?v=82"></script>
+  <script src="js/core.js?v=82"></script>
+  <script src="js/audio.js?v=82"></script>
+  <script src="js/drums.js?v=82"></script>
+  <script src="js/pads.js?v=82"></script>
+  <script src="js/osc.js?v=82"></script>
+  <script src="js/arp.js?v=82"></script>
+  <script src="js/xy.js?v=82"></script>
+  <script src="js/vibrato.js?v=82"></script>
+  <script src="js/notes.js?v=82"></script>
+  <script src="js/chords.js?v=82"></script>
+  <script src="js/sound.js?v=82"></script>
+  <script src="js/view.js?v=82"></script>
+  <script src="js/controls.js?v=82"></script>
+  <script src="js/access.js?v=82"></script>
+  <script src="js/settings.js?v=82"></script>
+  <script src="js/user-presets.js?v=82"></script>
+  <script src="js/wizard.js?v=82"></script>
+  <script src="js/pwa.js?v=82"></script>
+  <script src="js/main.js?v=82"></script>
 </body>
 </html>

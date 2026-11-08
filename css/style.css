@@ -682,6 +682,9 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 }
 #about p { margin: 0 0 10px; font-size: 0.95rem; }
 #about a { color: #8fb0ff; }
+.about-install { margin: 0 0 10px; padding-left: 20px; font-size: 0.95rem; }
+.about-install li { margin-bottom: 6px; }
+#about-install-status { color: #7be3a0; font-weight: 600; }
 .about-motto { font-weight: 600; color: var(--hit); }
 .about-close { position: absolute; top: 12px; right: 12px; margin: 0; }
 .about-close button { background: none; border: none; color: var(--muted); font-size: 1.1rem; padding: 4px 8px; }

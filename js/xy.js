@@ -3,6 +3,8 @@
 //   Y = highcut (lågpassfilter) som öppnar uppåt: längst ned dovt, längst upp helt öppet.
 //       Sinus har inga övertoner att filtrera, så där styr Y i stället vibrato: inget längst ned,
 //       djupt och lite snabbare längst upp.
+//       Klanger med få övertoner (Sinus, Triangel, Varm) får dessutom FM på Y: längst ned ren,
+//       uppåt allt fler övertoner, så att Y hörs tydligt även på dem.
 // Musen låter så länge den är över ytan (som resten av appen), fingrar så länge de rör skärmen.
 // Varje pekare ritar ett glödande spår som bleknar bort.
 
@@ -41,6 +43,8 @@ const xyCut = (ny, freq) => Math.min(XY_CUT_MAX, freq * Math.pow(2, ny * XY_CUT_
 const XY_VIB_MAX = 55;
 const xyVibDepth = (ny) => XY_VIB_MAX * Math.pow(ny, 1.6);
 const xyVibRate = (ny) => 4 + 3 * ny;
+// FM-djup (frekvenssvängning i Hz) för höjden ny: ingenting längst ned, kurva som gör toppen tydligast
+const xyFmDev = (fm, ny, freq) => fm.index * Math.pow(ny, 1.4) * fm.ratio * freq;
 const xyYIsVibrato = () => (XY_SOUNDS[ui.xySound.value] || {}).y === 'vibrato';
 
 // ---------- Ljud: en röst per pekare ----------
@@ -48,9 +52,10 @@ const xyYIsVibrato = () => (XY_SOUNDS[ui.xySound.value] || {}).y === 'vibrato';
 // alla klanger låter ungefär lika starkt.
 const XY_SOUNDS = {
   // Uppmätta: övertonsrika klanger låter starkare per energi, så de ligger lite lägre än sinus
-  sine: { level: 0.85, y: 'vibrato' }, // Y styr vibrato (filter hörs inte på en sinus)
-  triangle: { level: 0.95 },
-  warm: { level: 0.85 },
+  // fm: Y styr FM-djupet (ratio = modulatorns frekvens / tonens, index = djup längst upp)
+  sine: { level: 0.85, y: 'vibrato', fm: { ratio: 1, index: 3.5 } }, // vibrato + FM (filter hörs inte på en sinus)
+  triangle: { level: 0.95, fm: { ratio: 2, index: 2.5 } }, // ihålig -> ljus
+  warm: { level: 0.85, fm: { ratio: 1, index: 3 } },
   sawtooth: { level: 1.05 },
   square: { level: 0.75 },
   supersaw: { level: 2.2, detunes: [-18, -9, 0, 9, 18], wave: 'sawtooth' }, // bred, i stereo
@@ -123,9 +128,21 @@ function xyMakeVoice(freq, ny, when = 0) {
     oscs.forEach((o) => yDepth.connect(o.detune));
     yLfo.start(t);
   }
+  // FM från Y: en modulator per röst, som följer tonhöjden
+  let fmMod = null;
+  let fmDepth = null;
+  if (snd.fm) {
+    fmMod = ctx.createOscillator();
+    fmMod.frequency.value = freq * snd.fm.ratio;
+    fmDepth = ctx.createGain();
+    fmDepth.gain.value = xyFmDev(snd.fm, ny, freq);
+    fmMod.connect(fmDepth);
+    oscs.forEach((o) => fmDepth.connect(o.frequency));
+    fmMod.start(t);
+  }
   mix.connect(hp).connect(hp2).connect(amp).connect(xyBus());
   oscs.forEach((o) => o.start(t));
-  return { osc: oscs[0], oscs, hp, hp2, amp, vib, yLfo, yDepth, t, attack };
+  return { osc: oscs[0], oscs, hp, hp2, amp, vib, yLfo, yDepth, fm: snd.fm, fmMod, fmDepth, t, attack };
 }
 
 // Släpp en röst (at = ljudklockans tid, annars så snart som möjligt). Reverb klingar ut ändå.
@@ -143,6 +160,7 @@ function xyVoiceEnd(v, at = 0) {
   const end = r + (rel / 4) * 9 + 0.05;
   v.oscs.forEach((o) => o.stop(end));
   if (v.yLfo) v.yLfo.stop(end);
+  if (v.fmMod) v.fmMod.stop(end);
   v.osc.onended = () => {
     v.amp.disconnect();
     try { engine.vibLfo.disconnect(v.vib); } catch {}
@@ -162,12 +180,17 @@ function xyVoiceMove(id, nx, ny) {
   const v = xy.voices.get(id);
   if (!v) return;
   const now = audioCtx.currentTime;
+  const f = xyFreq(nx);
   // Kort glidtid: följer pekaren mjukt utan trappsteg mellan mushändelserna
-  v.oscs.forEach((o) => o.frequency.setTargetAtTime(xyFreq(nx), now, 0.012));
+  v.oscs.forEach((o) => o.frequency.setTargetAtTime(f, now, 0.012));
+  if (v.fmMod) {
+    v.fmMod.frequency.setTargetAtTime(f * v.fm.ratio, now, 0.012);
+    v.fmDepth.gain.setTargetAtTime(xyFmDev(v.fm, ny, f), now, 0.02);
+  }
   if (v.yLfo) {
     v.yDepth.gain.setTargetAtTime(xyVibDepth(ny), now, 0.03);
     v.yLfo.frequency.setTargetAtTime(xyVibRate(ny), now, 0.05);
-  } else [v.hp, v.hp2].forEach((f) => f.frequency.setTargetAtTime(xyCut(ny, xyFreq(nx)), now, 0.02));
+  } else [v.hp, v.hp2].forEach((flt) => flt.frequency.setTargetAtTime(xyCut(ny, f), now, 0.02));
 }
 
 function xyVoiceStop(id) {
@@ -199,7 +222,7 @@ function xyArpAdd(id, nx, ny) {
       p.last = -1;
       p.voices.forEach((v) => {
         if (v.t > now) {
-          try { v.amp.disconnect(); v.oscs.forEach((o) => o.stop()); v.yLfo?.stop(); } catch {}
+          try { v.amp.disconnect(); v.oscs.forEach((o) => o.stop()); v.yLfo?.stop(); v.fmMod?.stop(); } catch {}
           p.voices.delete(v);
         }
       });

@@ -184,6 +184,7 @@ function wizPreviewXY() {
   const t = audioCtx.currentTime + 0.05;
   const v = xyMakeVoice(220, 0.3, t);
   v.oscs.forEach((o) => o.frequency.exponentialRampToValueAtTime(440, t + 0.9));
+  if (v.fmMod) v.fmMod.frequency.exponentialRampToValueAtTime(440 * v.fm.ratio, t + 0.9); // FM följer tonen
   xyVoiceEnd(v, t + 1.2);
   wiz.stops.push(() => xyVoiceEnd(v));
   setTimeout(() => { wiz.stops = []; }, 1700);

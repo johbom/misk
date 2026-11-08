@@ -30,4 +30,12 @@ function setupPwa() {
     btn.hidden = true;
     log('Hover Pads är installerad som app.');
   });
+
+  // Om-rutan: säg till när appen redan körs installerad
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const status = $('about-install-status');
+  if (standalone) {
+    status.textContent = 'Du kör redan Hover Pads som installerad app.';
+    status.hidden = false;
+  }
 }
