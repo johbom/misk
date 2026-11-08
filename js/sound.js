@@ -1,4 +1,4 @@
-// Ljudmotorns reglage, snabbvalet (fem ljud per motor) och presetbiblioteket.
+// Ljudmotorns reglage, snabbvalet (fem ljud per motor, tio oscillatorljud) och presetbiblioteket.
 
 // ---------- Ljudmotor: presets och reglage ----------
 const CUSTOM = '__custom';

@@ -182,7 +182,7 @@ const PRESET_GROUPS = [...new Set(PRESET_CATEGORIES.map((c) => c.group))];
 // ---------- Snabbvalet (listan Ljud i spelraden) ----------
 // Fem ljud från varje motor, i grupper. Biblioteksljud som står här blir egna snabbval.
 const QUICK_SOUNDS = [
-  ['Oscillatorer', ['Elpiano', 'Varm pad', 'Supersaw-lead', 'Bas', 'Orgel']],
+  ['Oscillatorer', ['Elpiano', 'Varm pad', 'Supersaw-lead', 'Bas', 'Orgel', 'Pluck', 'Stråkar', 'Blås', 'Kör', 'Chip']],
   ['Sträng', ['Gitarr', 'Piano', 'Elgitarr', 'Kontrabas', 'Sitar']],
   ['Resonans', ['Marimbaträ', 'Vibrafonstav', 'Tumkalimba', 'Trinidadpan', 'Klangskål']],
   ['FM', ['Klassiskt FM-piano', 'FM-klocka', 'Slapbas FM', 'FM-brass', 'Jazz-FM']],
