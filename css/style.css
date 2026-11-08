@@ -1458,6 +1458,22 @@ html.reduce-motion .pad.arp-hit { animation-duration: 60ms; }
 .wiz-prog[aria-checked="true"] .wiz-chord em { color: #ffd98f; }
 .wiz-desc { text-align: left !important; }
 
+/* Egen ackordrunda */
+.wiz-custom { border: 1px solid var(--accent); border-radius: 12px; padding: 10px 12px 12px; margin-top: -2px; background: rgba(91, 140, 255, 0.06); }
+.wiz-custom-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.wiz-custom-top > span { color: var(--muted); font-size: 0.88rem; margin-right: 2px; }
+.wiz-custom-top output { min-width: 1.6em; text-align: center; font-weight: 700; font-size: 1.1rem; }
+.wiz-custom-top .wiz-listen { margin-left: auto; }
+.wiz-step { width: 40px; height: 40px; padding: 0; border-radius: 10px; font-size: 1.2rem; }
+.wiz-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 8px; }
+.wiz-slot {
+  display: grid; grid-template-columns: auto 1fr 1fr 2.6em; align-items: center; gap: 6px;
+  padding: 6px 8px; border-radius: 10px; background: #222533; border-left: 4px solid var(--cr);
+}
+.wiz-slot-num { color: var(--muted); font-weight: 700; min-width: 1.1em; text-align: center; }
+.wiz-slot select { min-height: 40px; min-width: 0; font-size: 1rem; }
+.wiz-slot-func { font-style: normal; color: var(--hit); font-size: 0.9rem; text-align: center; }
+
 /* Av/på-knappar */
 .wiz-toggle {
   display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; text-align: left;
