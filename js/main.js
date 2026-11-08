@@ -5,15 +5,6 @@ document.documentElement.classList.toggle('fixed-screen', FIXED_SCREEN);
 NOTE_NAMES.forEach((n, i) => ui.root.append(new Option(n, i)));
 // Toner eller ett trumset (fylls i före loadSettings, så att sparat val finns att välja)
 Object.entries(DRUM_KITS).forEach(([id, k]) => ui.drumKit.append(new Option(k.name, id)));
-// Spelraden: Toner, och trumseten samlade under rubriken Trumset
-(() => {
-  const bar = $('drum-kit-bar');
-  bar.append(new Option('Toner', ''));
-  const group = document.createElement('optgroup');
-  group.label = 'Trumset';
-  Object.entries(DRUM_KITS).forEach(([id, k]) => group.append(new Option(`Trumset: ${k.name}`, id)));
-  bar.append(group);
-})();
 for (let n = NOTE_COUNT_MIN; n <= NOTE_COUNT_MAX; n++) ui.noteCount.append(new Option(n, n));
 ui.noteCount.value = NOTE_COUNT_DEFAULT;
 accessDefaults();
@@ -46,17 +37,6 @@ for (const k of SAVED) ui[k].addEventListener('change', saveSettings);
 [ui.root, ui.octave, ui.scale, ui.notesKind, ui.drumKit].forEach((el) => el.addEventListener('change', updateNotes));
 // textstorleken beror på om det är trumnamn
 [ui.notesKind, ui.drumKit].forEach((el) => el.addEventListener('change', layoutPads));
-// Trumsetet i spelraden och under Inställningar är samma val
-$('drum-kit-bar').addEventListener('change', () => {
-  const v = $('drum-kit-bar').value;
-  ui.notesKind.value = v ? 'drums' : 'tones';
-  if (v) ui.drumKit.value = v;
-  ui.notesKind.dispatchEvent(new Event('change'));
-  ui.drumKit.dispatchEvent(new Event('change'));
-  syncSegment(ui.notesKind);
-  syncSegment(ui.drumKit);
-  log(drumKitOn() ? `Trumset: ${DRUM_KITS[ui.drumKit.value].name}` : 'Toner');
-});
 ui.chordCount.addEventListener('change', buildChordPads);
 $('chord-colors-preset').addEventListener('click', () => setChordColors(CHORD_PALETTE));
 $('chord-colors-none').addEventListener('click', () => setChordColors(CHORD_PALETTE.map(() => '')));

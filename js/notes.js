@@ -52,7 +52,7 @@ function updateNotes() {
   notePads.forEach(release);
   const kit = drumKitOn() ? ui.drumKit.value : '';
   document.body.classList.toggle('drums', !!kit);
-  $('drum-kit-bar').value = kit;
+  syncSoundSelect(); // listan Ljud visar trumsetet på sidan Toner
   noteScale().forEach((n, i) => {
     notePads[i].note = n;
     notePads[i].drum = kit ? drumPiece(kit, i) : null;

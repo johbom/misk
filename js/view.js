@@ -7,6 +7,7 @@ function showTab(tab) {
   allPads().forEach(release);
   arpReset();
   document.body.dataset.tab = tab;
+  syncSoundSelect(); // trumseten finns i listan Ljud bara på sidan Toner
   if (tab === 'settings') setLocked(false);
   document.querySelectorAll('#tabs button[data-tab]').forEach((b) =>
     b.classList.toggle('on', b.dataset.tab === tab)

@@ -124,7 +124,7 @@ function applySynth(params, preset) {
   synthParams = { ...params };
   synthPreset = preset;
   updateCustomLabel();
-  ui.preset.value = preset;
+  syncSoundSelect();
   syncSynthPanel();
   engine && engine.setParams(synthParams);
   saveSynth();
@@ -254,6 +254,34 @@ function loadLibraryPreset(entry, preview) {
   }
 }
 
+// Trumseten är en egen grupp i listan Ljud, men bara på sidan Toner (de spelas bara där).
+// Värdet "drum:<id>" väljer trumset, ett vanligt ljud går tillbaka till toner.
+const DRUM_OPT = 'drum:';
+function syncSoundSelect() {
+  const custom = [...ui.preset.options].find((o) => o.value === CUSTOM);
+  if (!custom) return; // listan är inte byggd än
+  const onNotes = document.body.dataset.tab === 'notes';
+  let group = ui.preset.querySelector('optgroup.drum-group');
+  if (onNotes && !group) {
+    group = document.createElement('optgroup');
+    group.className = 'drum-group';
+    group.label = 'Trumset';
+    Object.entries(DRUM_KITS).forEach(([id, k]) => group.append(new Option(`Trumset: ${k.name}`, DRUM_OPT + id)));
+    ui.preset.insertBefore(group, custom);
+  } else if (!onNotes && group) group.remove();
+  ui.preset.value = onNotes && drumKitOn() ? DRUM_OPT + ui.drumKit.value : synthPreset;
+}
+
+// Trumset av/på från listan Ljud (samma val som under Inställningar → Spelytor → Toner)
+function setNotesKind(kit) {
+  ui.notesKind.value = kit ? 'drums' : 'tones';
+  if (kit) ui.drumKit.value = kit;
+  ui.notesKind.dispatchEvent(new Event('change'));
+  ui.drumKit.dispatchEvent(new Event('change'));
+  syncSegment(ui.notesKind);
+  syncSegment(ui.drumKit);
+}
+
 function setupSynthUi() {
   // Fem ljud från varje motor, i grupper
   QUICK_SOUNDS.forEach(([engineName, names]) => {
@@ -266,19 +294,28 @@ function setupSynthUi() {
   buildSynthPanel();
   buildPresetLibrary();
   updateCustomLabel();
-  ui.preset.value = synthPreset;
+  syncSoundSelect();
   syncSynthPanel();
 
   ui.preset.addEventListener('change', () => {
-    if (ui.preset.value === CUSTOM) return;
+    const v = ui.preset.value;
+    if (v.startsWith(DRUM_OPT)) {
+      setNotesKind(v.slice(DRUM_OPT.length));
+      log(`Trumset: ${DRUM_KITS[ui.drumKit.value].name}`);
+      return;
+    }
+    if (document.body.dataset.tab === 'notes' && drumKitOn()) setNotesKind(''); // tillbaka till toner
+    if (v === CUSTOM) { syncSoundSelect(); return; }
     synthLib = { name: '', edited: false };
-    applySynth(presetParams(ui.preset.value), ui.preset.value);
-    log(`Preset: ${ui.preset.value}`);
+    applySynth(presetParams(v), v);
+    log(`Preset: ${v}`);
   });
 
   // "Återställ" går tillbaka till senast valda preset (eller standard om ljudet är eget)
   let lastPreset = synthPreset === CUSTOM ? DEFAULT_PRESET : synthPreset;
-  ui.preset.addEventListener('change', () => { if (ui.preset.value !== CUSTOM) lastPreset = ui.preset.value; });
+  ui.preset.addEventListener('change', () => {
+    if (ui.preset.value !== CUSTOM && !ui.preset.value.startsWith(DRUM_OPT)) lastPreset = ui.preset.value;
+  });
   $('synth-reset').addEventListener('click', () => {
     // Laddat från biblioteket? Då går "Återställ" tillbaka till det biblioteksljudet.
     const lib = synthPreset === CUSTOM && PRESET_LIBRARY.find((e) => e.name === synthLib.name);

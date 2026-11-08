@@ -12,7 +12,7 @@ När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **
 
 ### Trumset (sidan Toner)
 
-Rutorna på sidan **Toner** kan spela ett **trumset** i stället för toner. Välj i listan *Spelar* i spelraden (*Toner*, eller under rubriken *Trumset*: *Trumset: Akustiskt*, *Trumset: 808* …), eller under *Inställningar → Spelytor → Toner*: *Rutorna spelar* (Toner eller Trumset) och sedan *Trumset* (visas bara när Trumset är valt; det valda setet minns även när man går tillbaka till toner):
+Rutorna på sidan **Toner** kan spela ett **trumset** i stället för toner. Välj ett trumset under rubriken *Trumset* i listan *Ljud* i spelraden (*Trumset: Akustiskt*, *Trumset: 808* …; gruppen finns bara på sidan Toner, och väljer man ett vanligt ljud i listan spelar rutorna toner igen), eller under *Inställningar → Spelytor → Toner*: *Rutorna spelar* (Toner eller Trumset) och sedan *Trumset* (visas bara när Trumset är valt; det valda setet minns även när man går tillbaka till toner):
 
 - **Akustiskt** – bastrumma, virvel, hihat (stängd, öppen, pedal), tre tommar, crash, ride, ride-klocka, splash, kantslag, tamburin, handklapp och koskälla, med lite reverb.
 - **808** – den klassiska trummaskinen: lång, mullrande bastrumma, metalliska hihattar, handklapp, tommar, koskälla, cymbal, claves, maracas och congas.
