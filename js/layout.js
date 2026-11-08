@@ -118,8 +118,8 @@ const LAYOUTS = {
     const r = R * opts.ringHole;
     const step = (2 * Math.PI) / n;
     const mid = (R + r) / 2;
-    // Mellanrummet får ta högst knappt halva bågen, annars försvinner sektorerna
-    const g = n === 1 ? 0 : Math.min(opts.ringGap, mid * step * 0.45); // en sektor = hel ring, ingen glipa
+    // Mellanrummet får ta högst tre fjärdedelar av bågen, annars försvinner sektorerna
+    const g = n === 1 ? 0 : Math.min(opts.ringGap, mid * step * 0.75); // en sektor = hel ring, ingen glipa
     const font = Math.min(28, (R - r) * 0.28, (mid * step - g) * 0.3);
     const rects = Array.from({ length: n }, (_, i) => {
       const a = -Math.PI / 2 + i * step; // sektorns mitt
