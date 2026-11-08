@@ -1,7 +1,7 @@
 // Inställningar som sparas i webbläsaren.
 
 // ---------- Inställningar ----------
-const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'formation', 'noteCount', 'drumKit', 'root', 'octave', 'scale',
+const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'hexOrder', 'formation', 'noteCount', 'drumKit', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
   'noteLength', 'vibrato', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'xyOctaves', 'xySound', 'xyReverb', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',

@@ -414,7 +414,9 @@ const DRUM_LEVEL = 0.75; // trummornas nivå jämfört med syntens toner
 function drumPiece(kitId, i) {
   const kit = DRUM_KITS[kitId];
   const [gm, name, voice, p, lvl] = kit.pieces[i % kit.pieces.length];
-  return { gm, name, voice, p, lvl, kit: kitId };
+  const piece = { gm, name, voice, p, lvl, kit: kitId };
+  piece.icon = drumIcon(piece);
+  return piece;
 }
 
 // Slår an en trumma. Returnerar en stoppfunktion (gör inget – trummor klingar ut av sig själva),
@@ -433,4 +435,101 @@ function drumHit(piece, when = 0, level = 1) {
     return true;
   };
   return stop;
+}
+
+// ---------- Symboler ----------
+// De vanligaste trumljuden visas med en symbol i stället för namn (namnet finns kvar som
+// beskrivning för skärmläsare och när pekaren vilar på rutan). Storleken skiljer låg/hög tom och conga.
+const drumSvg = (body) =>
+  `<svg class="drum-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`;
+
+// Trumma från sidan: övre skinnet som ellips, kroppen nedåt (bottnen på y = bottom)
+function drumSide(cx, bottom, w, h, extra = '') {
+  const rx = w / 2;
+  const ry = Math.max(1.2, w * 0.15);
+  const top = bottom - h;
+  return `<ellipse cx="${cx}" cy="${top}" rx="${rx}" ry="${ry}"/>`
+    + `<path d="M${cx - rx} ${top}v${h}a${rx} ${ry} 0 0 0 ${2 * rx} 0v-${h}"/>${extra}`;
+}
+
+// Conga: hög tunna som smalnar av nedåt
+function conga(r, muted = false) {
+  const cx = 12;
+  return `<ellipse cx="${cx}" cy="4.5" rx="${r}" ry="1.6"${muted ? ' fill="currentColor"' : ''}/>`
+    + `<path d="M${cx - r} 4.5C${cx - r - 1.8} 11 ${cx - r + 0.6} 16.5 ${cx - r * 0.65} 21.5H${cx + r * 0.65}C${cx + r - 0.6} 16.5 ${cx + r + 1.8} 11 ${cx + r} 4.5"/>`;
+}
+
+// Bongo: två små trummor ihop; den som spelas har fyllt skinn
+function bongos(low) {
+  const f = ' fill="currentColor"';
+  return `<ellipse cx="7.5" cy="9" rx="5" ry="1.6"${low ? f : ''}/><path d="M2.5 9v7a5 1.6 0 0 0 10 0V9"/>`
+    + `<ellipse cx="17.5" cy="10.5" rx="4" ry="1.4"${low ? '' : f}/><path d="M13.5 10.5v5.5a4 1.4 0 0 0 8 0v-5.5"/><path d="M12.5 13h1"/>`;
+}
+
+// Cymbal på stativ
+function cymbal(rx, opts = {}) {
+  const bell = opts.bell ? '<ellipse cx="12" cy="5.6" rx="2.6" ry="2" fill="currentColor"/>' : '<path d="M10.6 6.6a1.4 1 0 0 1 2.8 0"/>';
+  const sparks = opts.sparks ? '<path d="M3 2.5l1.4 1.8M21 2.5l-1.4 1.8M12 1v1.6"/>' : '';
+  return `<path d="M12 8v13M8.5 21.5h7"/><ellipse cx="12" cy="7.2" rx="${rx}" ry="1.9"/>${bell}${sparks}`;
+}
+
+// Hihat: två cymbaler på stativ (tätt = stängd, isär = öppen), pedal = med fotplatta
+function hihat(open, pedal = false) {
+  const top = open ? 3 : 6.2;
+  const plates = `<ellipse cx="12" cy="${top}" rx="8.5" ry="1.4"/><ellipse cx="12" cy="8.4" rx="8.5" ry="1.4"/>`;
+  const foot = pedal ? '<path d="M12 21.5l5-2.5" stroke-width="2.4"/><path d="M7 21.5h6"/>' : '<path d="M8.5 21.5h7"/>';
+  return `<path d="M12 ${top}V21.5"/>${plates}${foot}`;
+}
+
+const DRUM_ICONS = {
+  kick: '<circle cx="12" cy="11.5" r="8.5"/><circle cx="12" cy="11.5" r="3.2"/><path d="M5.5 18.5l-2 3.5M18.5 18.5l2 3.5"/>',
+  snare: drumSide(12, 18, 18, 5.5, '<path d="M5 2.5l5.5 6M19 2.5l-5.5 6"/><path d="M5 15.5l2 1.2 2-1.2 2 1.2 2-1.2 2 1.2 2-1.2 2 1.2" stroke-width="1.2"/>'),
+  rim: drumSide(12, 19, 18, 6, '<path d="M2.5 13.5L21.5 7" stroke-width="2.4"/>'),
+  tomFloor: drumSide(12, 18.5, 17, 11, '<path d="M4.5 18.5l-1.5 3.5M19.5 18.5l1.5 3.5"/>'),
+  tomLow: drumSide(12, 20, 17, 9),
+  tomMid: drumSide(12, 20, 13.5, 7.5),
+  tomHigh: drumSide(12, 20, 10, 6),
+  hatClosed: hihat(false),
+  hatOpen: hihat(true),
+  hatPedal: hihat(false, true),
+  crash: cymbal(10, { sparks: true }),
+  splash: cymbal(6, { sparks: true }),
+  ride: cymbal(10.5),
+  rideBell: cymbal(10.5, { bell: true }),
+  clap: '<rect x="4.5" y="7" width="6" height="13" rx="3" transform="rotate(-18 7.5 13.5)"/><rect x="13.5" y="7" width="6" height="13" rx="3" transform="rotate(18 16.5 13.5)"/><path d="M12 1.5v3M6.8 3l1.2 2M17.2 3l-1.2 2"/>',
+  cowbell: '<path d="M8.5 7.5h7l3 13h-13z"/><path d="M10.5 7.5V4h3v3.5"/><path d="M8 13.5h8" opacity=".5"/>',
+  tambourine: `<circle cx="12" cy="12" r="7.5"/>${[0, 1, 2, 3, 4, 5].map((i) => {
+    const a = (i * Math.PI) / 3 + Math.PI / 6;
+    return `<circle cx="${(12 + 7.5 * Math.cos(a)).toFixed(1)}" cy="${(12 + 7.5 * Math.sin(a)).toFixed(1)}" r="1.7" fill="currentColor"/>`;
+  }).join('')}`,
+  maracas: '<ellipse cx="8" cy="7.5" rx="3.6" ry="4.8" transform="rotate(-18 8 7.5)"/><path d="M9.6 12l2 9.5"/><ellipse cx="16.5" cy="7.5" rx="3.6" ry="4.8" transform="rotate(18 16.5 7.5)"/><path d="M14.9 12l-2 9.5"/>',
+  shaker: '<rect x="8" y="3" width="8" height="18" rx="4" transform="rotate(30 12 12)"/><path d="M10.8 9.5h.01M13 12h.01M11 14.5h.01M13.4 8.4h.01" stroke-width="2.4"/><path d="M19.5 3.5l1.5-1M21 7l1.5-.3M3 17l-1.5.3M4.5 20.5l-1.5 1"/>',
+  claves: '<path d="M3.5 17.5L17 6" stroke-width="2.8"/><path d="M7 5.5l13.5 11.5" stroke-width="2.8"/>',
+  woodblock: '<rect x="3" y="8.5" width="18" height="8.5" rx="2"/><path d="M6 12.7h12"/><path d="M14 2.5l-3 5" stroke-width="2.2"/>',
+  triangle: '<path d="M10.5 5L3.5 19.5h15.5L12.3 6.8"/><path d="M15.5 11.5l6-6" stroke-width="2"/><path d="M10.5 5l1-2"/>',
+  congaLow: conga(6.2),
+  congaMid: conga(5.4),
+  congaHigh: conga(4.6),
+  congaMute: conga(5, true),
+  bongoLow: bongos(true),
+  bongoHigh: bongos(false),
+};
+
+// GM-nummer -> symbol (de vanligaste; övriga visar namnet)
+const DRUM_ICON_FOR = {
+  35: 'kick', 36: 'kick', 37: 'rim', 38: 'snare', 40: 'snare', 39: 'clap',
+  41: 'tomFloor', 43: 'tomFloor', 45: 'tomLow', 47: 'tomMid', 48: 'tomMid', 50: 'tomHigh',
+  42: 'hatClosed', 44: 'hatPedal', 46: 'hatOpen',
+  49: 'crash', 57: 'crash', 55: 'splash', 51: 'ride', 59: 'ride', 53: 'rideBell',
+  54: 'tambourine', 56: 'cowbell', 70: 'maracas', 69: 'shaker', 82: 'shaker',
+  75: 'claves', 76: 'woodblock', 77: 'woodblock', 81: 'triangle',
+  64: 'congaLow', 63: 'congaHigh', 62: 'congaMute', 61: 'bongoLow', 60: 'bongoHigh',
+};
+
+function drumIcon(piece) {
+  // 808:s tre congas: låg, mellan, hög
+  let id = DRUM_ICON_FOR[piece.gm];
+  if (piece.name === 'Mellanconga') id = 'congaMid';
+  if (piece.name === 'Hög conga' && piece.kit === 'e808') id = 'congaHigh';
+  return id ? drumSvg(DRUM_ICONS[id]) : '';
 }

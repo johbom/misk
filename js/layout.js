@@ -130,7 +130,9 @@ const LAYOUTS = {
   },
 
   // Bollar i bikupemönster: varannan rad förskjuten en halv boll.
-  hex(n, W, H, gap) {
+  // opts.hexOrder: rows = vänster→höger rad för rad, snake = slingrande (varannan rad baklänges),
+  // cols = uppifrån och ned, kolumn för kolumn
+  hex(n, W, H, gap, opts = {}) {
     const ROW = Math.sqrt(3) / 2; // radavstånd i ett tätpackat mönster
     const bestFor = (g) => {
       let best = { s: 0, cols: 1, rows: 1, shift: 0, none: true }; // (n = 0 ger inga rutor)
@@ -152,9 +154,13 @@ const LAYOUTS = {
     const totalH = s + (rows - 1) * ROW * step;
     const x0 = (W - totalW) / 2;
     const y0 = (H - totalH) / 2;
+    // Lodrätt: lika många rader som behövs för att fylla kolumnerna uppifrån
+    const colRows = Math.ceil(n / cols);
     return Array.from({ length: n }, (_, i) => {
-      const r = Math.floor(i / cols);
-      const c = i % cols;
+      let r = Math.floor(i / cols);
+      let c = i % cols;
+      if (opts.hexOrder === 'snake' && r % 2) c = cols - 1 - c;
+      if (opts.hexOrder === 'cols') { c = Math.floor(i / colRows); r = i % colRows; }
       return { x: x0 + c * step + (r % 2) * shift * step, y: y0 + r * ROW * step, w: s, h: s, font: s * 0.2 };
     });
   },

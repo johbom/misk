@@ -65,7 +65,17 @@ function renderNotePad(pad) {
   // Grundtonen (i alla oktaver) får ljusare ruta – följer med när grundton, skala eller antal ändras
   pad.el.classList.toggle('root', !pad.drum && pad.note % 12 === Number(ui.root.value));
   pad.el.classList.toggle('drum', !!pad.drum);
-  pad.el.innerHTML = `${pad.label()}<small>${
+  // Trummor med symbol: symbolen syns, namnet finns för skärmläsare och som verktygstips
+  const icon = pad.drum && !pad.sample ? pad.drum.icon : '';
+  pad.el.classList.toggle('drum-sym', !!icon);
+  if (icon) {
+    pad.el.setAttribute('aria-label', pad.drum.name);
+    pad.el.title = pad.drum.name;
+  } else {
+    pad.el.removeAttribute('aria-label');
+    pad.el.removeAttribute('title');
+  }
+  pad.el.innerHTML = `${icon || pad.label()}<small>${
     pad.sample ? pad.sampleName : `MIDI ${pad.note}`
   }</small>`;
 }

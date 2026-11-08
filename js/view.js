@@ -138,6 +138,7 @@ function formationOpts() {
     stringLength: Number(ui.stringLength.value) / 100,
     ringGap: Number(ui.ringGap.value),
     ringHole: Number(ui.ringHole.value) / 100,
+    hexOrder: ui.hexOrder.value,
   };
 }
 

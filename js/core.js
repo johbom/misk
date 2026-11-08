@@ -78,6 +78,7 @@ const ui = {
   stringLength: $('string-length'),
   ringGap: $('ring-gap'),
   ringHole: $('ring-hole'),
+  hexOrder: $('hex-order'),
   formation: $('formation'),
   root: $('root'),
   drumKit: $('drum-kit'),

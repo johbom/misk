@@ -94,6 +94,7 @@ body:not([data-tab="notes"]) #log[data-kind="file-hint"] { visibility: hidden; }
 .formation-opts { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 12px; }
 body:not([data-formation="strings"]) .only-strings,
 body:not([data-formation="ring"]) .only-ring,
+body:not([data-formation="hex"]) .only-hex,
 body[data-formation="ring"] .not-ring { display: none; }
 
 fieldset {
@@ -1511,3 +1512,5 @@ html.high-contrast .wiz-opt[aria-checked="true"] small, html.high-contrast .wiz-
 body.drums .tones-only { display: none !important; }
 body.drums[data-tab="notes"] .preset-label { display: none !important; }
 .pad.drum { font-size: 0.9em; line-height: 1.15; text-align: center; }
+.pad .drum-icon { display: block; width: 2.6em; height: 2.6em; margin: -0.3em auto 0.3em; }
+.pad.drum-sym { font-size: 1.2rem; }

@@ -13,6 +13,12 @@ const WAVE_ICONS = {
   square: '<path d="M2 17V7h5v10h5V7h5v10h5"/>',
   supersaw: '<path d="M2 18l9-10v10l9-10v10"/><path d="M4 14l9-10v10l9-10" opacity=".5"/>',
 };
+// Symboler för bikupans tonordning (pilar)
+const ORDER_ICONS = {
+  rows: '<path d="M4 7h15M16 4l3 3-3 3M4 17h15M16 14l3 3-3 3"/>',
+  snake: '<path d="M4 5.5h13.5a3.25 3.25 0 0 1 0 6.5H6.5a3.25 3.25 0 0 0 0 6.5H20"/><path d="M17 15.5l3 3-3 3"/>',
+  cols: '<path d="M7 4v15M4 16l3 3 3-3M17 4v15M14 16l3 3 3-3"/>',
+};
 // Symboler för arpeggiatorns mönster
 const arpDot = (x, y) => `<circle cx="${x}" cy="${y}" r="2.3" fill="currentColor" stroke="none"/>`;
 const ARP_ICONS = {
@@ -95,6 +101,7 @@ function setupSegments() {
   segmentSelect(ui.xyOctaves, 'seg-count');
   segmentSelect(ui.arpPattern, '', ARP_ICONS);
   segmentSelect(ui.arpRate);
+  segmentSelect(ui.hexOrder, '', ORDER_ICONS);
   segmentSelect(ui.arpOctaves, 'seg-count');
   segmentSelect(ui.arpRetrig, 'seg-count');
   segmentSelect(ui.xySound, 'seg-xy', WAVE_ICONS);
