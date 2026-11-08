@@ -168,6 +168,7 @@ function trigger(pad) {
   } else {
   if (ui.outAudio.checked) {
     if (useSample) stops.push(playSample(pad.sample));
+    else if (pad.drum) stops.push(drumHit(pad.drum));
     else {
       const level = 1 / Math.sqrt(notes.length);
       notes.forEach((n) => stops.push(engine.noteOn(n, level)));
@@ -184,11 +185,11 @@ function trigger(pad) {
   // Vibrato på allt som rutan spelar just nu (styrs av js/vibrato.js)
   pad.vibrato = (cents, rate) => stops.forEach((s) => s.vibrato && s.vibrato(cents, rate));
   }
-  log(`▶ ${pad.label()}  (${notes.map(noteName).join(' ')})${arpOn() ? '  · arp' : ''}`);
+  log(`▶ ${pad.label()}${pad.drum ? '' : `  (${notes.map(noteName).join(' ')})`}${arpOn() ? '  · arp' : ''}`);
 
   // One-shot och Bestämd längd: släpps av en timer, inte av pekaren
   const length = mode === 'fixed' ? ms(ui.noteLength) || ONESHOT_MS
-    : mode === 'shot' ? (useSample ? pad.sample.duration * 1000 : naturalLength()) : 0;
+    : mode === 'shot' ? (useSample ? pad.sample.duration * 1000 : pad.drum ? DRUM_SHOT_MS : naturalLength()) : 0;
   if (length) {
     const r = pad.release;
     setTimeout(() => { if (pad.release === r) release(pad); }, length);

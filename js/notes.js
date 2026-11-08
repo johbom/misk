@@ -2,6 +2,7 @@
 
 // ---------- Sidan "Toner" ----------
 function noteScale() {
+  if (drumKitOn()) return notePads.map((_, i) => drumPiece(ui.drumKit.value, i).gm);
   const scale = SCALES[ui.scale.value];
   const base = 12 * (Number(ui.octave.value) + 1) + Number(ui.root.value); // C4 = 60
   return Array.from({ length: notePads.length }, (_, i) =>
@@ -26,7 +27,7 @@ function addNotePad(i) {
   const pad = {
     el, note: 0, sample: null, sampleName: '', release: null,
     notes: () => [pad.note],
-    label: () => noteName(pad.note),
+    label: () => (pad.drum ? pad.drum.name : noteName(pad.note)),
   };
   notePads.push(pad);
   attachHover(pad, el);
@@ -49,14 +50,22 @@ function addNotePad(i) {
 
 function updateNotes() {
   notePads.forEach(release);
-  noteScale().forEach((n, i) => { notePads[i].note = n; renderNotePad(notePads[i]); });
+  const kit = drumKitOn() ? ui.drumKit.value : '';
+  document.body.classList.toggle('drums', !!kit);
+  $('drum-kit-bar').value = kit;
+  noteScale().forEach((n, i) => {
+    notePads[i].note = n;
+    notePads[i].drum = kit ? drumPiece(kit, i) : null;
+    renderNotePad(notePads[i]);
+  });
 }
 
 function renderNotePad(pad) {
   pad.el.classList.toggle('sample', !!pad.sample);
   // Grundtonen (i alla oktaver) får ljusare ruta – följer med när grundton, skala eller antal ändras
-  pad.el.classList.toggle('root', pad.note % 12 === Number(ui.root.value));
-  pad.el.innerHTML = `${noteName(pad.note)}<small>${
+  pad.el.classList.toggle('root', !pad.drum && pad.note % 12 === Number(ui.root.value));
+  pad.el.classList.toggle('drum', !!pad.drum);
+  pad.el.innerHTML = `${pad.label()}<small>${
     pad.sample ? pad.sampleName : `MIDI ${pad.note}`
   }</small>`;
 }

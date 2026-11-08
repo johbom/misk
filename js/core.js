@@ -80,6 +80,7 @@ const ui = {
   ringHole: $('ring-hole'),
   formation: $('formation'),
   root: $('root'),
+  drumKit: $('drum-kit'),
   octave: $('octave'),
   scale: $('scale'),
   noteCount: $('note-count'),

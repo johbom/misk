@@ -1506,3 +1506,8 @@ html.reduce-motion .pad.arp-hit { animation-duration: 60ms; }
 html.high-contrast .wiz-opt[aria-checked="true"] { background: #ffd400 !important; color: #000 !important; }
 html.high-contrast .wiz-opt[aria-checked="true"] small, html.high-contrast .wiz-opt[aria-checked="true"] em { color: #000 !important; }
 @media (prefers-reduced-motion: reduce) { #wizard::backdrop { backdrop-filter: none; } }
+
+/* Trumset på sidan Toner */
+body.drums .tones-only { display: none !important; }
+body.drums[data-tab="notes"] .preset-label { display: none !important; }
+.pad.drum { font-size: 0.9em; line-height: 1.15; text-align: center; }

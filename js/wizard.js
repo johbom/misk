@@ -111,6 +111,7 @@ function openWizard(fromStart = false) {
     arpOn: ui.arpOn.checked,
     formation: ui.formation.value,
     sound: synthPreset in SYNTH_PRESETS ? synthPreset : null,
+    drumKit: drumKitOn() ? ui.drumKit.value : '',
     xySound: ui.xySound.value,
     xyOctaves: Number(ui.xyOctaves.value),
     xyReverb: WIZ_REVERBS.reduce((a, b) =>
@@ -164,6 +165,15 @@ function wizPreviewSound() {
     const notes = [0, 2, 4, 7].map((k) => 60 + d.root + 12 * Math.floor(k / sc.length) + sc[k % sc.length]);
     wizPlay([...notes.map((n) => [n]), [notes[0], notes[2]]], 0.22);
   }
+}
+
+// Trumset: en kort takt (bastrumma, hihat, virvel …)
+function wizPreviewDrums(kit) {
+  if (!audioCtx) return;
+  if (audioCtx.state !== 'running') audioCtx.resume();
+  const t0 = audioCtx.currentTime + 0.05;
+  const step = 0.16;
+  [0, 2, 1, 2, 0, 0, 1, 3].forEach((i, k) => drumHit(drumPiece(kit, i), t0 + k * step));
 }
 
 // XY: en kort glidning med vald klang, nerifrån och upp på ytan (filtret öppnas)
@@ -289,9 +299,13 @@ function renderWizard() {
           `${WAVE_ICONS?.[o.value] ? segIconSvg(WAVE_ICONS[o.value]) : ''}${o.textContent}`, d.xySound === o.value, 'wiz-wave')).join('')}</div>`;
     } else {
       title = 'Vilket ljud?';
-      const cur = d.sound === null ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
-      html = `${cur}<div class="wiz-sounds" role="radiogroup" aria-label="Ljud">${
-        Object.keys(SYNTH_PRESETS).map((n) => wizOption('sound', n, n, d.sound === n)).join('')}</div>
+      const drums = d.tab === 'notes' ? `<h4>Trumset</h4><p class="wiz-hint">Varje ruta blir en trumma.</p>
+        <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Trumset">${
+        Object.entries(DRUM_KITS).map(([id, k]) => wizOption('drumKit', id, k.name, d.drumKit === id)).join('')}</div>
+        <h4>Toner</h4>` : '';
+      const cur = d.sound === null && !d.drumKit ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
+      html = `${drums}${cur}<div class="wiz-sounds" role="radiogroup" aria-label="Ljud">${
+        Object.keys(SYNTH_PRESETS).map((n) => wizOption('sound', n, n, !d.drumKit && d.sound === n)).join('')}</div>
         <p class="wiz-hint">Tryck för att lyssna. Fler än 350 ljud finns under Inställningar → Ljud.</p>`;
     }
   } else if (step === 'xyfeel') {
@@ -323,6 +337,7 @@ function renderWizard() {
       ['Spela', WIZ_TABS[d.tab]],
       ['Tonart', `${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}`],
     ];
+    if (d.tab === 'notes' && d.drumKit) rows.pop(); // trummor har ingen tonart
     if (d.tab === 'notes') rows.push(['Rutor', d.noteCount]);
     if (d.tab === 'chords') {
       rows.push(['Ackord', d.prog === KEEP_CHORDS ? customChords(d).map((c) => chordName({ ...c, bass: BASS_ROOT })).join(' ')
@@ -331,7 +346,8 @@ function renderWizard() {
     rows.push(['Spelsätt', PLAY_MODES[d.playMode].name + (d.arpOn ? ' + arpeggiator' : '')]);
     if (d.tab !== 'xy') rows.push(['Formation', FORMATIONS[d.formation]]);
     rows.push(['Ljud', d.tab === 'xy' ? ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent
-      : d.sound || $('sound-now-name')?.textContent || 'eget ljud']);
+      : d.tab === 'notes' && d.drumKit ? `Trumset ${DRUM_KITS[d.drumKit].name}`
+        : d.sound || $('sound-now-name')?.textContent || 'eget ljud']);
     html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
       <h4>Ut</h4>
       <div class="wiz-row">
@@ -359,6 +375,7 @@ function wizChoose(key, raw) {
   if (key === 'tab' && raw === 'chords' && !(d.scale in { major: 1, minor: 1 })) d.scale = progMode(d.scale);
   if (key === 'scale') d.prog = 1;
   if (key === 'sound') {
+    d.drumKit = '';
     synthLib = { name: '', edited: false };
     applySynth(presetParams(raw), raw);
   }
@@ -372,6 +389,7 @@ function wizChoose(key, raw) {
       .map(wizChordNotes));
   }
   if (key === 'sound') wizPreviewSound();
+  if (key === 'drumKit') wizPreviewDrums(raw);
   if (key === 'xySound') {
     ui.xySound.value = raw; // provlyssning; sparas först när guiden är klar
     wizPreviewXY();
@@ -421,7 +439,10 @@ function finishWizard() {
       outAudio: d.outAudio, outMidi: d.outMidi,
     });
   }
-  if (d.tab === 'notes') data.settings.noteCount = String(d.noteCount);
+  if (d.tab === 'notes') {
+    data.settings.noteCount = String(d.noteCount);
+    data.settings.drumKit = d.drumKit;
+  }
   if (d.tab !== 'xy') data.settings.formation = d.formation;
   if (d.tab === 'chords' && d.prog === KEEP_CHORDS) {
     data.settings.chordCount = String(d.customCount);

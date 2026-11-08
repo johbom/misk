@@ -201,6 +201,14 @@ function layoutPads() {
       height: `${r.h}px`,
       fontSize: `${Math.max(11, r.font)}px`,
     });
+    // Trumnamn ("Bastrumma") är längre än tonnamn ("C4"): krymp texten tills namnet ryms
+    if (p.drum) {
+      let fs = Math.max(11, r.font);
+      while (fs > 10 && p.el.scrollWidth > p.el.clientWidth) {
+        fs *= 0.9;
+        p.el.style.fontSize = `${fs}px`;
+      }
+    }
     if (r.clip) {
       // Formen (t.ex. en ringsektor) – klippningen styr också var man träffar rutan
       p.el.style.clipPath = r.clip;

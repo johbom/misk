@@ -10,6 +10,18 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **XY** eller **Inställningar** – med stora knappar. Klicket startar också ljudet (webbläsare kräver ett klick först). Det man använde senast är markerat och har fokus, så Enter eller en kontakt startar direkt där.
 
+### Trumset (sidan Toner)
+
+Rutorna på sidan **Toner** kan spela ett **trumset** i stället för toner. Välj under *Trumset* i spelraden eller under *Inställningar → Spelytor → Toner → Rutorna spelar*:
+
+- **Akustiskt** – bastrumma, virvel, hihat (stängd, öppen, pedal), tre tommar, crash, ride, ride-klocka, splash, kantslag, tamburin, handklapp och koskälla, med lite rumsklang.
+- **808** – den klassiska trummaskinen: lång, mullrande bastrumma, metalliska hihattar, handklapp, tommar, koskälla, cymbal, claves, maracas och congas.
+- **909** – hårdare och mer house/techno: bastrumma med klick, brusig virvel, två bastrummor och två virvlar, tommar, crash, ride, tamburin, shaker och koskälla.
+- **Lo-fi** – dovt och grynigt (lågpassfilter, distorsion och färre bitar), för hiphop och lo-fi-beats.
+- **Slagverk** – congas (låg, hög, dämpad), bongos, timbales, koskälla, agogo, claves, träblock, shaker, guiro och triangel.
+
+Varje ruta visar trummans namn och dess General MIDI-nummer, så att MIDI ut träffar rätt trumma i en trumsampler (GM-trummor ligger oftast på kanal 10 – ställ in kanalen under *Ut, MIDI & OSC*). Har man fler rutor än trummor börjar setet om. Allt syntetiseras i appen (inga ljudfiler). Trummorna klingar alltid ut av sig själva, går förbi syntens effekter och har en egen rumsklang per set. Öppen hihat tystas av stängd hihat och pedal, som på ett riktigt trumset. Med **arpeggiatorn** blir trummorna rytmer: håll flera trummor så spelas de i tur och ordning i takt (fler oktaver = fler slag på samma trumma, inte högre tonhöjd). Grundton, oktav och skala döljs när ett trumset är valt; *Toner* går tillbaka till vanliga toner. Trumsetet följer med i *Mina presets* och kan väljas i startguiden.
+
 ### Startguide
 
 Knappen **Startguide** på startsidan (och **Guide** i menyraden) frågar steg för steg om det viktigaste och ställer sedan in allt på en gång:
@@ -19,7 +31,7 @@ Knappen **Startguide** på startsidan (och **Guide** i menyraden) frågar steg f
 3. **Ackordmall** (bara Ackord) – färdiga ackordföljder som räknas ut från tonarten med funktionsbeteckningar: T = tonika, S = subdominant, D = dominant och parallellerna Tp, Sp, Dp. I dur: *Grundackorden* (T S D), *Pop* (T D Tp S), *50-tal* (T Tp S D), *Visa* (T S D⁷ Tp), *Alla sex*, *Jazz II–V–I*, *Blues* och *Hela tonarten* (8 rutor med D⁷ och dubbeldominant). I moll (små bokstäver = mollackord): *Grundackorden* (t s D), *Moll-pop* (t sP tP dP), *Andalusisk* (t dP sP D), *Ballad*, *Alla sex* och *Hela tonarten*. Mallen spelas upp när man väljer den. Överst ligger *Egen ackordrunda*: den utgår från de ackord du har nu, och när du väljer den kan du ställa in antal ackord (2–8) och grundton och typ för varje ackord direkt i guiden. Varje ackord visar sin funktion i tonarten (T, S, D, Tp …) om det har någon, och spelas upp när du ändrar det; *▶ Lyssna* spelar hela rundan.
 4. **Spelsätt** – Håll, One-shot, Längd eller Ligg kvar, och arpeggiatorn av/på.
 5. **Formation** (Toner och Ackord) – Rutnät, Cirkel, Ring, Bikupa eller Strängar.
-6. **Ljud** – de färdiga ljuden (provlyssnas direkt), eller klangen för XY.
+6. **Ljud** – de färdiga ljuden (provlyssnas direkt). För Toner finns också trumseten, som spelar en kort takt när man väljer dem.
 7. **Klart** – en sammanfattning, val av ljud i appen och MIDI, och *Börja spela*.
 
 **För XY** frågar guiden bara om det XY använder: *Klang* (provlyssnas med en kort glidning), *Omfång* i oktaver (1–5, högerkanten är C7), *Rumsklang* (Torr, Lite, Mellan, Mycket) och arpeggiatorn av/på. Tonart, spelsätt, formation och utgångar lämnas orörda, eftersom XY glider steglöst i tonhöjd och inte skickar MIDI.
@@ -217,6 +229,7 @@ python3 -m http.server 8080
 - `js/access.js` – tillgänglighet: profiler, synlig pekare, klicka genom att titta, − / + knappar, lås, stegning och tangentbord
 - `js/settings.js` – sparade inställningar
 - `js/user-presets.js` – Mina presets (spara/ladda/exportera)
+- `js/drums.js` – Trumseten: syntetiserade trumljud och fem set
 - `js/wizard.js` – Startguiden och ackordmallarna (funktionsanalys utifrån tonarten)
 - `js/pwa.js` – service worker och Installera-knapp
 - `js/main.js` – uppstart

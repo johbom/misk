@@ -80,7 +80,8 @@ function arpSequence() {
   else base.sort((a, b) => a.order - b.order);
   const octaves = Number(ui.arpOctaves.value) || 1;
   let seq = [];
-  for (let o = 0; o < octaves; o++) seq.push(...base.map((e) => ({ ...e, note: clampNote(e.note + 12 * o) })));
+  // Trummor byter inte tonhöjd: fler oktaver = fler slag på samma trumma
+  for (let o = 0; o < octaves; o++) seq.push(...base.map((e) => ({ ...e, note: e.pad.drum ? e.note : clampNote(e.note + 12 * o) })));
   if (pattern === 'down') seq.reverse();
   else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
   return seq;
@@ -121,6 +122,7 @@ function arpPlayStep(time) {
   if (ui.outAudio.checked) {
     let stop;
     if (pad.sample) stop = playSample(pad.sample, time, Math.pow(2, (note - pad.note) / 12));
+    else if (pad.drum) stop = drumHit(pad.drum, time, 0.9);
     else stop = engine.noteOn(note, 0.8, time);
     if (pad.arpVib && stop.vibrato) stop.vibrato(pad.arpVib);
     stop(off);
