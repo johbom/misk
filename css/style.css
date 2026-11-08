@@ -444,7 +444,7 @@ body:not(.advanced) .adv-only { display: none; }
 .lib-cat[hidden] { display: none; }
 #lib-cats[hidden] { display: none; }
 .lib-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-bottom: 8px; }
-#lib-groups { display: inline-flex; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: #171922; }
+#lib-groups { display: inline-flex; flex-wrap: wrap; max-width: 100%; gap: 2px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; background: #171922; }
 .lib-group { border: none; border-radius: 7px; background: transparent; color: var(--muted); padding: 4px 12px; min-height: 32px; font-weight: 600; }
 .lib-group small { opacity: 0.7; font-weight: 400; margin-left: 2px; }
 .lib-group:hover { color: var(--text); background: #262938; }

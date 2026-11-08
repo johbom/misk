@@ -1,4 +1,5 @@
-// Presetbibliotek: 110 färdiga ljud i 11 kategorier.
+// Presetbibliotek: 500 färdiga ljud, 100 per ljudmotor (10 kategorier med 10 ljud var).
+// Här finns oscillatormotorns 100; de andra motorernas ljud ligger i egna filer (se nedan).
 // Väljer man ett av dem laddas inställningarna in i "Eget", så kan man fortsätta skruva därifrån.
 // Varje kategori har en bas; varje ljud ändrar bara det som skiljer sig (ovanpå SYNTH_DEFAULTS).
 
@@ -163,29 +164,14 @@ const PRESET_CATEGORIES = [
       'Retrolead': { osc1Wave: 'pulse', unison: 2, spread: 8, lfoTarget: 'pitch', lfoRate: 6, lfoDepth: 0.12, delayMix: 0.25, delayTime: 0.2, delayFeedback: 0.35 },
     },
   },
-  {
-    // Fysisk modellering: en räknad sträng eller resonanskropp i stället för oscillatorer.
-    // Modellen klingar ut av sig själv (Klingtid); volymkurvan håller bara tonen och tar släppet.
-    name: 'Fysisk modell',
-    base: { attack: 0.001, decay: 6, sustain: 1, release: 1.2, reverbMix: 0.25, reverbSize: 2.5 },
-    presets: {
-      'Nylonsträng': { model: 'string', pmExciter: 'pluck', pmDecay: 3, pmBright: 0.45, pmPos: 0.22, reverbMix: 0.2 },
-      'Stålsträng': { model: 'string', pmExciter: 'pluck', pmDecay: 5, pmBright: 0.8, pmPos: 0.12, chorus: 0.15 },
-      'Harpsträng': { model: 'string', pmExciter: 'pluck', pmDecay: 6, pmBright: 0.55, pmPos: 0.45, release: 2.5, reverbMix: 0.4, reverbSize: 4 },
-      'Kotosträng': { model: 'string', pmExciter: 'pluck', pmDecay: 2.5, pmBright: 0.9, pmPos: 0.07, lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.05, delayMix: 0.15, delayTime: 0.35, delayFeedback: 0.3 },
-      'Stråkcello': { model: 'string', pmExciter: 'bow', pmDecay: 4, pmBright: 0.35, pmPos: 0.15, attack: 0.15, release: 0.5, lfoTarget: 'pitch', lfoRate: 5.5, lfoDepth: 0.06, reverbMix: 0.35, reverbSize: 3 },
-      'Marimbaträ': { model: 'modal', pmBody: 'marimba', pmDecay: 1.4, pmBright: 0.45, pmPos: 0.25, release: 1.5 },
-      'Vibrafonstav': { model: 'modal', pmBody: 'vibes', pmDecay: 4.5, pmBright: 0.55, pmPos: 0.25, lfoTarget: 'amp', lfoRate: 5.5, lfoDepth: 0.35, release: 3 },
-      'Glasklang': { model: 'modal', pmBody: 'glass', pmDecay: 5, pmBright: 0.75, pmPos: 0.3, release: 4, reverbMix: 0.45, reverbSize: 5 },
-      'Tumpiano': { model: 'modal', pmBody: 'bar', pmDecay: 1.6, pmBright: 0.55, pmPos: 0.2, release: 1.2, reverbMix: 0.2 },
-      'Handtrumma': { model: 'modal', pmBody: 'drum', pmDecay: 0.45, pmBright: 0.35, pmPos: 0.3, release: 0.4, reverbMix: 0.15 },
-    },
-  },
 ];
 
-// FM-motorns ljud (js/fm-library.js) läggs sist, som en egen grupp
-PRESET_CATEGORIES.forEach((c) => { c.group = c.group || 'Klassiska'; });
-if (typeof FM_CATEGORIES !== 'undefined') FM_CATEGORIES.forEach((c) => PRESET_CATEGORIES.push({ ...c, group: 'FM' }));
+// Ett bibliotek per motor, i samma ordning som motorvalet: Oscillatorer (kategorierna ovan),
+// Sträng och Resonans (js/pm-library.js), FM (js/fm-library.js) och Vågtabell (js/wt-library.js).
+PRESET_CATEGORIES.forEach((c) => { c.group = 'Oscillatorer'; });
+[
+  ['Sträng', STRING_CATEGORIES], ['Resonans', MODAL_CATEGORIES], ['FM', FM_CATEGORIES], ['Vågtabell', WT_CATEGORIES],
+].forEach(([group, cats]) => cats.forEach((c) => PRESET_CATEGORIES.push({ ...c, group })));
 
 // Platt lista: { group, cat, name, params } – params är kompletta (defaults + kategori + ljud)
 const PRESET_LIBRARY = PRESET_CATEGORIES.flatMap(({ name: cat, group, base, presets }) =>

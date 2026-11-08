@@ -1,0 +1,177 @@
+// Bibliotek för vågtabellmotorn: 100 ljud i 10 kategorier.
+// W(tabell, position, { env, et, mv, mr, un, sp, …övrigt })
+//   env/et = rörelse genom tabellen och hur lång tid den tar, mv/mr = svängning (djup/takt),
+//   un/sp = antal röster och svävning (cent). Övrigt = motorns vanliga reglage (filter, kurvor, effekter).
+// Laddas före js/sound-library.js, som lägger kategorierna i presetbiblioteket.
+function W(table, pos, o = {}) {
+  const { env = 0, et = 1, mv = 0, mr = 0.3, un = 1, sp = 12, ...fx } = o;
+  return {
+    model: 'wt', wtTable: table, wtPos: pos, wtEnv: env, wtEnvTime: et, wtMove: mv, wtMoveRate: mr,
+    wtUnison: un, wtSpread: sp, ...fx,
+  };
+}
+
+const WT_ECHO = { delayMix: 0.25, delayTime: 0.375, delayFeedback: 0.4 };
+
+const WT_CATEGORIES = [
+  {
+    name: 'Vågmattor',
+    base: { attack: 0.8, decay: 1.5, sustain: 0.85, release: 2.5, chorus: 0.3, reverbMix: 0.5, reverbSize: 5 },
+    presets: {
+      'Morfmatta': W('basic', 0.1, { env: 0.6, et: 4, un: 5, sp: 14, cutoff: 3000 }),
+      'Varm vågmatta': W('basic', 0.45, { un: 5, sp: 10, cutoff: 1400 }),
+      'Andande matta': W('basic', 0.4, { mv: 0.5, mr: 0.15, un: 3, sp: 12, cutoff: 2200 }),
+      'Bred vågmatta': W('basic', 0.6, { un: 7, sp: 22, cutoff: 3500 }),
+      'Glasvåg': W('glass', 0.3, { env: 0.5, et: 5, un: 3, sp: 8, ...WT_ECHO }),
+      'Dimmatta': W('pulse', 0.3, { mv: 0.4, mr: 0.1, un: 5, sp: 16, cutoff: 1200 }),
+      'Vokalmatta': W('vowel', 0.3, { mv: 0.5, mr: 0.12, un: 5, sp: 10 }),
+      'Dragstångsmatta': W('organ', 0.4, { env: 0.4, et: 3, un: 3, sp: 6 }),
+      'Pulsmatta': W('pulse', 0.2, { env: 0.6, et: 6, un: 5, sp: 12, cutoff: 2600 }),
+      'Mjuk digitalmatta': W('digital', 0.3, { mv: 0.3, mr: 0.08, un: 5, sp: 12, cutoff: 1800 }),
+    },
+  },
+  {
+    name: 'Våglead',
+    base: { attack: 0.005, decay: 0.3, sustain: 0.85, release: 0.25, delayMix: 0.2, delayTime: 0.375, delayFeedback: 0.3, reverbMix: 0.2 },
+    presets: {
+      'Synklead': W('sync', 0.4, { env: 0.4, et: 0.4, lfoTarget: 'pitch', lfoRate: 5.5, lfoDepth: 0.08 }),
+      'Vecklead': W('fold', 0.3, { env: 0.3, et: 0.3, cutoff: 5000 }),
+      'Morflead': W('basic', 0.4, { mv: 0.4, mr: 3, un: 2, sp: 8 }),
+      'Pulslead': W('pulse', 0.5, { mv: 0.3, mr: 0.5 }),
+      'Vokallead': W('vowel', 0.5, { mv: 0.6, mr: 2, ...{ lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.06 } }),
+      'Digitallead': W('digital', 0.6, { un: 2, sp: 10, cutoff: 6000 }),
+      'Skrikande lead': W('sync', 0.8, { drive: 0.5, cutoff: 4500, q: 3 }),
+      'Mjuk våglead': W('basic', 0.2, { attack: 0.05, cutoff: 2500, lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.1 }),
+      'Glaslead': W('glass', 0.5, { mv: 0.3, mr: 4, reverbMix: 0.35 }),
+      'Bred våglead': W('basic', 0.75, { un: 5, sp: 20, cutoff: 5000 }),
+    },
+  },
+  {
+    name: 'Vågbas',
+    base: { attack: 0.003, decay: 0.4, sustain: 0.8, release: 0.15, reverbMix: 0.02 },
+    presets: {
+      'Vågbas': W('basic', 0.55, { cutoff: 900, fEnv: 2, fDecay: 0.2, fSustain: 0.3 }),
+      'Synkbas': W('sync', 0.2, { env: 0.5, et: 0.15, cutoff: 1800 }),
+      'Veckbas': W('fold', 0.4, { cutoff: 1500, drive: 0.2 }),
+      'Pulsbas': W('pulse', 0.6, { cutoff: 1000, q: 3, fEnv: 2, fDecay: 0.15, fSustain: 0.2 }),
+      'Talande bas': W('vowel', 0.2, { env: 0.7, et: 0.3, cutoff: 2500 }),
+      'Digitalbas': W('digital', 0.4, { cutoff: 1400 }),
+      'Morfbas': W('basic', 0.9, { env: -0.6, et: 0.3, cutoff: 2000 }),
+      'Sub-våg': W('basic', 0, { cutoff: 600 }),
+      'Reesebas': W('basic', 0.67, { un: 3, sp: 18, cutoff: 1200, drive: 0.2 }),
+      'Morrande bas': W('fold', 0.5, { mv: 0.5, mr: 4, cutoff: 1600, drive: 0.35 }),
+    },
+  },
+  {
+    name: 'Vågplock och keys',
+    base: { attack: 0.002, decay: 0.8, sustain: 0.15, release: 0.4, reverbMix: 0.25, reverbSize: 2.5 },
+    presets: {
+      'Vågpiano': W('basic', 0.4, { env: -0.4, et: 0.5, cutoff: 4000, decay: 1.5, sustain: 0.1 }),
+      'Digital-EP': W('digital', 0.2, { env: -0.2, et: 0.4, chorus: 0.4, decay: 1.6 }),
+      'Plockvåg': W('basic', 0.9, { env: -0.9, et: 0.2, decay: 0.5, sustain: 0 }),
+      'Vokalplock': W('vowel', 0.8, { env: -0.8, et: 0.25, decay: 0.6, sustain: 0 }),
+      'Glasplock': W('glass', 0.7, { env: -0.6, et: 0.4, ...WT_ECHO }),
+      'Synkplock': W('sync', 0.9, { env: -0.9, et: 0.15, decay: 0.4, sustain: 0 }),
+      'Veckplock': W('fold', 0.9, { env: -0.9, et: 0.2, decay: 0.5, sustain: 0 }),
+      'Orgelplock': W('organ', 0.8, { env: -0.6, et: 0.3, decay: 0.7, sustain: 0.05 }),
+      'Pulsplock': W('pulse', 0.9, { env: -0.8, et: 0.2, decay: 0.4, sustain: 0, ...WT_ECHO }),
+      'Harpvåg': W('basic', 0.5, { env: -0.5, et: 0.6, decay: 2.5, sustain: 0, reverbMix: 0.45, reverbSize: 4 }),
+    },
+  },
+  {
+    name: 'Röster och vokaler',
+    base: { attack: 0.15, decay: 0.6, sustain: 0.85, release: 0.8, chorus: 0.3, reverbMix: 0.4, reverbSize: 3.5 },
+    presets: {
+      'Vokalsvep': W('vowel', 0, { env: 1, et: 2.5 }),
+      'Kör i våg': W('vowel', 0.5, { un: 6, sp: 14, lfoTarget: 'pitch', lfoRate: 5, lfoDepth: 0.04 }),
+      'Viskande våg': W('vowel', 0.7, { filterType: 'highpass', cutoff: 1200, un: 4, sp: 20 }),
+      'Robotröst': W('digital', 0.5, { mv: 0.8, mr: 6, chorus: 0 }),
+      'Mumlande röst': W('vowel', 0.4, { mv: 0.7, mr: 0.6 }),
+      'Sjungande våg': W('vowel', 0.5, { mv: 0.3, mr: 0.3, lfoTarget: 'pitch', lfoRate: 5.5, lfoDepth: 0.07 }),
+      'Djup röst': W('vowel', 0.1, { cutoff: 1500, un: 3, sp: 8 }),
+      'Ljus röst': W('vowel', 0.95, { un: 3, sp: 8 }),
+      'Talande våg': W('vowel', 0.2, { mv: 0.9, mr: 3 }),
+      'Andlig vokal': W('vowel', 0.3, { env: 0.4, et: 4, un: 7, sp: 16, reverbMix: 0.6, reverbSize: 7 }),
+    },
+  },
+  {
+    name: 'Rörliga ljud',
+    base: { attack: 0.2, decay: 1, sustain: 0.9, release: 1.5, reverbMix: 0.35, reverbSize: 3.5 },
+    presets: {
+      'Svepande våg': W('basic', 0, { env: 1, et: 6, un: 3, sp: 10 }),
+      'Pendelvåg': W('basic', 0.5, { mv: 1, mr: 0.25, un: 3, sp: 10 }),
+      'Vandrande våg': W('digital', 0.5, { mv: 0.8, mr: 0.1, un: 3, sp: 10 }),
+      'Pulserande synk': W('sync', 0.5, { mv: 0.9, mr: 2 }),
+      'Tidvatten': W('pulse', 0.5, { mv: 0.9, mr: 0.08, un: 5, sp: 14 }),
+      'Långsam morf': W('basic', 0.1, { env: 0.8, et: 10, un: 3, sp: 10 }),
+      'Snabb morf': W('basic', 0.1, { env: 0.8, et: 0.3 }),
+      'Rytmisk våg': W('fold', 0.4, { mv: 0.7, mr: 4 }),
+      'Spiral': W('glass', 0.2, { env: 0.7, et: 3, mv: 0.3, mr: 1.5, ...WT_ECHO }),
+      'Böljande orgel': W('organ', 0.5, { mv: 0.9, mr: 0.2, un: 3, sp: 6 }),
+    },
+  },
+  {
+    name: 'Synk och aggressiva',
+    base: { attack: 0.005, decay: 0.4, sustain: 0.8, release: 0.3, reverbMix: 0.15 },
+    presets: {
+      'Synksvep': W('sync', 0, { env: 1, et: 1.2 }),
+      'Hård synk': W('sync', 0.9, { drive: 0.3 }),
+      'Vecksvep': W('fold', 0, { env: 1, et: 1.5 }),
+      'Distad veck': W('fold', 0.7, { drive: 0.6, cutoff: 3500 }),
+      'Raspande digital': W('digital', 0.9, { drive: 0.4, un: 3, sp: 15 }),
+      'Industriell': W('fold', 0.95, { drive: 0.8, cutoff: 2500, q: 4 }),
+      'Laservåg': W('sync', 1, { env: -1, et: 0.2, sustain: 0.3, decay: 0.3, ...WT_ECHO }),
+      'Sågsynk': W('sync', 0.6, { un: 5, sp: 18, cutoff: 5000 }),
+      'Metallsynk': W('sync', 0.75, { mv: 0.3, mr: 7, filterType: 'bandpass', cutoff: 2000, q: 2 }),
+      'Brutal veck': W('fold', 1, { un: 3, sp: 25, drive: 0.9, cutoff: 3000 }),
+    },
+  },
+  {
+    name: 'Vågklockor och glas',
+    base: { attack: 0.002, decay: 2.5, sustain: 0, release: 2, reverbMix: 0.45, reverbSize: 5 },
+    presets: {
+      'Vågklocka': W('glass', 0.6, { env: -0.5, et: 1.5 }),
+      'Kristallvåg': W('glass', 0.9, { env: -0.8, et: 2, ...WT_ECHO }),
+      'Glittrande glas': W('glass', 0.5, { mv: 0.4, mr: 6, un: 3, sp: 6 }),
+      'Digitalklocka': W('digital', 0.7, { env: -0.6, et: 1 }),
+      'Klingande våg': W('basic', 0.3, { env: -0.3, et: 1, decay: 3 }),
+      'Spröd glasvåg': W('glass', 1, { env: -1, et: 0.5, decay: 1.5 }),
+      'Isvåg': W('glass', 0.8, { filterType: 'highpass', cutoff: 800, decay: 3 }),
+      'Klockvåg': W('organ', 1, { env: -0.9, et: 1.2, decay: 3 }),
+      'Stjärnvåg': W('glass', 0.4, { chorus: 0.5, delayMix: 0.4, delayTime: 0.3, delayFeedback: 0.6 }),
+      'Ljusglas': W('glass', 0.7, { un: 3, sp: 5, decay: 2, sustain: 0.1, release: 2.5 }),
+    },
+  },
+  {
+    name: 'Vågorgel',
+    base: { attack: 0.01, decay: 0.2, sustain: 1, release: 0.2, reverbMix: 0.25, reverbSize: 2.5 },
+    presets: {
+      'Dragstångsorgel': W('organ', 0.6),
+      'Jazzvågorgel': W('organ', 0.4, { lfoTarget: 'amp', lfoRate: 6.5, lfoDepth: 0.25, chorus: 0.4 }),
+      'Kyrkvåg': W('organ', 1, { un: 3, sp: 4, reverbMix: 0.55, reverbSize: 6 }),
+      'Svällande orgel': W('organ', 0.1, { env: 0.8, et: 2.5, attack: 0.3 }),
+      'Roterande orgel': W('organ', 0.7, { lfoTarget: 'amp', lfoRate: 6.8, lfoDepth: 0.35, chorus: 0.7 }),
+      'Pipvåg': W('organ', 0.25, { cutoff: 3000 }),
+      'Kammarvåg': W('organ', 0.35, { reverbMix: 0.35, reverbSize: 3 }),
+      'Gospelvåg': W('organ', 0.85, { drive: 0.25, chorus: 0.5 }),
+      'Rockvågorgel': W('organ', 0.95, { drive: 0.55, lfoTarget: 'amp', lfoRate: 6, lfoDepth: 0.2 }),
+      'Pulsorgel': W('pulse', 0.1, { un: 2, sp: 4, chorus: 0.4 }),
+    },
+  },
+  {
+    name: 'Vågatmosfär',
+    base: { attack: 1.5, decay: 2, sustain: 0.9, release: 4, chorus: 0.4, reverbMix: 0.65, reverbSize: 8 },
+    presets: {
+      'Vågvind': W('digital', 0.3, { mv: 0.6, mr: 0.06, un: 7, sp: 30, filterType: 'bandpass', cutoff: 1500, q: 1.5 }),
+      'Spökvåg': W('vowel', 0.6, { mv: 0.6, mr: 0.2, lfoTarget: 'pitch', lfoRate: 0.3, lfoDepth: 0.2 }),
+      'Ekande digital': W('digital', 0.5, { attack: 0.01, decay: 1, sustain: 0.2, delayMix: 0.45, delayTime: 0.5, delayFeedback: 0.6 }),
+      'Drönare': W('fold', 0.2, { mv: 0.3, mr: 0.05, un: 5, sp: 12, cutoff: 900 }),
+      'Mörker': W('basic', 0.7, { un: 5, sp: 18, cutoff: 500, q: 4, lfoTarget: 'filter', lfoRate: 0.07, lfoDepth: 0.4 }),
+      'Polarljus': W('glass', 0.2, { env: 0.7, et: 8, mv: 0.3, mr: 0.1, un: 5, sp: 14 }),
+      'Havsdjup': W('vowel', 0.1, { mv: 0.4, mr: 0.05, cutoff: 700, un: 3, sp: 20 }),
+      'Kortvåg': W('digital', 0.9, { mv: 1, mr: 7, filterType: 'bandpass', cutoff: 2500, q: 3, attack: 0.3 }),
+      'Tidsresa': W('sync', 0, { env: 1, et: 10, un: 5, sp: 16, ...WT_ECHO }),
+      'Galax': W('basic', 0.5, { mv: 0.6, mr: 0.04, un: 7, sp: 25, delayMix: 0.3, delayTime: 0.6, delayFeedback: 0.5 }),
+    },
+  },
+];

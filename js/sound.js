@@ -139,6 +139,7 @@ function randomSynth() {
     reverbMix: Math.min(p.reverbMix, 0.6),
     drive: Math.min(p.drive, 0.6),
     unison: Math.min(p.unison, 5),
+    vol: 1,
   });
   synthLib = { name: '', edited: false };
   applySynth(p, CUSTOM);
@@ -163,7 +164,7 @@ function updateCustomLabel() {
 }
 
 // ---------- Presetbibliotek (js/sound-library.js och js/fm-library.js) ----------
-// Grupp (Alla / Klassiska / FM) -> kategori -> ljud, plus sökning på namn och kategori.
+// Grupp (Alla eller en motor) -> kategori -> ljud, plus sökning på namn och kategori.
 let libGroup = 'Alla';
 let libCategory = 'Alla';
 let libQuery = '';
@@ -177,7 +178,7 @@ function buildPresetLibrary() {
     b.className = 'lib-group';
     b.dataset.group = g;
     const n = g === 'Alla' ? PRESET_LIBRARY.length : PRESET_LIBRARY.filter((e) => e.group === g).length;
-    b.innerHTML = `${g === 'FM' ? 'FM-motorn' : g} <small>${n}</small>`;
+    b.innerHTML = `${g} <small>${n}</small>`;
     b.addEventListener('click', () => { libGroup = g; libCategory = 'Alla'; renderPresetLibrary(); });
     groups.append(b);
   });

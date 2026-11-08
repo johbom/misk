@@ -1,4 +1,5 @@
-// FM-biblioteket: 256 färdiga ljud för FM-motorn, 16 kategorier med 16 ljud i varje.
+// FM-biblioteket: 100 färdiga ljud för FM-motorn, 10 kategorier med 10 ljud i varje
+// (urval ur 16 receptkategorier, se FM_PICKS längst ned).
 //
 // Varje kategori bygger på ett eller flera "recept" (klassiska FM-knep: elpiano med två par, klockor
 // med ojämna förhållanden, mässing med långsam modulator, orgel med fyra bärare …) som varieras.
@@ -123,7 +124,7 @@ const fmGlass = (v = {}) => FM(5, [
 ], { det: v.det ?? 3, rel: v.rel ?? 2, ...v.fx });
 
 // ---------- Kategorierna ----------
-const FM_CATEGORIES = [
+const FM_ALL_CATEGORIES = [
   {
     name: 'FM-piano',
     base: { reverbMix: 0.2, reverbSize: 1.8, chorus: 0.25 },
@@ -477,3 +478,30 @@ const FM_CATEGORIES = [
     },
   },
 ];
+
+// Urvalet: 10 kategorier med 10 ljud. [namn, [[receptkategori, antal], …]] – de första ljuden
+// i varje receptkategori tas med.
+const FM_PICKS = [
+  ['FM-piano', [['FM-piano', 10]]],
+  ['FM-klockor', [['FM-klockor', 10]]],
+  ['FM-stavspel och glas', [['FM-stavspel', 6], ['FM-glas', 4]]],
+  ['FM-bas', [['FM-bas', 10]]],
+  ['FM-mässing och träblås', [['FM-mässing', 5], ['FM-träblås', 5]]],
+  ['FM-mattor och röster', [['FM-mattor', 5], ['FM-röster', 5]]],
+  ['FM-lead och pop', [['FM-lead', 6], ['FM-pop', 4]]],
+  ['FM-orgel', [['FM-orgel', 10]]],
+  ['FM-knäppt', [['FM-knäppt', 10]]],
+  ['FM-atmosfär och slagverk', [['FM-atmosfär', 4], ['FM-effekter', 3], ['FM-slagverk', 3]]],
+];
+const FM_CATEGORIES = FM_PICKS.map(([name, from]) => {
+  const presets = {};
+  from.forEach(([cat, n]) => {
+    const c = FM_ALL_CATEGORIES.find((x) => x.name === cat);
+    Object.entries(c.presets).slice(0, n).forEach(([k, v]) => {
+      // Kategorins bas följer med in i varje ljud (kategorierna slås ihop)
+      presets[k] = { ...c.base, ...v };
+    });
+  });
+  return { name, base: {}, presets };
+});
+

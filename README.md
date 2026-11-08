@@ -127,7 +127,7 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 
 Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljud** och skruva själv:
 
-- **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och enkel FM, allt nedan), **fysisk modell** eller **FM-motorn**, se nedan.
+- **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och enkel FM, allt nedan), **Sträng** och **Resonans** (fysisk modell), **FM** eller **Vågtabell**, se nedan.
 - **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.
 - **Oscillator 2:** blandas in eller frekvensmodulerar osc 1 (FM), transponering, fininställning, brus.
 - **Filter:** lågpass/högpass/bandpass med resonans och egen envelope.
@@ -143,7 +143,16 @@ Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, 
 
 **FM-motorn:** fyra sinusoperatorer, som på klassiska FM-syntar. Varje operator har ett *förhållande* till grundtonen (0,5×–16×), en *nivå* och en egen kurva (*attack, decay, sustain*). **Algoritmen** (1–8) bestämmer vilka operatorer som hörs och vilka som i stället modulerar andra – från en lång kedja (4→3→2→1, mycket övertoner) till fyra bärare som blandas (orgel). Rubriken på varje operator visar vad den gör i den valda algoritmen (*hörs* eller *→ modulerar 1*). *Återkoppling* låter operator 4 modulera sig själv (sågtandslikt, vid högt värde brus), *Svävning* stämmer operatorerna en aning isär. Moduleringen minskar en aning uppåt i registret och växer med anslagets styrka, som på riktiga FM-syntar. Allt räknas sampel för sampel i ljudtråden. Filter, LFO, vibrato och effekterna fungerar som vanligt; i FM-ljuden står volymkurvan öppen och operatorernas kurvor formar ljudet.
 
-**Presetbibliotek:** under *Inställningar → Ljud → Färdiga ljud* finns **366 ljud**: 110 *klassiska* (oscillatorer och fysisk modell) och **256 för FM-motorn** i 16 kategorier – FM-piano, klockor, stavspel, bas, mässing, mattor, lead, orgel, knäppt, träblås, atmosfär, röster, effekter, glas, pop och slagverk. Välj grupp (*Alla, Klassiska, FM-motorn*) och kategori, eller **sök** på namn. De klassiska finns i elva kategorier (klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip, fysisk modell – t.ex. *Nylonsträng*, *Stråkcello*, *Marimbaträ*, *Vibrafonstav*, *Glasklang*, *Handtrumma*). Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. De tio i presetmenyn finns kvar som förut.
+**Vågtabell:** en oscillator som glider mellan åtta vågformer i en *tabell*: **Grund** (sinus → triangel → sågtand → fyrkant), **Puls** (pulsbredd 50 % → 4 %), **Vokal** (u → o → a → e → i), **Orgel** (dragstänger som dras ut en efter en), **Synk** (hårdsynk), **Veck** (allt mer veckad sinus), **Glas** (glesa höga övertoner) och **Digital**. *Position* är var i tabellen tonen börjar, *Rörelse* och *Rörelsetid* flyttar positionen under tonen (t.ex. ett svep från mörkt till ljust), *Svängning* och *Takt* låter den pendla, och *Röster* och *Svävning* ger flera lätt ostämda röster spridda i stereo. Tabellerna byggs med bara de övertoner som ryms i varje tonläge, så att höga toner inte får vikningsdistorsion, och förbereds när ljudet väljs. Allt räknas i ljudtråden; filter, volymkurva, LFO, vibrato och effekter fungerar som vanligt. Resonans har också fått sex nya kroppar: *Kalimba, Klangskål, Steelpan, Gong, Trä* och *Tabla*.
+
+**Presetbibliotek:** under *Inställningar → Ljud → Färdiga ljud* finns **500 ljud – 100 för varje ljudmotor**, i 10 kategorier med 10 ljud var. Välj motor (*Alla, Oscillatorer, Sträng, Resonans, FM, Vågtabell*) och kategori, eller **sök** på namn i alla:
+- **Oscillatorer:** klaviatur, pad, lead, bas, pluck, klockor, orgel, stråk & blås, atmosfär, retro & chip.
+- **Sträng:** akustisk gitarr, elgitarr, strängbas, harpa och lyra, asiatiska strängar (koto, guzheng, shamisen, erhu …), folk och lutor (banjo, mandolin, nyckelharpa …), slagna strängar (hackbräde, cimbalom, klavikord …), stråkar, pizzicato och ambienta strängar.
+- **Resonans:** marimba och xylofon, vibrafon, kyrk- och handklockor, glas, metall och speldosor, kalimba, trummor och trä (tabla, djembe, slitstrumma …), steelpan, gonggar och klangskålar, och ambienta klanger.
+- **FM:** piano, klockor, stavspel och glas, bas, mässing och träblås, mattor och röster, lead och pop, orgel, knäppt, och atmosfär och slagverk.
+- **Vågtabell:** mattor, lead, bas, plock och keys, röster och vokaler, rörliga ljud, synk och aggressiva, klockor och glas, orgel, och atmosfär.
+
+Ett klick laddar in ljudet i *Eget* och provspelar det; presetmenyn visar då t.ex. *Eget: Harpa*. Nivåerna är uppmätta så att alla ljud ligger ungefär lika starkt (reglaget **Nivå** under *Volymkurva* finjusterar varje ljud). Snabbvalen i presetmenyn finns kvar som förut. Trumseten (sidan Toner) är oförändrade.
 
 Ändrar du ett reglage blir ljudet *Eget (ändrat)*. *Återställ* går tillbaka, *Slumpa ljud* hittar på något nytt. Överst på fliken *Ljud* syns vilket ljud som är valt (t.ex. *Piano (ändrat)*), och under *Skruva själv* visas bara reglagen för den valda motorn – välj *Oscillatorer*, *Sträng*, *Resonans* eller *FM* med knapparna under *Motor*.
 Uppladdade ljudfiler går också genom effekterna.
@@ -210,8 +219,11 @@ python3 -m http.server 8080
 - `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`)
 - `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
 - `js/sound-library.js` – presetbiblioteket: 110 klassiska ljud (och samlar ihop FM-ljuden)
-- `js/fm-library.js` – 256 ljud för FM-motorn, byggda av recept per instrumentfamilj
-- `js/pm-worklet.js` – motorer i ljudtråden: sträng (Karplus–Strong), resonanskropp och FM-motorn (fyra operatorer)
+- `js/fm-library.js` – 100 ljud för FM-motorn (urval ur recept per instrumentfamilj)
+- `js/pm-library.js` – 100 ljud för Sträng och 100 för Resonans
+- `js/wt-library.js` – 100 ljud för Vågtabell
+- `js/lib-levels.js` – uppmätt nivå per ljud i biblioteken
+- `js/pm-worklet.js` – motorer i ljudtråden: sträng (Karplus–Strong), resonanskropp, FM-motorn (fyra operatorer) och vågtabell
 - `js/layout.js` – formationerna (cirkel, ring, bikupa, strängar)
 - `js/core.js` – grunddata: tonnamn, skalor, ackordtyper, färger, referenser till reglagen
 - `js/audio.js` – ljud- och MIDI-utgång

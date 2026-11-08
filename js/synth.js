@@ -57,6 +57,12 @@ const PM_BODIES = {
   bell: { name: 'Klocka', ratios: [0.5, 1, 1.19, 1.5, 2, 2.66, 3.01], amps: [0.15, 1, 0.55, 0.35, 0.6, 0.25, 0.2], damp: 0.5 },
   drum: { name: 'Trumma', ratios: [1, 1.59, 2.14, 2.3, 2.65, 2.92, 3.16], amps: [1, 0.8, 0.6, 0.5, 0.4, 0.35, 0.3], damp: 0.8 },
   bar: { name: 'Metallstav', ratios: [1, 2.76, 5.4, 8.93], amps: [1, 0.4, 0.22, 0.1], damp: 0.7 },
+  kalimba: { name: 'Kalimba', ratios: [1, 5.4, 13.7], amps: [1, 0.3, 0.12], damp: 0.85 },
+  bowl: { name: 'Klangskål', ratios: [1, 2.71, 5.15, 8.17], amps: [1, 0.6, 0.3, 0.15], damp: 0.3 },
+  steelpan: { name: 'Steelpan', ratios: [1, 2, 3, 4.02], amps: [1, 0.6, 0.35, 0.15], damp: 0.6 },
+  gong: { name: 'Gong', ratios: [1, 1.42, 1.83, 2.13, 2.56, 2.9, 3.4, 3.9], amps: [1, 0.8, 0.7, 0.6, 0.5, 0.45, 0.35, 0.3], damp: 0.3 },
+  wood: { name: 'Trä', ratios: [1, 2.57, 4.4], amps: [1, 0.35, 0.15], damp: 1.2 },
+  tabla: { name: 'Tabla', ratios: [1, 2, 3, 4, 5], amps: [1, 0.6, 0.4, 0.25, 0.15], damp: 0.9 },
 };
 
 // FM-motorn: fyra sinusoperatorer (som klassiska FM-syntar). Algoritmen bestämmer vilka som hörs
@@ -73,6 +79,12 @@ const FM_ALGOS = {
   8: { name: '8 · Alla fyra hörs (orgel)', mods: [[], [], [], []], car: [0, 1, 2, 3] },
 };
 const ratioFmt = (v) => `${Number(v.toFixed(2))}×`;
+
+// Vågtabellmotorn: tabeller med åtta vågformer var (byggs i pm-worklet.js, 'wavetable')
+const WT_TABLES = [
+  ['basic', 'Grund'], ['pulse', 'Puls'], ['vowel', 'Vokal'], ['organ', 'Orgel'],
+  ['sync', 'Synk'], ['fold', 'Veck'], ['glass', 'Glas'], ['digital', 'Digital'],
+];
 const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
   { group: `Operator ${k}`, op: k, key: `op${k}Ratio`, label: 'Förhållande', min: 0.5, max: 16, log: true, fmt: ratioFmt },
   { key: `op${k}Level`, label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -82,7 +94,7 @@ const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
 ]);
 
 const SYNTH_PARAMS = [
-  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM']] },
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Vågtabell']] },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
   { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
   { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
@@ -93,6 +105,15 @@ const SYNTH_PARAMS = [
   { key: 'fmFb', label: 'Återkoppling', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'fmDetune', label: 'Svävning', min: 0, max: 30, step: 1, fmt: (v) => `${v} cent` },
   ...FM_OP_PARAMS,
+
+  { group: 'Vågtabell', key: 'wtTable', label: 'Tabell', options: WT_TABLES },
+  { key: 'wtPos', label: 'Position', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'wtEnv', label: 'Rörelse', min: -1, max: 1, step: 0.01, fmt: (v) => `${v > 0 ? '+' : ''}${Math.round(v * 100)} %` },
+  { key: 'wtEnvTime', label: 'Rörelsetid', min: 0.01, max: 10, log: true, fmt: sec },
+  { key: 'wtMove', label: 'Svängning', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'wtMoveRate', label: 'Takt', min: 0.02, max: 8, log: true, fmt: (v) => `${v.toFixed(2)} Hz` },
+  { key: 'wtUnison', label: 'Röster', min: 1, max: 7, step: 1, fmt: (v) => `${v} st` },
+  { key: 'wtSpread', label: 'Svävning', min: 0, max: 50, step: 1, fmt: (v) => `${v} cent` },
 
   { group: 'Oscillator 1', key: 'osc1Wave', label: 'Vågform', options: WAVES },
   { key: 'osc1Level', label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -119,6 +140,7 @@ const SYNTH_PARAMS = [
   { key: 'decay', label: 'Decay', min: 0.01, max: 6, log: true, fmt: sec },
   { key: 'sustain', label: 'Sustain', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'release', label: 'Release', min: 0.01, max: 8, log: true, fmt: sec },
+  { key: 'vol', label: 'Nivå', min: 0.1, max: 4, log: true, fmt: pct },
 
   { group: 'LFO', key: 'lfoTarget', label: 'Styr', options: [['off', 'Av'], ['pitch', 'Tonhöjd (vibrato)'], ['filter', 'Filter (wah)'], ['amp', 'Volym (tremolo)']] },
   { key: 'lfoRate', label: 'Hastighet', min: 0.05, max: 20, log: true, fmt: (v) => `${v.toFixed(2)} Hz` },
@@ -137,6 +159,7 @@ const SYNTH_PARAMS = [
 const notOsc = (p) => p.model && p.model !== 'osc';
 const notPm = (p) => p.model !== 'string' && p.model !== 'modal';
 const notFm = (p) => p.model !== 'fm';
+const notWt = (p) => p.model !== 'wt';
 // Reglage som hör till en annan motor döljs helt (en grupp utan synliga reglage döljs också)
 const SYNTH_HIDDEN_WHEN = {
   pmExciter: (p) => p.model !== 'string',
@@ -147,6 +170,7 @@ const SYNTH_HIDDEN_WHEN = {
   ...Object.fromEntries(['osc1Wave', 'osc1Level', 'unison', 'spread', 'osc2Mode', 'osc2Wave', 'osc2Level',
     'fmAmount', 'osc2Semi', 'osc2Fine', 'noise'].map((k) => [k, notOsc])),
   ...Object.fromEntries(['fmAlgo', 'fmFb', 'fmDetune', ...FM_OP_PARAMS.map((d) => d.key)].map((k) => [k, notFm])),
+  ...Object.fromEntries(['wtTable', 'wtPos', 'wtEnv', 'wtEnvTime', 'wtMove', 'wtMoveRate', 'wtUnison', 'wtSpread'].map((k) => [k, notWt])),
 };
 const SYNTH_DISABLED_WHEN = {
   pmExciter: (p) => p.model !== 'string',
@@ -168,6 +192,9 @@ const SYNTH_DISABLED_WHEN = {
   fAttack: (p) => p.fEnv === 0,
   fDecay: (p) => p.fEnv === 0,
   fSustain: (p) => p.fEnv === 0,
+  wtEnvTime: (p) => p.wtEnv === 0,
+  wtMoveRate: (p) => p.wtMove === 0,
+  wtSpread: (p) => p.wtUnison === 1,
   lfoRate: (p) => p.lfoTarget === 'off',
   lfoDepth: (p) => p.lfoTarget === 'off',
   delayTime: (p) => p.delayMix === 0,
@@ -186,8 +213,10 @@ const SYNTH_DEFAULTS = {
   op2Ratio: 1, op2Level: 0.3, op2Attack: 0.002, op2Decay: 0.8, op2Sustain: 0.15,
   op3Ratio: 1, op3Level: 0.45, op3Attack: 0.002, op3Decay: 1.5, op3Sustain: 0.05,
   op4Ratio: 14, op4Level: 0.2, op4Attack: 0.002, op4Decay: 0.12, op4Sustain: 0,
+  // Vågtabellmotorn
+  wtTable: 'basic', wtPos: 0.35, wtEnv: 0, wtEnvTime: 1, wtMove: 0, wtMoveRate: 0.3, wtUnison: 1, wtSpread: 12,
   filterType: 'lowpass', cutoff: 18000, q: 0.7, fEnv: 0, fAttack: 0.01, fDecay: 0.3, fSustain: 1,
-  attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25,
+  attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25, vol: 1,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
   drive: 0, chorus: 0, delayMix: 0, delayTime: 0.3, delayFeedback: 0.3, reverbMix: 0.1, reverbSize: 2,
 };
@@ -316,7 +345,10 @@ const presetParams = (name) => ({ ...SYNTH_DEFAULTS, ...SYNTH_PRESETS[name] });
 
 // ---------- Motorn ----------
 const NOTE_LOOKAHEAD = 0.015; // s, se noteOn
-const FM_MOD_SCALE = 6; // en modulator på full nivå = moduleringsindex 6 (mycket ljust)
+const FM_MOD_SCALE = 6;
+// Motorernas grundnivå (uppmätt mot oscillatorljuden)
+const STRING_GAIN = { pluck: 2.6, hammer: 1.3, bow: 0.7 };
+const WT_GAIN = 1.4; // en modulator på full nivå = moduleringsindex 6 (mycket ljust)
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
@@ -412,7 +444,10 @@ class SynthEngine {
     // Fysisk modell: strängen räknas i ljudtråden. Tills den laddats spelas en resonanskropp i stället.
     this.pmReady = false;
     this.ready = ctx.audioWorklet
-      ? ctx.audioWorklet.addModule(PM_WORKLET_URL).then(() => { this.pmReady = true; }).catch(() => {})
+      ? ctx.audioWorklet.addModule(PM_WORKLET_URL).then(() => {
+        this.pmReady = true;
+        if (this.p.model === 'wt') this.warmWavetable(this.p.wtTable);
+      }).catch(() => {})
       : Promise.resolve();
 
     this.reverbBuiltSize = null;
@@ -436,6 +471,7 @@ class SynthEngine {
   // Effekterna ändras direkt, även medan toner spelar.
   updateEffects() {
     const { ctx, p } = this;
+    if (p.model === 'wt') this.warmWavetable(p.wtTable);
     const t = ctx.currentTime;
     const smooth = (param, v) => param.setTargetAtTime(v, t, 0.03);
 
@@ -512,6 +548,7 @@ class SynthEngine {
   addModelVoice(p, freq, t, out, detunes, onRelease, onEnd, level = 1) {
     const { ctx } = this;
     if (p.model === 'fm') { this.addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level); return; }
+    if (p.model === 'wt') { this.addWtVoice(p, freq, t, out, detunes, onRelease, onEnd); return; }
     if (p.model === 'string' && this.pmReady) {
       const node = new AudioWorkletNode(ctx, 'pm-string', {
         numberOfInputs: 0,
@@ -521,7 +558,10 @@ class SynthEngine {
       });
       node.parameters.get('frequency').value = freq;
       detunes.push(node.parameters.get('detune'));
-      node.connect(out);
+      // Nivå per anslag (uppmätt): knäppt sträng är svagast, stråke starkast
+      const g = ctx.createGain();
+      g.gain.value = STRING_GAIN[p.pmExciter] || 1;
+      node.connect(g).connect(out);
       onRelease.push((r, end) => node.port.postMessage({ release: r, end }));
       onEnd.push(() => node.disconnect());
       return;
@@ -530,7 +570,8 @@ class SynthEngine {
     const body = PM_BODIES[p.model === 'modal' ? p.pmBody : 'bar'] || PM_BODIES.marimba;
     const sr = ctx.sampleRate;
     // Anslaget: en kort puls – hårdare klubba (ljusare) = kortare puls = fler höga deltoner
-    const len = Math.max(2, Math.round(sr * (0.0004 + 0.008 * (1 - p.pmBright) ** 2)));
+    // (högst en halv period: en längre puls släcker grundtonen, och höga toner blir nästan tysta)
+    const len = Math.max(2, Math.min(Math.round(sr * (0.0004 + 0.008 * (1 - p.pmBright) ** 2)), Math.round((sr / freq) * 0.5)));
     // Deltonens styrka: kroppens egen, anslagspunkten och hur hård klubban är
     const weight = (k) => body.amps[k] * (0.3 + 0.7 * Math.abs(Math.sin(Math.PI * (k + 1) * p.pmPos)))
       * (k === 0 ? 1 : 0.3 + 0.7 * p.pmBright);
@@ -632,6 +673,49 @@ class SynthEngine {
     onEnd.push(() => node.disconnect());
   }
 
+  // Vågtabellmotorn (pm-worklet.js, 'wavetable'): stereo, med unisonrösterna spridda åt sidorna
+  addWtVoice(p, freq, t, out, detunes, onRelease, onEnd) {
+    const { ctx } = this;
+    if (!this.pmReady) {
+      // Reserv de första ögonblicken innan ljudtråden laddats
+      const o = this.makeOsc(p.wtTable === 'organ' ? 'organ' : p.wtTable === 'vowel' ? 'vox' : 'sawtooth', freq);
+      const g = ctx.createGain();
+      g.gain.value = 0.6;
+      o.connect(g).connect(out);
+      o.start(t);
+      detunes.push(o.detune);
+      onRelease.push((r, end) => o.stop(end));
+      return;
+    }
+    const node = new AudioWorkletNode(ctx, 'wavetable', {
+      numberOfInputs: 0,
+      numberOfOutputs: 1,
+      outputChannelCount: [2],
+      processorOptions: {
+        start: t, table: p.wtTable, pos: p.wtPos, env: p.wtEnv, envTime: p.wtEnvTime,
+        move: p.wtMove, moveRate: p.wtMoveRate, unison: p.wtUnison, spread: p.wtSpread,
+      },
+    });
+    node.parameters.get('frequency').value = freq;
+    detunes.push(node.parameters.get('detune'));
+    const g = ctx.createGain();
+    g.gain.value = WT_GAIN;
+    node.connect(g).connect(out);
+    onRelease.push((r, end) => node.port.postMessage({ end }));
+    onEnd.push(() => node.disconnect());
+  }
+
+  // Bygger vågtabellen i förväg (alla tonområden), så att första tonen inte hackar
+  warmWavetable(table) {
+    if (!this.pmReady || this.warmed?.has(table)) return;
+    (this.warmed || (this.warmed = new Set())).add(table);
+    try {
+      new AudioWorkletNode(this.ctx, 'wavetable', {
+        numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [1], processorOptions: { table, warm: true },
+      });
+    } catch {}
+  }
+
   // Startar en ton. Returnerar en funktion som släpper den.
   // when (valfritt): ljudklockans tid då tonen ska börja (arpeggiatorn planerar i förväg).
   noteOn(note, level = 1, when = 0) {
@@ -656,7 +740,7 @@ class SynthEngine {
     life.connect(mixer);
     sources.push(life);
 
-    if (p.model === 'string' || p.model === 'modal' || p.model === 'fm') {
+    if (p.model === 'string' || p.model === 'modal' || p.model === 'fm' || p.model === 'wt') {
       this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd, level);
     } else {
     // Oscillator 1, med unison (flera lätt ostämda kopior spridda i stereo)
@@ -731,7 +815,7 @@ class SynthEngine {
 
     // Volymkurva (ADSR). Minst 3 ms attack, annars knäpper det i anslaget.
     const amp = ctx.createGain();
-    const peak = 0.32 * level;
+    const peak = 0.32 * level * (p.vol ?? 1);
     const attack = Math.max(0.003, p.attack);
     const decayTau = p.decay / 3;
     amp.gain.value = 0;
