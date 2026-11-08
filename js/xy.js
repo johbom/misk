@@ -44,7 +44,7 @@ const xyVibRate = (ny) => 4 + 3 * ny;
 const xyYIsVibrato = () => (XY_SOUNDS[ui.xySound.value] || {}).y === 'vibrato';
 
 // ---------- Ljud: en röst per pekare ----------
-// XY har egen klang och egen rumsklang, oberoende av rutornas ljud. Nivåerna är utjämnade så att
+// XY har egen klang och egen reverb, oberoende av rutornas ljud. Nivåerna är utjämnade så att
 // alla klanger låter ungefär lika starkt.
 const XY_SOUNDS = {
   // Uppmätta: övertonsrika klanger låter starkare per energi, så de ligger lite lägre än sinus
@@ -56,7 +56,7 @@ const XY_SOUNDS = {
   supersaw: { level: 2.2, detunes: [-18, -9, 0, 9, 18], wave: 'sawtooth' }, // bred, i stereo
 };
 
-// Egen buss: torrt + egen rumsklang, direkt till volymen (efter rutornas effekter)
+// Egen buss: torrt + egen reverb, direkt till volymen (efter rutornas effekter)
 function xyBus() {
   if (xy.bus && xy.busCtx === audioCtx) return xy.bus;
   const ctx = audioCtx;
@@ -318,7 +318,7 @@ function setupXY() {
     ui.xyOctaves.value = '5';
     saveSettings();
   }
-  // Rumsklangen finns både i spelraden på XY-sidan och under Spelytor – de följs åt
+  // Reverben finns både i spelraden på XY-sidan och under Spelytor – de följs åt
   const revBar = $('xy-reverb-bar');
   revBar.value = ui.xyReverb.value;
   ui.xyReverb.addEventListener('input', () => {

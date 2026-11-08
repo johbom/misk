@@ -373,7 +373,7 @@ const DRUM_KITS = {
 };
 
 // ---------- Uppspelning ----------
-// Varje trumset har en egen buss: (lo-fi-filter) -> volym, plus lite egen rumsklang.
+// Varje trumset har en egen buss: (lo-fi-filter) -> volym, plus lite egen reverb.
 // Trummorna går förbi syntens effekter (eko och klang hör till rutornas ljud, inte till trummorna).
 const drumBuses = new Map();
 

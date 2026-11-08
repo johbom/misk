@@ -399,11 +399,11 @@ class SynthEngine {
     this.delay.connect(fbTone).connect(this.delayFb).connect(this.delay);
     this.delay.connect(this.delayMix);
 
-    // Reverb (konvolution med en genererad rumsklang)
+    // Reverb (konvolution med en genererad reverb)
     this.convolver = ctx.createConvolver();
     this.reverbMix = ctx.createGain();
     this.bus.connect(this.convolver);
-    this.delayMix.connect(this.convolver); // ekon får också rumsklang
+    this.delayMix.connect(this.convolver); // ekon får också reverb
     this.convolver.connect(this.reverbMix);
 
     // Ut: volym -> kompressor (håller nere toppar när många toner spelas)
@@ -504,7 +504,7 @@ class SynthEngine {
 
     smooth(this.reverbMix.gain, p.reverbMix * 1.2);
     if (this.reverbBuiltSize !== p.reverbSize) {
-      // Att bygga om rumsklangen tar lite tid – vänta tills reglaget står still.
+      // Att bygga om reverben tar lite tid – vänta tills reglaget står still.
       clearTimeout(this.reverbTimer);
       const build = () => {
         this.convolver.buffer = this.makeImpulse(this.p.reverbSize);
@@ -515,7 +515,7 @@ class SynthEngine {
     }
   }
 
-  // Stereo-brus som klingar av = en enkel men fin rumsklang.
+  // Stereo-brus som klingar av = en enkel men fin reverb.
   makeImpulse(seconds) {
     const rate = this.ctx.sampleRate;
     const len = Math.max(1, Math.floor(rate * seconds));

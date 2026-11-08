@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=80" />
+  <link rel="stylesheet" href="css/style.css?v=81" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -87,9 +87,9 @@
         <option value="supersaw">Bred</option>
       </select>
     </label>
-    <!-- XY-plattans egen rumsklang (samma som under Inställningar → Spelytor → XY-platta) -->
-    <label class="only-xy xy-reverb-bar">Rumsklang
-      <input type="range" id="xy-reverb-bar" min="0" max="1" step="0.05" value="0.35" aria-label="Rumsklang för XY" />
+    <!-- XY-plattans egen reverb (samma som under Inställningar → Spelytor → XY-platta) -->
+    <label class="only-xy xy-reverb-bar">Reverb
+      <input type="range" id="xy-reverb-bar" min="0" max="1" step="0.05" value="0.35" aria-label="Reverb för XY" />
     </label>
     <button type="button" id="arp-toggle" aria-pressed="false" title="Arpeggiator på/av (inställningar under Spel)"><svg class="arp-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5h4.5v-6h4.5v-6h5" opacity=".55"/><circle cx="5" cy="18.5" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12.5" r="2.4" fill="currentColor" stroke="none"/><circle cx="19" cy="6.5" r="2.4" fill="currentColor" stroke="none"/></svg><span>Arp</span></button>
     <label>Volym
@@ -293,12 +293,12 @@
             <option value="5" selected>5</option>
           </select>
         </label>
-        <label class="slider" title="XY har egen rumsklang – rutornas ljud och effekter påverkar inte XY">
-          <span class="lbl">Rumsklang</span>
+        <label class="slider" title="XY har egen reverb – rutornas ljud och effekter påverkar inte XY">
+          <span class="lbl">Reverb</span>
           <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
           <output id="xy-reverb-value" class="val">35 %</output>
         </label>
-        <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret – med Sinus blir det mer vibrato. Klang och rumsklang går också att ställa på XY-sidan. Reverb under <em>Ljud</em> gäller bara rutorna.</p>
+        <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret – med Sinus blir det mer vibrato. Klang och reverb går också att ställa på XY-sidan. Reverb under <em>Ljud</em> gäller bara rutorna.</p>
       </fieldset>
     </div>
 
@@ -582,31 +582,31 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=80"></script>
-  <script src="js/fm-library.js?v=80"></script>
-  <script src="js/pm-library.js?v=80"></script>
-  <script src="js/wt-library.js?v=80"></script>
-  <script src="js/lib-levels.js?v=80"></script>
-  <script src="js/sound-library.js?v=80"></script>
-  <script src="js/layout.js?v=80"></script>
-  <script src="js/core.js?v=80"></script>
-  <script src="js/audio.js?v=80"></script>
-  <script src="js/drums.js?v=80"></script>
-  <script src="js/pads.js?v=80"></script>
-  <script src="js/osc.js?v=80"></script>
-  <script src="js/arp.js?v=80"></script>
-  <script src="js/xy.js?v=80"></script>
-  <script src="js/vibrato.js?v=80"></script>
-  <script src="js/notes.js?v=80"></script>
-  <script src="js/chords.js?v=80"></script>
-  <script src="js/sound.js?v=80"></script>
-  <script src="js/view.js?v=80"></script>
-  <script src="js/controls.js?v=80"></script>
-  <script src="js/access.js?v=80"></script>
-  <script src="js/settings.js?v=80"></script>
-  <script src="js/user-presets.js?v=80"></script>
-  <script src="js/wizard.js?v=80"></script>
-  <script src="js/pwa.js?v=80"></script>
-  <script src="js/main.js?v=80"></script>
+  <script src="js/synth.js?v=81"></script>
+  <script src="js/fm-library.js?v=81"></script>
+  <script src="js/pm-library.js?v=81"></script>
+  <script src="js/wt-library.js?v=81"></script>
+  <script src="js/lib-levels.js?v=81"></script>
+  <script src="js/sound-library.js?v=81"></script>
+  <script src="js/layout.js?v=81"></script>
+  <script src="js/core.js?v=81"></script>
+  <script src="js/audio.js?v=81"></script>
+  <script src="js/drums.js?v=81"></script>
+  <script src="js/pads.js?v=81"></script>
+  <script src="js/osc.js?v=81"></script>
+  <script src="js/arp.js?v=81"></script>
+  <script src="js/xy.js?v=81"></script>
+  <script src="js/vibrato.js?v=81"></script>
+  <script src="js/notes.js?v=81"></script>
+  <script src="js/chords.js?v=81"></script>
+  <script src="js/sound.js?v=81"></script>
+  <script src="js/view.js?v=81"></script>
+  <script src="js/controls.js?v=81"></script>
+  <script src="js/access.js?v=81"></script>
+  <script src="js/settings.js?v=81"></script>
+  <script src="js/user-presets.js?v=81"></script>
+  <script src="js/wizard.js?v=81"></script>
+  <script src="js/pwa.js?v=81"></script>
+  <script src="js/main.js?v=81"></script>
 </body>
 </html>

@@ -48,7 +48,7 @@ const customChords = (d) => d.custom.slice(0, d.customCount);
 const WIZ_NOTE_COUNTS = [5, 7, 8, 12, 16, 24];
 const WIZ_SCALES = { major: 'Dur', minor: 'Moll', pentatonic: 'Pentatonisk', blues: 'Blues', chromatic: 'Kromatisk' };
 const WIZ_TABS = { notes: 'Toner', chords: 'Ackord', xy: 'XY' };
-// XY: rumsklangens nivåer i guiden (reglaget under Inställningar är steglöst)
+// XY: reverbens nivåer i guiden (reglaget under Inställningar är steglöst)
 const WIZ_REVERBS = [[0, 'Torr'], [0.2, 'Lite'], [0.35, 'Mellan'], [0.6, 'Mycket']];
 // XY:s högerkant är C7; omfånget räknas nedåt därifrån
 const xyRangeName = (n) => `C${7 - n}–C7`;
@@ -83,7 +83,7 @@ const wiz = {
 };
 
 // Stegen beror på vad man valt att spela. XY glider steglöst i tonhöjd och har egen klang:
-// där frågas inte om tonart, spelsätt, formation eller MIDI, utan om klang, omfång och rumsklang.
+// där frågas inte om tonart, spelsätt, formation eller MIDI, utan om klang, omfång och reverb.
 function wizSteps() {
   const t = wiz.draft.tab;
   if (t === 'xy') return ['tab', 'sound', 'xyfeel', 'done'];
@@ -310,13 +310,13 @@ function renderWizard() {
         <p class="wiz-hint">Tryck för att lyssna. Alla 500 ljud finns under Inställningar → Ljud.</p>`;
     }
   } else if (step === 'xyfeel') {
-    title = 'Omfång och rumsklang';
+    title = 'Omfång och reverb';
     html = `<h4>Omfång i oktaver</h4><p class="wiz-hint">Hur många oktaver plattan räcker över. Färre oktaver gör det lättare att träffa rätt ton.</p>
       <div class="wiz-octs" role="radiogroup" aria-label="Omfång i oktaver">${
       [1, 2, 3, 4, 5].map((n) => wizOption('xyOctaves', n,
         `<b>${n}</b><small>${xyRangeName(n)}</small>`, d.xyOctaves === n)).join('')}</div>
-      <h4>Rumsklang</h4>
-      <div class="wiz-row" role="radiogroup" aria-label="Rumsklang">${
+      <h4>Reverb</h4>
+      <div class="wiz-row" role="radiogroup" aria-label="Reverb">${
       WIZ_REVERBS.map(([v, name]) => wizOption('xyReverb', v, name, d.xyReverb === v)).join('')}</div>
       <button type="button" class="wiz-toggle" role="switch" aria-checked="${d.arpOn}" data-act="arp">
         ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Varje finger upprepas i takt, över oktaverna.</small></span><i class="wiz-switch"></i>
@@ -327,7 +327,7 @@ function renderWizard() {
       ['Spela', 'XY'],
       ['Klang', ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent],
       ['Omfång', `${d.xyOctaves} oktav${d.xyOctaves > 1 ? 'er' : ''} (${xyRangeName(d.xyOctaves)})`],
-      ['Rumsklang', WIZ_REVERBS.find(([v]) => v === d.xyReverb)?.[1] || ''],
+      ['Reverb', WIZ_REVERBS.find(([v]) => v === d.xyReverb)?.[1] || ''],
       ['Arpeggiator', d.arpOn ? 'På' : 'Av'],
     ];
     html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
@@ -463,7 +463,7 @@ function finishWizard() {
     }));
   }
   applySnapshot(data);
-  // XY:s stödlinjer följer med direkt (rumsklangen sköter applySnapshot)
+  // XY:s stödlinjer följer med direkt (reverben sköter applySnapshot)
   ui.xyOctaves.dispatchEvent(new Event('change'));
   // Det är inte längre det sparade presetet
   localStorage.removeItem(USER_PRESET_ACTIVE_KEY);
