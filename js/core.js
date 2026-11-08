@@ -81,6 +81,7 @@ const ui = {
   hexOrder: $('hex-order'),
   formation: $('formation'),
   root: $('root'),
+  notesKind: $('notes-kind'),
   drumKit: $('drum-kit'),
   octave: $('octave'),
   scale: $('scale'),

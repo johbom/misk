@@ -406,7 +406,7 @@ function drumBus(kitId) {
   return input;
 }
 
-const drumKitOn = () => ui.drumKit.value in DRUM_KITS;
+const drumKitOn = () => ui.notesKind.value === 'drums' && ui.drumKit.value in DRUM_KITS;
 const DRUM_SHOT_MS = 400; // One-shot: hur länge rutan lyser
 const DRUM_LEVEL = 0.75; // trummornas nivå jämfört med syntens toner
 

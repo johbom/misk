@@ -1,7 +1,7 @@
 // Inställningar som sparas i webbläsaren.
 
 // ---------- Inställningar ----------
-const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'hexOrder', 'formation', 'noteCount', 'drumKit', 'root', 'octave', 'scale',
+const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padGap', 'stringLength', 'ringGap', 'ringHole', 'hexOrder', 'formation', 'noteCount', 'notesKind', 'drumKit', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
   'noteLength', 'vibrato', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'xyOctaves', 'xySound', 'xyReverb', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
@@ -10,6 +10,7 @@ const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode
 // Äldre värden som bytt namn (sparade inställningar och presets)
 function normalizeSetting(k, v) {
   if (k === 'playMode' && v === 'oneshot') return 'fixed';
+  if (k === 'drumKit' && !(v in DRUM_KITS)) return 'acoustic'; // (förr betydde tomt "toner")
   return v;
 }
 
@@ -20,6 +21,12 @@ function loadSettings() {
     if (ui[k].type === 'checkbox') ui[k].checked = s[k];
     else ui[k].value = normalizeSetting(k, s[k]);
   }
+  migrateNotesKind(s);
+}
+
+// Förr låg "toner" och trumseten i samma val: ett valt trumset betydde trummor
+function migrateNotesKind(s) {
+  if (!('notesKind' in s) && s.drumKit in DRUM_KITS) ui.notesKind.value = 'drums';
 }
 
 function saveSettings() {

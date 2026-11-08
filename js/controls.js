@@ -93,6 +93,7 @@ const syncSegments = () => segmented.forEach(syncSegment);
 function setupSegments() {
   segmentSelect(ui.root, 'seg-notes');
   segmentSelect(ui.scale);
+  segmentSelect(ui.notesKind);
   segmentSelect(ui.drumKit);
   segmentSelect(ui.chordCount, 'seg-count');
   segmentSelect(ui.showPointer);

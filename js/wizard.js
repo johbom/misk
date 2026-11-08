@@ -346,7 +346,7 @@ function renderWizard() {
     rows.push(['Spelsätt', PLAY_MODES[d.playMode].name + (d.arpOn ? ' + arpeggiator' : '')]);
     if (d.tab !== 'xy') rows.push(['Formation', FORMATIONS[d.formation]]);
     rows.push(['Ljud', d.tab === 'xy' ? ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent
-      : d.tab === 'notes' && d.drumKit ? `Trumset ${DRUM_KITS[d.drumKit].name}`
+      : d.tab === 'notes' && d.drumKit ? `Trumset: ${DRUM_KITS[d.drumKit].name}`
         : d.sound || $('sound-now-name')?.textContent || 'eget ljud']);
     html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
       <h4>Ut</h4>
@@ -441,7 +441,8 @@ function finishWizard() {
   }
   if (d.tab === 'notes') {
     data.settings.noteCount = String(d.noteCount);
-    data.settings.drumKit = d.drumKit;
+    data.settings.notesKind = d.drumKit ? 'drums' : 'tones';
+    if (d.drumKit) data.settings.drumKit = d.drumKit;
   }
   if (d.tab !== 'xy') data.settings.formation = d.formation;
   if (d.tab === 'chords' && d.prog === KEEP_CHORDS) {

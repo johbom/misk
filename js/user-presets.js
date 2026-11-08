@@ -39,6 +39,7 @@ function applySnapshot(data) {
     if (ui[k].type === 'checkbox') ui[k].checked = !!v;
     else ui[k].value = normalizeSetting(k, v);
   }
+  migrateNotesKind(data.settings || {});
   saveSettings();
 
   // Ackord
