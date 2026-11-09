@@ -111,14 +111,14 @@ function openWizard(fromStart = false) {
     formation: ui.formation.value,
     sound: QUICK_NAMES.includes(synthPreset) ? synthPreset : null,
     drumKit: drumKitOn() ? ui.drumKit.value : '',
-    xySound: ui.xySound.value,
+    xySound: xySoundKey(), // aldrig tom, även om inställningen var okänd
     xyOctaves: Number(ui.xyOctaves.value),
     xyReverb: WIZ_REVERBS.reduce((a, b) =>
       (Math.abs(b[0] - Number(ui.xyReverb.value)) < Math.abs(a[0] - Number(ui.xyReverb.value)) ? b : a))[0],
     outAudio: ui.outAudio.checked,
     outMidi: ui.outMidi.checked,
   };
-  wiz.orig = { params: { ...synthParams }, preset: synthPreset, lib: { ...synthLib }, xySound: ui.xySound.value };
+  wiz.orig = { params: { ...synthParams }, preset: synthPreset, lib: { ...synthLib }, xySound: xySoundKey() };
   wiz.step = 0;
   wiz.fromStart = fromStart;
   renderWizard();

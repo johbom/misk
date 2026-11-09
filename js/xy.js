@@ -45,7 +45,9 @@ const xyVibDepth = (ny) => XY_VIB_MAX * Math.pow(ny, 1.6);
 const xyVibRate = (ny) => 4 + 3 * ny;
 // FM-djup (frekvenssvängning i Hz) för höjden ny: ingenting längst ned, kurva som gör toppen tydligast
 const xyFmDev = (fm, ny, freq) => fm.index * Math.pow(ny, 1.4) * fm.ratio * freq;
-const xyYIsVibrato = () => (XY_SOUNDS[ui.xySound.value] || {}).y === 'vibrato';
+// Vald klang – aldrig tom: ett okänt eller saknat värde (gammal inställning, preset) blir Sinus
+const xySoundKey = () => (ui.xySound.value in XY_SOUNDS ? ui.xySound.value : 'sine');
+const xyYIsVibrato = () => XY_SOUNDS[xySoundKey()].y === 'vibrato';
 
 // ---------- Ljud: en röst per pekare ----------
 // XY har egen klang och egen reverb, oberoende av rutornas ljud. Nivåerna är utjämnade så att
@@ -81,12 +83,13 @@ function xyBus() {
 function xyMakeVoice(freq, ny, when = 0) {
   const ctx = audioCtx;
   const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
-  const snd = XY_SOUNDS[ui.xySound.value] || XY_SOUNDS.sine;
+  const key = xySoundKey();
+  const snd = XY_SOUNDS[key];
   const yVib = snd.y === 'vibrato';
   const cut = yVib ? XY_CUT_MAX : xyCut(ny, freq);
   const mix = ctx.createGain();
   const oscs = (snd.detunes || [0]).map((cents, i, all) => {
-    const o = engine.makeOsc(snd.wave || ui.xySound.value, freq);
+    const o = engine.makeOsc(snd.wave || key, freq);
     o.detune.value = cents;
     if (all.length > 1) {
       const pan = ctx.createStereoPanner();

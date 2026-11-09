@@ -11,6 +11,7 @@ const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode
 function normalizeSetting(k, v) {
   if (k === 'playMode' && v === 'oneshot') return 'fixed';
   if (k === 'drumKit' && !(v in DRUM_KITS)) return 'acoustic'; // (förr betydde tomt "toner")
+  if (k === 'xySound' && !(v in XY_SOUNDS)) return 'sine'; // annars blir XY-klangen tom (tyst)
   return v;
 }
 
