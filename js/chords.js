@@ -237,11 +237,27 @@ const strum = { active: false, pad: null, idx: -1, harp: false };
 
 // Vilken ton (prick) på strängen som ligger närmast pekaren: nerifrån och upp på lodräta strängar,
 // från vänster till höger på vågräta
-function strumIndex(pad, e) {
+// strumFloat: läget i "prickar" (0 = nedersta/vänstra kanten, n = översta/högra), strumIndex: pricken
+function strumFloat(pad, e) {
   const r = pad.el.querySelector('.strum').getBoundingClientRect();
   const n = pad.strumNotes().length;
   const pos = ui.stringDir.value === 'h' ? (e.clientX - r.left) / r.width : (r.bottom - e.clientY) / r.height;
-  return Math.max(0, Math.min(n - 1, Math.floor(pos * n)));
+  return pos * n;
+}
+function strumIndex(pad, e) {
+  return Math.max(0, Math.min(pad.strumNotes().length - 1, Math.floor(strumFloat(pad, e))));
+}
+// Man måste in en bit på nästa tons del av strängen innan den knäpps, så att en pekare
+// (eller blick) som darrar vid gränsen inte knäpper samma två toner om och om igen
+const STRUM_HYST = 0.2;
+
+// Mus (eller penna) utan nedtryckt knapp: harpan spelas också genom att bara föra pekaren
+// längs strängen – ackordet låter när man kommer in, tonerna knäpps när man rör sig längs den.
+// Inte med aktiveringstid (ögonprofilerna), där varje ruta ska vänta in blicken.
+function hoverHarpOk(e) {
+  return e.pointerType !== 'touch' && e.buttons === 0 && !ms(ui.dwell)
+    && document.body.dataset.tab === 'chords' && ui.formation.value === 'strings'
+    && !picker.open && !scanning() && inPlayArea(e.target);
 }
 
 function pluck(pad, idx) {
@@ -295,7 +311,11 @@ function harpDebug(msg) {
 }
 
 function strumMove(e) {
-  if (!strum.active) return;
+  if (!strum.active && !hoverHarpOk(e)) {
+    // Pekaren lämnade spelytan (eller harpan gäller inte här): börja om nästa gång
+    if (strum.pad) { strum.pad = null; strum.harp = false; }
+    return;
+  }
   const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.chord-pad');
   const pad = chordPads.find((p) => p.el === el);
   if (HARP_DEBUG && (harpMoves++ % 8 === 0 || pad !== strum.pad)) {
@@ -304,7 +324,9 @@ function strumMove(e) {
       + `${pad ? ` idx=${strumIndex(pad, e)}` : ''}`);
   }
   if (!pad) { strum.pad = null; return; } // i mellanrummet mellan strängarna
-  const idx = strumIndex(pad, e);
+  let idx = strumIndex(pad, e);
+  const f = strumFloat(pad, e);
+  if (pad === strum.pad && strum.idx >= 0 && f > strum.idx - STRUM_HYST && f < strum.idx + 1 + STRUM_HYST) idx = strum.idx;
   if (pad !== strum.pad) {
     // Första anslaget på en sträng spelar hela ackordet (det sköter hover);
     // här noteras bara var på strängen man kom in.
