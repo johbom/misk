@@ -170,6 +170,7 @@ Hover Pads är en installerbar webbapp som fungerar **offline** efter första be
 - **Android:** Chrome → menyn ⋮ → *Installera app* (eller *Lägg till på startskärmen*).
 - **Chrome och Edge på dator:** tryck på *Installera* uppe till höger (eller installera-ikonen i adressfältet).
 - **Mac med Safari:** *Arkiv → Lägg till i Dock*.
+- Startrutan berättar att appen går att installera, med en kort instruktion för webbläsaren som används (och en *Installera*-knapp där webbläsaren erbjuder det). Texten syns inte när appen redan körs installerad.
 - Samma beskrivning finns i Om-rutan (*Om* uppe till höger), som också säger till om appen redan körs installerad.
 - När du är uppkopplad hämtas alltid senaste versionen; offline används den sparade.
 - Fastnar något kan felet visas direkt på skärmen (på startrutan eller längst ner) – skicka gärna texten om det händer.

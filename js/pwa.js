@@ -15,30 +15,53 @@ function setupPwa() {
     });
   }
 
-  const btn = $('install-btn');
+  // Installera-knappar: uppe till höger och på startrutan
+  const btns = [$('install-btn'), $('start-install-btn')];
   let deferred = null;
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferred = e;
-    btn.hidden = false;
+    btns.forEach((b) => { b.hidden = false; });
   });
-  btn.addEventListener('click', async () => {
+  const install = async () => {
     if (!deferred) return;
     deferred.prompt();
     await deferred.userChoice;
     deferred = null;
-    btn.hidden = true;
-  });
+    btns.forEach((b) => { b.hidden = true; });
+  };
+  btns.forEach((b) => b.addEventListener('click', install));
   window.addEventListener('appinstalled', () => {
-    btn.hidden = true;
+    btns.forEach((b) => { b.hidden = true; });
+    $('start-install').hidden = true;
     log('Hover Pads är installerad som app.');
   });
 
-  // Om-rutan: säg till när appen redan körs installerad
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+
+  // Startrutan: berätta att appen går att installera, och hur i just den här webbläsaren
+  if (!standalone) {
+    $('start-install-how').textContent = installHowTo();
+    $('start-install').hidden = false;
+  }
+
+  // Om-rutan: säg till när appen redan körs installerad
   const status = $('about-install-status');
   if (standalone) {
     status.textContent = 'Du kör redan Hover Pads som installerad app.';
     status.hidden = false;
   }
+}
+
+// Kort instruktion för att installera i den webbläsare som används (mer i Om-rutan)
+function installHowTo() {
+  const ua = navigator.userAgent;
+  const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (ios) return 'Tryck på Dela (fyrkanten med en pil uppåt) och välj Lägg till på hemskärmen.';
+  if (/Android/.test(ua)) return 'Öppna webbläsarens meny ⋮ och välj Installera app.';
+  if (/Firefox\//.test(ua)) return 'Öppna sidan i Chrome, Edge eller Safari för att installera.';
+  if (/Macintosh/.test(ua) && /Safari\//.test(ua) && !/Chrome|Chromium|Edg\//.test(ua)) {
+    return 'I Safari: välj Arkiv → Lägg till i Dock.';
+  }
+  return 'Tryck på Installera eller på installera-ikonen i adressfältet.';
 }
