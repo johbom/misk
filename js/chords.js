@@ -248,7 +248,11 @@ function pluck(pad, idx) {
   if (!audioCtx) return;
   const note = pad.strumNotes()[idx];
   const stops = [];
-  if (ui.outAudio.checked) stops.push(engine.noteOn(note, PLUCK_LEVEL));
+  if (ui.outAudio.checked) {
+    const s = engine.noteOn(note, PLUCK_LEVEL);
+    posForVoice(pad, s); // läge på rutan: tvärs över strängen
+    stops.push(s);
+  }
   if (ui.outMidi.checked) {
     const ch = midiChannel();
     noteOn(note, ch);

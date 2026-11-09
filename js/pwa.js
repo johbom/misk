@@ -2,6 +2,9 @@
 // där webbläsaren erbjuder det (Chrome/Edge/Android). På iPhone/iPad: Dela → Lägg till på hemskärmen.
 
 function setupPwa() {
+  // Versionen (samma som ?v= på skripten) visas längst ned i Om-rutan
+  const v = document.querySelector('script[src*="main.js"]')?.src.match(/[?&]v=(\d+)/)?.[1];
+  $('about-version').textContent = v || '?';
   const dev = ['localhost', '127.0.0.1'].includes(location.hostname);
   // Under utveckling används ingen cache, om man inte ber om det med ?pwa
   if ('serviceWorker' in navigator && (!dev || new URLSearchParams(location.search).has('pwa'))) {

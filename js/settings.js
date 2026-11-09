@@ -4,7 +4,7 @@
 const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padSpace', 'stringLength', 'ringSpace', 'ringHole', 'hexOrder', 'stringDir', 'formation', 'noteCount', 'notesKind', 'drumKit', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
-  'noteLength', 'vibrato', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'xyOctaves', 'xySound', 'xyReverb', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
+  'noteLength', 'vibrato', 'posParam', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'xyOctaves', 'xySound', 'xyReverb', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
   'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'showKeys'];
 
 // Äldre värden som bytt namn (sparade inställningar och presets)

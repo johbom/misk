@@ -832,7 +832,14 @@ class SynthEngine {
       return s + (peak - s) * Math.exp(-(dt - attack) / decayTau);
     };
 
-    mixer.connect(filter).connect(trem).connect(amp).connect(this.input);
+    // Läge på rutan (js/position.js): filter, volym, tonhöjd och vibrato som pekarens läge styr
+    const expr = ctx.createGain();
+    const posFilt = ctx.createConstantSource(); // cent på filtret (0 = som ljudet är)
+    posFilt.offset.value = 0;
+    posFilt.connect(filter.detune);
+    sources.push(posFilt);
+
+    mixer.connect(filter).connect(trem).connect(expr).connect(amp).connect(this.input);
 
     // LFO
     if (p.lfoTarget !== 'off' && p.lfoDepth > 0) {
@@ -861,6 +868,15 @@ class SynthEngine {
     this.vibLfo.connect(vib);
     [...carriers, ...pitched].forEach((o) => vib.connect(o.detune));
     detunes.forEach((d) => vib.connect(d));
+    // Läge på rutan: böjning (cent) och eget vibratodjup
+    const posBend = ctx.createConstantSource();
+    posBend.offset.value = 0;
+    sources.push(posBend);
+    const posVib = ctx.createGain();
+    posVib.gain.value = 0;
+    this.vibLfo.connect(posVib);
+    [...carriers, ...pitched].forEach((o) => { posBend.connect(o.detune); posVib.connect(o.detune); });
+    detunes.forEach((d) => { posBend.connect(d); posVib.connect(d); });
 
     sources.forEach((s) => s.start(t));
 
@@ -886,6 +902,7 @@ class SynthEngine {
         amp.disconnect();
         onEnd.forEach((f) => f());
         try { this.vibLfo.disconnect(vib); } catch {}
+        try { this.vibLfo.disconnect(posVib); } catch {}
       };
     };
     // Avbryt en ton som är planerad men inte har börjat än (arpeggiatorns retrigg). Tyst, utan klick.
@@ -894,6 +911,19 @@ class SynthEngine {
       try { amp.disconnect(); } catch {}
       sources.forEach((s) => { try { s.stop(); } catch {} });
       return true;
+    };
+    // Läge på rutan, x = 0..1. param: filter, volume, bend, vibrato (annat = som ljudet är).
+    // first: precis vid anslaget – sätts direkt i stället för att glida dit.
+    stop.pos = (x, param, first = false) => {
+      const now = ctx.currentTime;
+      const set = (prm, v) => {
+        if (first) prm.setValueAtTime(v, now);
+        else prm.setTargetAtTime(v, now, 0.03);
+      };
+      set(posFilt.offset, param === 'filter' ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
+      set(expr.gain, param === 'volume' ? 0.08 + 0.92 * x * x : 1);
+      set(posBend.offset, param === 'bend' ? x * 200 : 0); // upp till en helton
+      set(posVib.gain, param === 'vibrato' ? x * 50 : 0); // upp till 50 cent
     };
     // Djup i cent (mjukt in/ut) och takt i Hz
     stop.vibrato = (cents, rate) => {

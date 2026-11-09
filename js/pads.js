@@ -165,6 +165,7 @@ function trigger(pad) {
     arpAdd(pad, notes);
     pad.release = () => arpRemove(pad);
     pad.vibrato = (cents, rate) => arpVibrato(pad, cents, rate);
+    pad.posTarget = (x, first) => { arpPos(pad, x, first); if (ui.outMidi.checked) posMidi(x); };
   } else {
   if (ui.outAudio.checked) {
     if (useSample) stops.push(playSample(pad.sample));
@@ -184,7 +185,14 @@ function trigger(pad) {
   pad.release = () => stops.forEach((s) => s());
   // Vibrato på allt som rutan spelar just nu (styrs av js/vibrato.js)
   pad.vibrato = (cents, rate) => stops.forEach((s) => s.vibrato && s.vibrato(cents, rate));
+  // Läge på rutan (avancerat, js/position.js)
+  pad.posTarget = (x, first) => {
+    stops.forEach((s) => s.pos && s.pos(x, posParam(), first));
+    if (ui.outMidi.checked) posMidi(x);
+  };
   }
+  pad.posX = null;
+  posStart(pad);
   log(`▶ ${pad.label()}${pad.drum ? '' : `  (${notes.map(noteName).join(' ')})`}${arpOn() ? '  · arp' : ''}`);
 
   // One-shot och Bestämd längd: släpps av en timer, inte av pekaren
@@ -206,4 +214,5 @@ function release(pad) {
   pad.el.classList.remove('active');
   if (pad.release) { pad.release(); pad.release = null; }
   pad.vibrato = null;
+  if (pad.posTarget) { pad.posTarget = null; pad.posX = null; posReleased(); }
 }

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=94" />
+  <link rel="stylesheet" href="css/style.css?v=95" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -288,6 +288,25 @@
           <output id="vibrato-value" class="val">20 cent</output>
         </label>
         <p class="hint">Vicka pekaren fram och tillbaka på en ruta som låter.</p>
+      </fieldset>
+
+      <!-- Läge på rutan (js/position.js) -->
+      <fieldset id="pos-set">
+        <legend>Läge på rutan <span class="adv-tag">avancerat</span></legend>
+        <label title="Var på rutan pekaren är styr ljudet medan rutan låter">Styr
+          <select id="pos-param">
+            <option value="off" selected>Av</option>
+            <option value="filter">Filter: mörkt → ljust</option>
+            <option value="volume">Volym: svagt → starkt</option>
+            <option value="vibrato">Vibrato: inget → mycket</option>
+            <option value="bend">Tonhöjd: böj upp en helton</option>
+          </select>
+        </label>
+        <p class="hint" id="pos-hint">Rör pekaren över rutan medan den låter.
+          <strong>Rutnät och Bikupa:</strong> från nederkanten och uppåt.
+          <strong>Cirkel, Ring och Båge:</strong> från innerkanten (mot mitten) och utåt.
+          <strong>Strängar:</strong> tvärs över strängen.
+          Med MIDI skickas samma sak: CC74 (filter), CC11 (volym), CC1 (vibrato) eller pitch bend.</p>
       </fieldset>
 
       <fieldset id="xy-set">
@@ -579,6 +598,7 @@
       Vill också tipsa om <strong>Lyssna till mitt öga</strong>, vårt systerprojekt drivet av
       Studieförbundet Vuxenskolan.
     </p>
+    <p class="about-version">Version <span id="about-version"></span></p>
   </dialog>
 
   <!-- ===== Spelflikarna ===== -->
@@ -614,32 +634,33 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=94"></script>
-  <script src="js/fm-library.js?v=94"></script>
-  <script src="js/pm-library.js?v=94"></script>
-  <script src="js/wt-library.js?v=94"></script>
-  <script src="js/lib-levels.js?v=94"></script>
-  <script src="js/sound-library.js?v=94"></script>
-  <script src="js/layout.js?v=94"></script>
-  <script src="js/core.js?v=94"></script>
-  <script src="js/audio.js?v=94"></script>
-  <script src="js/drums.js?v=94"></script>
-  <script src="js/pads.js?v=94"></script>
-  <script src="js/osc.js?v=94"></script>
-  <script src="js/arp.js?v=94"></script>
-  <script src="js/xy.js?v=94"></script>
-  <script src="js/vibrato.js?v=94"></script>
-  <script src="js/notes.js?v=94"></script>
-  <script src="js/chords.js?v=94"></script>
-  <script src="js/sound.js?v=94"></script>
-  <script src="js/view.js?v=94"></script>
-  <script src="js/controls.js?v=94"></script>
-  <script src="js/access.js?v=94"></script>
-  <script src="js/settings.js?v=94"></script>
-  <script src="js/user-presets.js?v=94"></script>
-  <script src="js/wizard.js?v=94"></script>
-  <script src="js/quick.js?v=94"></script>
-  <script src="js/pwa.js?v=94"></script>
-  <script src="js/main.js?v=94"></script>
+  <script src="js/synth.js?v=95"></script>
+  <script src="js/fm-library.js?v=95"></script>
+  <script src="js/pm-library.js?v=95"></script>
+  <script src="js/wt-library.js?v=95"></script>
+  <script src="js/lib-levels.js?v=95"></script>
+  <script src="js/sound-library.js?v=95"></script>
+  <script src="js/layout.js?v=95"></script>
+  <script src="js/core.js?v=95"></script>
+  <script src="js/audio.js?v=95"></script>
+  <script src="js/drums.js?v=95"></script>
+  <script src="js/pads.js?v=95"></script>
+  <script src="js/osc.js?v=95"></script>
+  <script src="js/arp.js?v=95"></script>
+  <script src="js/xy.js?v=95"></script>
+  <script src="js/vibrato.js?v=95"></script>
+  <script src="js/position.js?v=95"></script>
+  <script src="js/notes.js?v=95"></script>
+  <script src="js/chords.js?v=95"></script>
+  <script src="js/sound.js?v=95"></script>
+  <script src="js/view.js?v=95"></script>
+  <script src="js/controls.js?v=95"></script>
+  <script src="js/access.js?v=95"></script>
+  <script src="js/settings.js?v=95"></script>
+  <script src="js/user-presets.js?v=95"></script>
+  <script src="js/wizard.js?v=95"></script>
+  <script src="js/quick.js?v=95"></script>
+  <script src="js/pwa.js?v=95"></script>
+  <script src="js/main.js?v=95"></script>
 </body>
 </html>

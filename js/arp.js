@@ -23,6 +23,7 @@ const arpStepDur = () => (60 / (Number(ui.arpBpm.value) || 120)) * (ARP_RATES[ui
 function arpAdd(pad, notes) {
   notes.forEach((note, i) => arp.pool.push({ note, pad, order: performance.now() + i * 1e-3 }));
   pad.arpVib = 0;
+  pad.arpPos = null;
   if (!arp.timer) arpStart();
   else if (arpRetrig()) arpRestart();
 }
@@ -125,6 +126,7 @@ function arpPlayStep(time) {
     else if (pad.drum) stop = drumHit(pad.drum, time, 0.9);
     else stop = engine.noteOn(note, 0.8, time);
     if (pad.arpVib && stop.vibrato) stop.vibrato(pad.arpVib);
+    if (pad.arpPos != null && stop.pos) stop.pos(pad.arpPos, posParam(), true);
     stop(off);
     audioStop = stop;
     // Vibrato (vickning) når också toner som redan klingar
@@ -162,6 +164,12 @@ function arpPlayStep(time) {
 }
 
 // Vibrato för en ruta som arpeggieras
+// Läge på rutan (js/position.js): gäller toner som klingar och de som kommer
+function arpPos(pad, x, first) {
+  pad.arpPos = x;
+  pad.arpStops?.forEach((s) => s.pos && s.pos(x, posParam(), first));
+}
+
 function arpVibrato(pad, cents, rate) {
   pad.arpVib = cents;
   pad.arpStops?.forEach((s) => s.vibrato && s.vibrato(cents, rate));

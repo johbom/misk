@@ -22,6 +22,7 @@ buildChordPads();
 setupStrum();
 setupTouch();
 setupVibrato();
+setupPosition();
 setupOsc();
 setupXY();
 setupArp();

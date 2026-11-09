@@ -52,6 +52,7 @@ const ui = {
   playMode: $('play-mode'),
   noteLength: $('note-length'),
   vibrato: $('vibrato'),
+  posParam: $('pos-param'),
   xyOctaves: $('xy-octaves'),
   arpOn: $('arp-on'),
   arpPattern: $('arp-pattern'),
