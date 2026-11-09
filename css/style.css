@@ -125,8 +125,8 @@ html.high-contrast .quick-roots button.on, html.high-contrast .quick-scales butt
 /* Små paneler: rutorna blir bara så breda som innehållet (inte hela skärmen i helskärm) */
 #settings .panel:is([data-panel="play"], [data-panel="io"]) > fieldset { flex: 0 1 auto; max-width: 100%; }
 #settings .panel > #chord-settings { flex-basis: 100%; }
-/* Speltoner (▶ C …) i loggen hör till spelsidorna, inte inställningarna */
-body[data-tab="settings"] #log[data-kind="play"] { visibility: hidden; }
+/* Speltoner (▶ C …) i loggen hör till Toner och Ackord – inte XY-plattan eller inställningarna */
+body:is([data-tab="settings"], [data-tab="xy"]) #log[data-kind="play"] { visibility: hidden; }
 /* Tipset om ljudfiler gäller bara rutorna på Toner-sidan */
 body:not([data-tab="notes"]) #log[data-kind="file-hint"] { visibility: hidden; }
 .hint { color: var(--muted); font-size: 0.85rem; margin: 0 0 10px; }
