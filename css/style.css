@@ -597,6 +597,14 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #play-bar select { max-width: 42vw; }
   html.fixed-screen #volume { width: 100%; min-width: 60px; }
 }
+/* Smal skärm: Ljud och Volym delar första raden, snabbknapparna och Arp ligger på raden under */
+@media (max-width: 600px) {
+  html.fixed-screen #play-bar { flex-wrap: wrap; gap: 6px 10px; }
+  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar { order: 1; flex: 1 1 40%; min-width: 0; }
+  #play-bar > .preset-label select { min-width: 0; width: 100%; max-width: none; }
+  #play-bar > .vol-label input[type="range"], #play-bar > .xy-reverb-bar input[type="range"] { min-width: 0; width: 100%; }
+  #play-bar > .quick-btn, #play-bar > #arp-toggle { order: 2; }
+}
 
 /* Ring: sektorer runt ett tomt hål där muspekaren kan vila */
 .pad-grid[data-formation="ring"] .pad {

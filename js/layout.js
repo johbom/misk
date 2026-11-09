@@ -139,17 +139,22 @@ const LAYOUTS = {
   // cols = uppifrån och ned, kolumn för kolumn
   hex(n, W, H, gap, opts = {}) {
     const ROW = Math.sqrt(3) / 2; // radavstånd i ett tätpackat mönster
+    // Störst möjliga bollar ger ofta bara två kolumner på en smal skärm (jättebollar, ingen bikupa).
+    // Därför väljs flest kolumner vars bollar är minst HEX_KEEP av de största möjliga.
+    const HEX_KEEP = 0.8;
     const bestFor = (g) => {
-      let best = { s: 0, cols: 1, rows: 1, shift: 0, none: true }; // (n = 0 ger inga rutor)
+      const all = [];
       for (let cols = 1; cols <= n; cols++) {
         const rows = Math.ceil(n / cols);
         const shift = rows > 1 ? 0.5 : 0;
         const sW = (W - (cols - 1 + shift) * g) / (cols + shift);
         const sH = (H - (rows - 1) * ROW * g) / (1 + (rows - 1) * ROW);
-        const s = Math.min(sW, sH);
-        if (best.none || s > best.s) best = { s, cols, rows, shift };
+        all.push({ s: Math.min(sW, sH), cols, rows, shift });
       }
-      return best;
+      if (!all.length) return { s: 0, cols: 1, rows: 1, shift: 0 }; // (n = 0 ger inga rutor)
+      const top = Math.max(...all.map((a) => a.s));
+      const min = top > 0 ? top * HEX_KEEP : top; // (negativt = mellanrummet provas för stort)
+      return all.filter((a) => a.s >= min).pop();
     };
     const { g } = fitGap(gap, MIN_BALL, (g) => bestFor(g).s);
     const { cols, rows, shift, s: raw } = bestFor(g);
