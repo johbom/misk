@@ -32,6 +32,9 @@ const ARP_ICONS = {
   updown: `<path d="M3.5 18.5 12 6l8.5 12.5" opacity=".45"/>${arpDot(3.5, 18.5)}${arpDot(7.8, 12.3)}${arpDot(12, 6)}${arpDot(16.2, 12.3)}${arpDot(20.5, 18.5)}`,
   random: '<path d="M3 7h3c4.5 0 6.5 10 11 10h3.5M3 17h3c4.5 0 6.5-10 11-10h3.5"/><path d="M18.5 4.5 21 7l-2.5 2.5M18.5 14.5 21 17l-2.5 2.5"/>',
   order: '<path d="M7 5.5v13M4.5 8 7 5.5"/><path d="M11.5 9a2.6 2.6 0 0 1 5 1c0 2.3-5 4.5-5 8.5h5.5"/>',
+  // Strum: hela ackordet på varje slag (två slag)
+  strum: `${arpDot(4.5, 18)}${arpDot(7, 12)}${arpDot(9.5, 6)}${arpDot(14.5, 18)}${arpDot(17, 12)}${arpDot(19.5, 6)}`,
+  strumud: `${arpDot(4.5, 18)}${arpDot(7, 12)}${arpDot(9.5, 6)}${arpDot(14.5, 6)}${arpDot(17, 12)}${arpDot(19.5, 18)}`,
 };
 const segIconSvg = (inner) =>
   `<svg class="seg-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;

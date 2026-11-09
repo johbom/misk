@@ -255,7 +255,7 @@ function xyArpOctaves() {
   const n = Number(ui.arpOctaves.value) || 1;
   let seq = [...Array(n).keys()];
   const pattern = ui.arpPattern.value;
-  if (pattern === 'down') seq.reverse();
+  if (pattern === 'down') seq.reverse(); // (Strum: alla oktaver på varje slag, nedifrån)
   else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
   return seq;
 }
@@ -277,10 +277,26 @@ function xyArpTick() {
 function xyArpStep(time) {
   if (!xyArp.pts.size) return;
   const seq = xyArpOctaves();
-  const dur = arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
+  const dur = arpGateDur();
   const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
   const hits = [];
   for (const p of xyArp.pts.values()) {
+    if (arpStrum()) {
+      // Strum: fingrets ton i alla oktaver, snabbt efter varandra (Ner & upp: vartannat slag uppifrån)
+      const oct = ui.arpPattern.value === 'strumud' && p.step % 2 ? [...seq].reverse() : seq;
+      p.step++;
+      const gap = arpStrumGap(oct.length);
+      oct.forEach((o, i) => {
+        const t = time + i * gap;
+        const v = xyMakeVoice(xyFreq(p.nx) * Math.pow(2, o), p.ny, t);
+        if (p.vib) v.vib.gain.value = p.vib;
+        xyVoiceEnd(v, Math.max(time + dur, t + 0.05));
+        p.voices.add(v);
+        setTimeout(() => p.voices.delete(v), wait + (i * gap + dur) * 1000 + 150);
+      });
+      hits.push(p);
+      continue;
+    }
     let idx;
     if (ui.arpPattern.value === 'random') {
       idx = Math.floor(Math.random() * seq.length);

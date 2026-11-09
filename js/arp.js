@@ -18,6 +18,12 @@ const arpRetrig = () => ui.arpRetrig.value === 'on';
 // MIDI skickas så här långt före tonen (med tidsstämpel), så att den kan strykas vid retrigg ända till dess
 const ARP_MIDI_AHEAD = 0.025;
 const arpStepDur = () => (60 / (Number(ui.arpBpm.value) || 120)) * (ARP_RATES[ui.arpRate.value] || 0.5);
+// Strum: alla toner på varje slag, en kort stund efter varandra (som när man drar över strängarna)
+const arpStrum = () => ui.arpPattern.value === 'strum' || ui.arpPattern.value === 'strumud';
+const ARP_STRUM_GAP = 0.03; // s mellan tonerna i ett slag (kortare om slaget är kort)
+// Tid mellan tonerna i ett slag med n toner: hela slaget ryms i drygt halva steget
+const arpStrumGap = (n) => Math.min(ARP_STRUM_GAP, (arpStepDur() * 0.6) / Math.max(1, n - 1));
+const arpGateDur = () => arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
 
 // En ruta börjar låta: lägg till dess toner
 function arpAdd(pad, notes) {
@@ -85,6 +91,11 @@ function arpSequence() {
   for (let o = 0; o < octaves; o++) seq.push(...base.map((e) => ({ ...e, note: e.pad.drum ? e.note : clampNote(e.note + 12 * o) })));
   if (pattern === 'down') seq.reverse();
   else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
+  else if (pattern === 'strum' || pattern === 'strumud') {
+    // Strum: varje ton en gång, nedifrån och upp (som strängarna på en gitarr)
+    const once = new Set();
+    seq = seq.filter((e) => !once.has(e.note) && once.add(e.note)).sort((a, b) => a.note - b.note);
+  }
   return seq;
 }
 
@@ -105,6 +116,19 @@ function arpTick() {
 function arpPlayStep(time) {
   const seq = arpSequence();
   if (!seq.length) return;
+  const dur = arpGateDur();
+  if (arpStrum()) {
+    // Ner & upp: vartannat slag uppifrån
+    if (ui.arpPattern.value === 'strumud' && arp.step % 2) seq.reverse();
+    arp.step++;
+    const gap = arpStrumGap(seq.length);
+    // Alla toner i slaget slutar samtidigt (som när handen dämpar strängarna)
+    seq.forEach(({ note, pad }, i) => {
+      const t = time + i * gap;
+      arpPlayNote(note, pad, t, Math.max(time + dur, t + 0.05));
+    });
+    return;
+  }
   let idx;
   if (ui.arpPattern.value === 'random') {
     idx = Math.floor(Math.random() * seq.length);
@@ -115,8 +139,12 @@ function arpPlayStep(time) {
   arp.last = idx;
   arp.step++;
   const { note, pad } = seq[idx];
-  const dur = arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
-  const off = time + dur;
+  arpPlayNote(note, pad, time, time + dur);
+}
+
+// En ton i arpeggiot: från time till off (ljudklockans tid)
+function arpPlayNote(note, pad, time, off) {
+  const dur = off - time;
   const timers = [];
   let audioStop = null;
 
@@ -185,10 +213,13 @@ function setupArp() {
   const sync = syncArpToggle;
   // Byter man arpeggiator av/på mitt i spelet börjar man om från tyst läge
   ui.arpOn.addEventListener('change', () => { allPads().forEach(release); arpReset(); if (typeof xyStopAll === 'function') xyStopAll(); sync(); });
+  // Slås arpen på visas dess inställningar under knappen; slås den av stängs de
   $('arp-toggle').addEventListener('click', () => {
     ui.arpOn.checked = !ui.arpOn.checked;
     ui.arpOn.dispatchEvent(new Event('change'));
     log(`Arpeggiator ${arpOn() ? 'på' : 'av'}`);
+    if (arpOn()) openQuick('arp');
+    else closeQuick();
   });
   sync();
   setupTapTempo();

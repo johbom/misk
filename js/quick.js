@@ -1,5 +1,7 @@
 // Snabbknappar i spelraden: Formation (sidorna Toner och Ackord) och Tonart (alla spelsidor).
 // Ett tryck öppnar en liten ruta med valen. Det är samma inställningar som under Inställningar → Spel.
+// Arp-knappen öppnar samma ruta med arpeggiatorns inställningar när arpen slås på (js/arp.js):
+// då flyttas själva inställningsrutan (#arp-set) dit, och tillbaka när rutan stängs.
 // Tonarten gäller hela instrumentet: ackorden flyttas med till den nya tonarten (transponeras),
 // oavsett vilken spelsida man byter på.
 
@@ -10,7 +12,7 @@ function setupQuick() {
   $('quick-key').addEventListener('click', () => toggleQuick('key'));
   // Klick utanför eller Esc stänger
   document.addEventListener('pointerdown', (e) => {
-    if (quick.open && !e.target.closest('#quick-pop, .quick-btn')) closeQuick();
+    if (quick.open && !e.target.closest('#quick-pop, .quick-btn, #arp-toggle')) closeQuick();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeQuick(); });
   [ui.formation, ui.root, ui.scale].forEach((el) => el.addEventListener('change', syncQuick));
@@ -29,35 +31,63 @@ function syncQuick() {
   if (quick.open) renderQuick();
 }
 
+const quickBtn = (kind) => $(kind === 'arp' ? 'arp-toggle' : `quick-${kind}`);
+const quickBtns = () => document.querySelectorAll('.quick-btn, #arp-toggle');
+
 function toggleQuick(kind) {
   if (quick.open === kind) { closeQuick(); return; }
+  openQuick(kind);
+}
+
+function openQuick(kind) {
+  if (quick.open === kind) return;
   allPads().forEach(release);
   quick.open = kind;
   renderQuick();
   $('quick-pop').hidden = false;
   placeQuick();
-  document.querySelectorAll('.quick-btn').forEach((b) =>
-    b.setAttribute('aria-expanded', b.id === `quick-${kind}`));
+  quickBtns().forEach((b) => b.setAttribute('aria-expanded', b === quickBtn(kind)));
 }
 
 function closeQuick() {
   if (!quick.open) return;
   quick.open = '';
   $('quick-pop').hidden = true;
-  document.querySelectorAll('.quick-btn').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+  arpSetHome();
+  quickBtns().forEach((b) => b.setAttribute('aria-expanded', 'false'));
 }
 
-// Rutan hamnar under sin knapp, men aldrig utanför spelraden
+// Arpens inställningar tillbaka till sin plats under Inställningar → Spel
+let arpSetSpot = null;
+function arpSetHome() {
+  const set = $('arp-set');
+  if (!arpSetSpot || !$('quick-pop').contains(set)) return;
+  arpSetSpot.replaceWith(set);
+  arpSetSpot = null;
+}
+
+// Rutan hamnar under sin knapp, men aldrig utanför spelraden (och inte nedanför skärmen)
 function placeQuick() {
   const pop = $('quick-pop');
-  const btn = $(`quick-${quick.open}`);
+  const btn = quickBtn(quick.open);
   const bar = $('play-bar');
   pop.style.top = `${btn.offsetTop + btn.offsetHeight + 6}px`;
   pop.style.left = `${Math.max(8, Math.min(btn.offsetLeft, bar.clientWidth - pop.offsetWidth - 8))}px`;
+  pop.style.maxHeight = `${Math.max(160, innerHeight - btn.getBoundingClientRect().bottom - 16)}px`;
 }
 
 function renderQuick() {
   const pop = $('quick-pop');
+  if (quick.open === 'arp') {
+    pop.setAttribute('aria-label', 'Arpeggiator');
+    const set = $('arp-set');
+    if (pop.contains(set)) return;
+    arpSetSpot = document.createComment('arp-set');
+    set.replaceWith(arpSetSpot);
+    pop.replaceChildren(set);
+    return;
+  }
+  arpSetHome();
   const chordsTab = document.body.dataset.tab === 'chords';
   if (quick.open === 'formation') {
     pop.setAttribute('aria-label', 'Formation');

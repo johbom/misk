@@ -87,6 +87,11 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
   padding: 10px; box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
 }
 #quick-pop .hint { margin: 8px 2px 0; }
+#quick-pop { overflow: auto; overscroll-behavior: contain; }
+/* Arpens inställningar under Arp-knappen (på/av sköts av knappen själv) */
+#quick-pop > #arp-set { margin: 0; padding: 2px; border: none; min-width: 0; width: min(520px, calc(100vw - 72px)); }
+#quick-pop > #arp-set > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 0 0 2px; font-weight: 600; color: var(--text); }
+#quick-pop > #arp-set > label.check { display: none; }
 .quick-forms { display: grid; grid-template-columns: repeat(3, minmax(84px, 1fr)); gap: 6px; }
 .quick-roots { display: grid; grid-template-columns: repeat(6, minmax(42px, 1fr)); gap: 6px; }
 .quick-scales { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -1442,6 +1447,7 @@ html.high-contrast #arp-toggle.on { background: #ffd400 !important; color: #000 
 #arp-set { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
 #arp-set > .arp-wide { grid-column: 1 / -1; }
 .arp-note { display: block; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+#arp-set > .arp-strum-note { margin-top: -6px; }
 #xy-set { display: grid; grid-template-columns: minmax(170px, auto) minmax(170px, 1fr); gap: 12px 22px; align-content: start; max-width: 560px; }
 #xy-set > .xy-wide { grid-column: 1 / -1; margin: 0; }
 #settings .panel > :is(#xy-set, #arp-set) { flex: 0 1 auto; max-width: min(560px, 100%); }
