@@ -3,7 +3,7 @@
 // svarar nätet inte inom några sekunder, eller är man offline, används cachen.
 // Kör tools/bump_version.py vid varje ny version (höjer VERSION här och ?v= i index.html).
 
-const VERSION = 'hover-pads-v87';
+const VERSION = 'hover-pads-v88';
 const ASSETS = [
   './',
   'index.html',
@@ -43,6 +43,7 @@ const ASSETS = [
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/icon-maskable-512.png',
+  'icons/tfh-logo.png',
 ];
 const NETWORK_TIMEOUT_MS = 4000;
 

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=87" />
+  <link rel="stylesheet" href="css/style.css?v=88" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -39,10 +39,14 @@
       <div id="start-preset-list" role="group" aria-labelledby="start-presets-title"></div>
     </div>
     <p id="start-msg" role="status"></p>
+    <a class="start-tfh" href="https://tfhsensory.se" target="_blank" rel="noopener"><img src="icons/tfh-logo.png" alt="" width="40" height="40" /><span>Hover Pads från <strong>TFH Sensory</strong><small>tfhsensory.se</small></span></a>
   </div>
 
   <header>
-    <h1>Hover Pads</h1>
+    <div class="brand">
+      <a class="tfh-link" href="https://tfhsensory.se" target="_blank" rel="noopener" title="Hover Pads från TFH Sensory – tfhsensory.se"><img src="icons/tfh-logo.png" alt="TFH Sensory (öppnar tfhsensory.se)" width="34" height="34" /></a>
+      <h1>Hover Pads</h1>
+    </div>
     <nav id="tabs">
       <button type="button" data-tab="notes"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.5 17.5V4l6 2.5"/><ellipse cx="9" cy="17.5" rx="3.5" ry="2.7" fill="currentColor" stroke="none" transform="rotate(-20 9 17.5)"/></svg><span>Toner</span></button>
       <button type="button" data-tab="chords"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18.5V3.5"/><ellipse cx="10.5" cy="18.5" rx="3.3" ry="2.4" fill="currentColor" stroke="none" transform="rotate(-20 10.5 18.5)"/><ellipse cx="10.5" cy="13" rx="3.3" ry="2.4" fill="currentColor" stroke="none" transform="rotate(-20 10.5 13)"/><ellipse cx="10.5" cy="7.5" rx="3.3" ry="2.4" fill="currentColor" stroke="none" transform="rotate(-20 10.5 7.5)"/></svg><span>Ackord</span></button>
@@ -527,7 +531,13 @@
   <!-- ===== Om-rutan ===== -->
   <dialog id="about" aria-labelledby="about-title">
     <form method="dialog" class="about-close"><button type="submit" aria-label="Stäng">✕</button></form>
-    <h2 id="about-title">Om Hover Pads</h2>
+    <div class="about-head">
+      <a href="https://tfhsensory.se" target="_blank" rel="noopener" title="tfhsensory.se"><img src="icons/tfh-logo.png" alt="TFH Sensory (öppnar tfhsensory.se)" width="56" height="56" /></a>
+      <div>
+        <h2 id="about-title">Om Hover Pads</h2>
+        <p class="about-by">En app från <a href="https://tfhsensory.se" target="_blank" rel="noopener">TFH Sensory</a></p>
+      </div>
+    </div>
     <p>
       Skapat av John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, utifrån erfarenheterna
       från <strong>MISK</strong> – ett projekt med stöd av Allmänna Arvsfonden. MISK drevs av Eldorado
@@ -554,6 +564,7 @@
       Appen har idag utvecklats med stöd av TFH Sensory,
       <a href="https://tfhsensory.se" target="_blank" rel="noopener">tfhsensory.se</a>.
     </p>
+    <a class="about-tfh" href="https://tfhsensory.se" target="_blank" rel="noopener"><img src="icons/tfh-logo.png" alt="" width="40" height="40" /><span>Besök <strong>tfhsensory.se</strong></span></a>
     <p class="about-motto">Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.</p>
     <p>
       Sedan 1983 har TFH utvecklat sinnesstimulerande produkter som skapar möjligheter till lärande,
@@ -601,32 +612,32 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=87"></script>
-  <script src="js/fm-library.js?v=87"></script>
-  <script src="js/pm-library.js?v=87"></script>
-  <script src="js/wt-library.js?v=87"></script>
-  <script src="js/lib-levels.js?v=87"></script>
-  <script src="js/sound-library.js?v=87"></script>
-  <script src="js/layout.js?v=87"></script>
-  <script src="js/core.js?v=87"></script>
-  <script src="js/audio.js?v=87"></script>
-  <script src="js/drums.js?v=87"></script>
-  <script src="js/pads.js?v=87"></script>
-  <script src="js/osc.js?v=87"></script>
-  <script src="js/arp.js?v=87"></script>
-  <script src="js/xy.js?v=87"></script>
-  <script src="js/vibrato.js?v=87"></script>
-  <script src="js/notes.js?v=87"></script>
-  <script src="js/chords.js?v=87"></script>
-  <script src="js/sound.js?v=87"></script>
-  <script src="js/view.js?v=87"></script>
-  <script src="js/controls.js?v=87"></script>
-  <script src="js/access.js?v=87"></script>
-  <script src="js/settings.js?v=87"></script>
-  <script src="js/user-presets.js?v=87"></script>
-  <script src="js/wizard.js?v=87"></script>
-  <script src="js/quick.js?v=87"></script>
-  <script src="js/pwa.js?v=87"></script>
-  <script src="js/main.js?v=87"></script>
+  <script src="js/synth.js?v=88"></script>
+  <script src="js/fm-library.js?v=88"></script>
+  <script src="js/pm-library.js?v=88"></script>
+  <script src="js/wt-library.js?v=88"></script>
+  <script src="js/lib-levels.js?v=88"></script>
+  <script src="js/sound-library.js?v=88"></script>
+  <script src="js/layout.js?v=88"></script>
+  <script src="js/core.js?v=88"></script>
+  <script src="js/audio.js?v=88"></script>
+  <script src="js/drums.js?v=88"></script>
+  <script src="js/pads.js?v=88"></script>
+  <script src="js/osc.js?v=88"></script>
+  <script src="js/arp.js?v=88"></script>
+  <script src="js/xy.js?v=88"></script>
+  <script src="js/vibrato.js?v=88"></script>
+  <script src="js/notes.js?v=88"></script>
+  <script src="js/chords.js?v=88"></script>
+  <script src="js/sound.js?v=88"></script>
+  <script src="js/view.js?v=88"></script>
+  <script src="js/controls.js?v=88"></script>
+  <script src="js/access.js?v=88"></script>
+  <script src="js/settings.js?v=88"></script>
+  <script src="js/user-presets.js?v=88"></script>
+  <script src="js/wizard.js?v=88"></script>
+  <script src="js/quick.js?v=88"></script>
+  <script src="js/pwa.js?v=88"></script>
+  <script src="js/main.js?v=88"></script>
 </body>
 </html>

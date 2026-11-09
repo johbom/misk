@@ -6,6 +6,8 @@ En webbsida med rutor som spelar ljud och/eller skickar MIDI när man för musen
 
 Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva för **XY**, reglage för **Inställningar** och ⓘ **Om**, som berättar vem som skapat appen och om MISK och TFH Sensory. På smal skärm står symbolen ovanför texten.
 
+Hover Pads är en app från **TFH Sensory**. TFH-loggan står uppe till vänster vid rubriken, på startrutan och i Om-rutan. Den länkar till [tfhsensory.se](https://tfhsensory.se) i en ny flik. På smal mobil ligger loggan på raden med Lås och MIDI.
+
 ## Flikar
 
 När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **XY** eller **Inställningar** – med stora knappar. Klicket startar också ljudet (webbläsare kräver ett klick först). Det man använde senast är markerat och har fokus, så Enter eller en kontakt startar direkt där.
@@ -221,7 +223,7 @@ python3 -m http.server 8080
 - `manifest.webmanifest`, `sw.js` – PWA: appinformation och offline-cache. Kör `python3 tools/bump_version.py` före varje ny version (höjer cacheversionen och `?v=` på filerna så att telefoner hämtar det nya)
 - `app.js` – ersättning för gamla cachade sidor: laddar om dem till den nya versionen
 - `css/style.css` – utseende
-- `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`)
+- `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`) och TFH Sensorys logga `tfh-logo.png`
 - `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
 - `js/sound-library.js` – presetbiblioteket: 110 klassiska ljud (och samlar ihop FM-ljuden)
 - `js/fm-library.js` – 100 ljud för FM-motorn (urval ur recept per instrumentfamilj)
