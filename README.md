@@ -33,10 +33,9 @@ Knappen **Startguide** på startsidan (och **Guide** i menyraden) frågar steg f
 3. **Ackordmall** (bara Ackord) – färdiga ackordföljder som räknas ut från tonarten med funktionsbeteckningar: T = tonika, S = subdominant, D = dominant och parallellerna Tp, Sp, Dp. I dur: *Grundackorden* (T S D), *Pop* (T D Tp S), *50-tal* (T Tp S D), *Visa* (T S D⁷ Tp), *Alla sex*, *Jazz II–V–I*, *Blues* och *Hela tonarten* (8 rutor med D⁷ och dubbeldominant). I moll (små bokstäver = mollackord): *Grundackorden* (t s D), *Moll-pop* (t sP tP dP), *Andalusisk* (t dP sP D), *Ballad*, *Alla sex* och *Hela tonarten*. Mallen spelas upp när man väljer den. Överst ligger *Egen ackordrunda*: den utgår från de ackord du har nu, och när du väljer den kan du ställa in antal ackord (2–8) och grundton och typ för varje ackord direkt i guiden. Varje ackord visar sin funktion i tonarten (T, S, D, Tp …) om det har någon, och spelas upp när du ändrar det; *▶ Lyssna* spelar hela rundan.
 4. **Spelsätt** – Håll, One-shot, Längd eller Ligg kvar, och arpeggiatorn av/på.
 5. **Formation** (Toner och Ackord) – Rutnät, Cirkel, Ring, Bikupa, Strängar eller Båge.
-6. **Ljud** – de färdiga ljuden (provlyssnas direkt). För Toner finns också trumseten, som spelar en kort takt när man väljer dem.
-7. **Klart** – en sammanfattning, val av ljud i appen och MIDI, och *Börja spela*.
+6. **Ljud** – de färdiga ljuden (provlyssnas direkt). För Toner finns också trumseten, som spelar en kort takt när man väljer dem. Det är sista steget: knappen heter där *Börja spela*. Utgångarna (ljud i appen, MIDI) lämnas som de är och ställs under Inställningar → Ut, MIDI & OSC.
 
-**För XY** frågar guiden bara om det XY använder: *Klang* (provlyssnas med en kort glidning), *Omfång* i oktaver (1–5, högerkanten är C7), *Reverb* (Torr, Lite, Mellan, Mycket) och arpeggiatorn av/på. Tonart, spelsätt, formation och utgångar lämnas orörda, eftersom XY glider steglöst i tonhöjd och inte skickar MIDI.
+**För XY** frågar guiden bara om det XY använder: *Klang* (provlyssnas med en kort glidning), *Omfång* i oktaver (1–5, högerkanten är C7), *Reverb* (Torr, Lite, Mellan, Mycket) och arpeggiatorn av/på (sista steget, med knappen *Börja spela*). Tonart, spelsätt, formation och utgångar lämnas orörda, eftersom XY glider steglöst i tonhöjd och inte skickar MIDI.
 
 Avbryter man (✕ eller Esc) ändras ingenting. Knapparna Tillbaka och Nästa ligger på samma ställe i alla steg.
 

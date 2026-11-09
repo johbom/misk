@@ -86,9 +86,8 @@ const wiz = {
 // där frågas inte om tonart, spelsätt, formation eller MIDI, utan om klang, omfång och reverb.
 function wizSteps() {
   const t = wiz.draft.tab;
-  if (t === 'xy') return ['tab', 'sound', 'xyfeel', 'done'];
-  return ['tab', 'key', ...(t === 'chords' ? ['prog'] : []), 'mode',
-    ...(t === 'xy' ? [] : ['formation']), 'sound', 'done'];
+  if (t === 'xy') return ['tab', 'sound', 'xyfeel'];
+  return ['tab', 'key', ...(t === 'chords' ? ['prog'] : []), 'mode', 'formation', 'sound'];
 }
 
 function openWizard(fromStart = false) {
@@ -322,41 +321,6 @@ function renderWizard() {
       <button type="button" class="wiz-toggle" role="switch" aria-checked="${d.arpOn}" data-act="arp">
         ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Varje finger upprepas i takt, över oktaverna.</small></span><i class="wiz-switch"></i>
       </button>`;
-  } else if (step === 'done' && d.tab === 'xy') {
-    title = 'Klart att spela!';
-    const rows = [
-      ['Spela', 'XY'],
-      ['Klang', ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent],
-      ['Omfång', `${d.xyOctaves} oktav${d.xyOctaves > 1 ? 'er' : ''} (${xyRangeName(d.xyOctaves)})`],
-      ['Reverb', WIZ_REVERBS.find(([v]) => v === d.xyReverb)?.[1] || ''],
-      ['Arpeggiator', d.arpOn ? 'På' : 'Av'],
-    ];
-    html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-      <p class="wiz-hint">Allt går att ändra senare: klangen på XY-sidan, resten under Inställningar. Guiden finns kvar under knappen Guide.</p>`;
-  } else if (step === 'done') {
-    title = 'Klart att spela!';
-    const rows = [
-      ['Spela', WIZ_TABS[d.tab]],
-      ['Tonart', `${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}`],
-    ];
-    if (d.tab === 'notes' && d.drumKit) rows.pop(); // trummor har ingen tonart
-    if (d.tab === 'notes') rows.push(['Rutor', d.noteCount]);
-    if (d.tab === 'chords') {
-      rows.push(['Ackord', d.prog === KEEP_CHORDS ? customChords(d).map((c) => chordName({ ...c, bass: BASS_ROOT })).join(' ')
-        : progChords(PROGRESSIONS[mode][d.prog], mode, d.root).map((c) => chordName({ ...c, bass: BASS_ROOT })).join(' ')]);
-    }
-    rows.push(['Spelsätt', PLAY_MODES[d.playMode].name + (d.arpOn ? ' + arpeggiator' : '')]);
-    if (d.tab !== 'xy') rows.push(['Formation', FORMATIONS[d.formation]]);
-    rows.push(['Ljud', d.tab === 'xy' ? ui.xySound.querySelector(`option[value="${d.xySound}"]`).textContent
-      : d.tab === 'notes' && d.drumKit ? `Trumset: ${DRUM_KITS[d.drumKit].name}`
-        : d.sound || $('sound-now-name')?.textContent || 'eget ljud']);
-    html = `<dl class="wiz-summary">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>
-      <h4>Ut</h4>
-      <div class="wiz-row">
-        <button type="button" class="wiz-toggle small" role="switch" aria-checked="${d.outAudio}" data-act="outAudio"><span><b>Ljud i appen</b></span><i class="wiz-switch"></i></button>
-        <button type="button" class="wiz-toggle small" role="switch" aria-checked="${d.outMidi}" data-act="outMidi"><span><b>Skicka MIDI</b></span><i class="wiz-switch"></i></button>
-      </div>
-      <p class="wiz-hint">Allt går att ändra senare under Inställningar, och guiden finns kvar under knappen Guide.</p>`;
   }
 
   $('wiz-title').textContent = title;
@@ -367,7 +331,7 @@ function renderWizard() {
   body.innerHTML = html;
   body.dataset.step = step;
   $('wiz-back').disabled = wiz.step === 0;
-  $('wiz-next').textContent = step === 'done' ? 'Börja spela' : 'Nästa →';
+  $('wiz-next').textContent = wiz.step === steps.length - 1 ? 'Börja spela' : 'Nästa →'; // sista steget startar
 }
 
 function wizChoose(key, raw) {
@@ -405,8 +369,6 @@ function wizAct(act) {
   if (act === 'cnt-') d.customCount = Math.max(2, d.customCount - 1);
   if (act === 'cnt+') d.customCount = Math.min(MAX_CHORDS, d.customCount + 1);
   if (act === 'arp') d.arpOn = !d.arpOn;
-  if (act === 'outAudio') d.outAudio = !d.outAudio;
-  if (act === 'outMidi') d.outMidi = !d.outMidi;
   renderWizard();
   const again = $('wiz-body').querySelector(`[data-act="${act}"]`);
   (again && !again.disabled ? again : $('wiz-body').querySelector('.wiz-custom-top [data-act]:not(:disabled)'))?.focus();

@@ -1575,10 +1575,6 @@ html.reduce-motion .pad.arp-hit { animation-duration: 60ms; }
 .wiz-toggle[aria-checked="true"] .wiz-switch { background: var(--accent); }
 .wiz-toggle[aria-checked="true"] .wiz-switch::after { transform: translateX(18px); }
 
-.wiz-summary { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0 0 6px; font-size: 1rem; }
-.wiz-summary dt { color: var(--muted); }
-.wiz-summary dd { margin: 0; font-weight: 600; }
-#wiz-body[data-step="done"] .wiz-hint { margin-top: 14px; }
 
 @media (max-width: 560px) {
   #wizard { padding: 12px 14px 14px; }
