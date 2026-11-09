@@ -253,7 +253,33 @@ function layoutPads() {
 }
 
 // Tomrum mellan rutorna – där kan musen röra sig utan att något spelas.
+// Reglaget är logaritmiskt: läge 0 = inget mellanrum, 1–100 = 1–300 % (varje steg lika stor ökning i procent).
+const GAP_MAX = 300;
+function gapFromSlider(p) {
+  if (p <= 0) return 0;
+  const v = Math.pow(GAP_MAX, (p - 1) / 99);
+  const r = v < 20 ? 1 : v < 100 ? 5 : 10; // jämna tal
+  return Math.min(GAP_MAX, Math.max(1, Math.round(v / r) * r));
+}
+const sliderFromGap = (v) => (v <= 0 ? 0 : Math.round(1 + (99 * Math.log(Math.max(1, v))) / Math.log(GAP_MAX)));
+
+function setupGapSlider() {
+  const slider = $('pad-space-slider');
+  const set = (type) => {
+    const v = gapFromSlider(Number(slider.value));
+    if (type === 'input' && String(v) === ui.padSpace.value) return;
+    ui.padSpace.value = v;
+    ui.padSpace.dispatchEvent(new Event(type, { bubbles: true })); // input: rita om, change: spara
+  };
+  slider.addEventListener('input', () => set('input'));
+  slider.addEventListener('change', () => set('change'));
+}
+
 function applyGap() {
-  $('gap-value').textContent = `${ui.padSpace.value} %`;
+  const v = Number(ui.padSpace.value);
+  const slider = $('pad-space-slider');
+  if (gapFromSlider(Number(slider.value)) !== v) slider.value = sliderFromGap(v);
+  slider.setAttribute('aria-valuetext', `${v} %`);
+  $('gap-value').textContent = `${v} %`;
   layoutPads();
 }

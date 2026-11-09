@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=92" />
+  <link rel="stylesheet" href="css/style.css?v=93" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -120,7 +120,9 @@
         <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
         <div class="formation-opts">
           <label class="not-ring" title="Tomrum mellan rutorna, i procent av rutornas storlek (50 % = halva rutan). Musen kan flyttas där utan att trigga något. Följer med när skärmen är större eller mindre.">Mellanrum
-            <input type="range" id="pad-space" min="0" max="300" step="5" value="30" />
+            <input type="hidden" id="pad-space" value="30" />
+            <!-- Logaritmiskt: små mellanrum får lika mycket av reglaget som stora (js/view.js) -->
+            <input type="range" id="pad-space-slider" min="0" max="100" step="1" value="60" />
             <span id="gap-value" class="val">30 %</span>
           </label>
           <label class="only-strings" title="Lodrätt: lägsta tonen till vänster. Vågrätt: lägsta tonen längst ned.">Riktning
@@ -612,32 +614,32 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=92"></script>
-  <script src="js/fm-library.js?v=92"></script>
-  <script src="js/pm-library.js?v=92"></script>
-  <script src="js/wt-library.js?v=92"></script>
-  <script src="js/lib-levels.js?v=92"></script>
-  <script src="js/sound-library.js?v=92"></script>
-  <script src="js/layout.js?v=92"></script>
-  <script src="js/core.js?v=92"></script>
-  <script src="js/audio.js?v=92"></script>
-  <script src="js/drums.js?v=92"></script>
-  <script src="js/pads.js?v=92"></script>
-  <script src="js/osc.js?v=92"></script>
-  <script src="js/arp.js?v=92"></script>
-  <script src="js/xy.js?v=92"></script>
-  <script src="js/vibrato.js?v=92"></script>
-  <script src="js/notes.js?v=92"></script>
-  <script src="js/chords.js?v=92"></script>
-  <script src="js/sound.js?v=92"></script>
-  <script src="js/view.js?v=92"></script>
-  <script src="js/controls.js?v=92"></script>
-  <script src="js/access.js?v=92"></script>
-  <script src="js/settings.js?v=92"></script>
-  <script src="js/user-presets.js?v=92"></script>
-  <script src="js/wizard.js?v=92"></script>
-  <script src="js/quick.js?v=92"></script>
-  <script src="js/pwa.js?v=92"></script>
-  <script src="js/main.js?v=92"></script>
+  <script src="js/synth.js?v=93"></script>
+  <script src="js/fm-library.js?v=93"></script>
+  <script src="js/pm-library.js?v=93"></script>
+  <script src="js/wt-library.js?v=93"></script>
+  <script src="js/lib-levels.js?v=93"></script>
+  <script src="js/sound-library.js?v=93"></script>
+  <script src="js/layout.js?v=93"></script>
+  <script src="js/core.js?v=93"></script>
+  <script src="js/audio.js?v=93"></script>
+  <script src="js/drums.js?v=93"></script>
+  <script src="js/pads.js?v=93"></script>
+  <script src="js/osc.js?v=93"></script>
+  <script src="js/arp.js?v=93"></script>
+  <script src="js/xy.js?v=93"></script>
+  <script src="js/vibrato.js?v=93"></script>
+  <script src="js/notes.js?v=93"></script>
+  <script src="js/chords.js?v=93"></script>
+  <script src="js/sound.js?v=93"></script>
+  <script src="js/view.js?v=93"></script>
+  <script src="js/controls.js?v=93"></script>
+  <script src="js/access.js?v=93"></script>
+  <script src="js/settings.js?v=93"></script>
+  <script src="js/user-presets.js?v=93"></script>
+  <script src="js/wizard.js?v=93"></script>
+  <script src="js/quick.js?v=93"></script>
+  <script src="js/pwa.js?v=93"></script>
+  <script src="js/main.js?v=93"></script>
 </body>
 </html>

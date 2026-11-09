@@ -43,6 +43,7 @@ $('chord-colors-preset').addEventListener('click', () => setChordColors(CHORD_PA
 $('chord-colors-none').addEventListener('click', () => setChordColors(CHORD_PALETTE.map(() => '')));
 ui.noteCount.addEventListener('change', buildNotePads);
 [ui.chordOctave, ui.chordBass].forEach((el) => el.addEventListener('change', updateChordLabels));
+setupGapSlider();
 ui.padSpace.addEventListener('input', applyGap);
 [ui.stringLength, ui.ringSpace, ui.ringHole].forEach((el) => el.addEventListener('input', applyFormationOpts));
 ui.hexOrder.addEventListener('change', layoutPads);

@@ -17,7 +17,7 @@ function normalizeSetting(k, v) {
 // Förr angavs mellanrummen i px; nu i procent av rutans (eller sektorns) storlek.
 // Omräkningen utgår från en vanlig rutstorlek (ca 150 px) och sektorbredd (ca 120 px).
 function migrateSpace(s) {
-  if (!('padSpace' in s) && 'padGap' in s) ui.padSpace.value = Math.round(Number(s.padGap) / 1.5 / 5) * 5;
+  if (!('padSpace' in s) && 'padGap' in s) ui.padSpace.value = gapFromSlider(sliderFromGap(Number(s.padGap) / 1.5));
   if (!('ringSpace' in s) && 'ringGap' in s) ui.ringSpace.value = Math.min(75, Math.round(Number(s.ringGap) / 1.2));
 }
 
