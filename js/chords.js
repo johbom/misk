@@ -258,6 +258,7 @@ function pluck(pad, idx) {
     noteOn(note, ch);
     stops.push(() => noteOff(note, ch));
   }
+  harpDebug(`knäpp ${pad.label()} ton ${noteName(note)} (ljud ${ui.outAudio.checked ? audioCtx.state : 'av'})`);
   const oscStop = oscPluck(note);
   if (oscStop) stops.push(oscStop);
   setTimeout(() => stops.forEach((s) => s()), PLUCK_MS);
@@ -271,10 +272,37 @@ function pluck(pad, idx) {
   log(`♪ ${pad.label()}: ${noteName(note)}`);
 }
 
+// Felsökning: öppna sidan med #harpdebug så visas vad harpan ser (pekare, sträng, ton) överst
+const HARP_DEBUG = location.hash.includes('harpdebug');
+const harpLines = [];
+let harpMoves = 0;
+const elName = (el) => (el instanceof Element ? el.getAttribute('class') || el.tagName.toLowerCase() : '-');
+function harpDebug(msg) {
+  if (!HARP_DEBUG) return;
+  let box = document.getElementById('harp-debug');
+  if (!box) {
+    box = document.createElement('pre');
+    box.id = 'harp-debug';
+    box.style.cssText = 'position:fixed;left:8px;right:8px;top:8px;z-index:99;margin:0;padding:8px;'
+      + 'background:rgba(0,0,0,.85);color:#7be3a0;font:12px/1.35 ui-monospace,Menlo,monospace;'
+      + 'pointer-events:none;white-space:pre-wrap;max-height:40vh;overflow:hidden;border-radius:8px';
+    document.body.append(box);
+  }
+  harpLines.push(`${(performance.now() / 1000).toFixed(2)} ${msg}`);
+  if (harpLines.length > 14) harpLines.shift();
+  box.textContent = `Harpa (felsökning) · v${document.querySelector('script[src*="main.js"]')?.src.match(/v=(\d+)/)?.[1]}\n`
+    + `${navigator.userAgent}\n${harpLines.join('\n')}`;
+}
+
 function strumMove(e) {
   if (!strum.active) return;
   const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.chord-pad');
   const pad = chordPads.find((p) => p.el === el);
+  if (HARP_DEBUG && (harpMoves++ % 8 === 0 || pad !== strum.pad)) {
+    harpDebug(`move ${e.type} ${e.pointerType} buttons=${e.buttons} x=${Math.round(e.clientX)} y=${Math.round(e.clientY)} `
+      + `under=${elName(document.elementFromPoint(e.clientX, e.clientY))} sträng=${pad ? pad.label() : '-'}`
+      + `${pad ? ` idx=${strumIndex(pad, e)}` : ''}`);
+  }
   if (!pad) { strum.pad = null; return; } // i mellanrummet mellan strängarna
   const idx = strumIndex(pad, e);
   if (pad !== strum.pad) {
@@ -298,19 +326,31 @@ function strumMove(e) {
 function setupStrum() {
   // Harpan kan också börja på bakgrunden – sedan drar man in på strängarna
   document.addEventListener('pointerdown', (e) => {
+    harpDebug(`down ${e.pointerType} button=${e.button} buttons=${e.buttons} mål=${elName(e.target)} `
+      + `flik=${document.body.dataset.tab} spelyta=${inPlayArea(e.target)} formation=${ui.formation.value} `
+      + `meny=${picker.open} stegning=${scanning()} ljud=${audioCtx ? audioCtx.state : 'inte startat'}`);
     if (document.body.dataset.tab !== 'chords' || !inPlayArea(e.target)) return;
     if (ui.formation.value !== 'strings' || picker.open || scanning()) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault(); // ingen textmarkering när man drar
     strum.active = true;
     strum.pad = null;
+    harpDebug('harpan aktiv (håll inne och dra)');
     strumMove(e);
   });
   window.addEventListener('pointermove', strumMove);
-  const stop = () => { strum.active = false; strum.pad = null; strum.harp = false; };
+  const stop = (e) => {
+    if (strum.active) harpDebug(`slut: ${e.type}${e.pointerType ? ` ${e.pointerType}` : ''}`);
+    strum.active = false; strum.pad = null; strum.harp = false;
+  };
   window.addEventListener('pointerup', stop);
   window.addEventListener('pointercancel', stop);
   window.addEventListener('blur', stop);
+  if (HARP_DEBUG) {
+    ['dragstart', 'selectstart', 'contextmenu', 'lostpointercapture'].forEach((t) =>
+      window.addEventListener(t, (e) => harpDebug(`${t} på ${elName(e.target)}`), true));
+    harpDebug('på – välj Ackord och Strängar, håll inne och dra längs en sträng');
+  }
 }
 
 const updateChordLabels = () => { chordPads.forEach(release); chordPads.forEach(renderChordPad); };
