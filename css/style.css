@@ -89,9 +89,30 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 #quick-pop .hint { margin: 8px 2px 0; }
 #quick-pop { overflow: auto; overscroll-behavior: contain; }
 /* Arpens inställningar under Arp-knappen (på/av sköts av knappen själv) */
-#quick-pop > #arp-set { margin: 0; padding: 2px; border: none; min-width: 0; width: min(520px, calc(100vw - 72px)); }
-#quick-pop > #arp-set > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 0 0 2px; font-weight: 600; color: var(--text); }
-#quick-pop > #arp-set > label.check { display: none; }
+/* Kompakt: rubrik, reglage och värde på en rad, små knappar, inga förklaringar */
+#quick-pop > #arp-set {
+  margin: 0; padding: 0; border: none; min-width: 0; width: min(440px, calc(100vw - 72px));
+  grid-template-columns: 1fr; gap: 8px; font-size: 0.85rem;
+}
+#quick-pop > #arp-set > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 2px 40px 0 0; font-weight: 600; color: var(--text); }
+#quick-pop > #arp-set > label.check, #quick-pop > #arp-set .arp-note { display: none; }
+#quick-pop > #arp-set label.slider { grid-template-columns: 4.6em minmax(0, 1fr) auto; grid-template-areas: "lbl ctl val"; gap: 4px 8px; }
+#quick-pop > #arp-set label.slider.arp-wide { grid-template-areas: "lbl lbl val" "ctl ctl ctl"; }
+#quick-pop > #arp-set label.slider > .val { min-width: 0; font-size: 0.8rem; }
+#quick-pop > #arp-set input[type="range"] { height: 22px; margin: 0; }
+#quick-pop > #arp-set .seg { padding: 2px; border-radius: 8px; }
+#quick-pop > #arp-set .seg button { min-height: 28px; padding: 2px 8px; font-size: 0.8rem; border-radius: 6px; }
+#quick-pop > #arp-set .seg button.has-icon { gap: 4px; }
+#quick-pop > #arp-set .seg-icon { width: 16px; height: 16px; }
+#quick-pop > #arp-set .seg-count button { min-width: 32px; padding: 2px 6px; }
+#quick-pop > #arp-set .arp-tempo { gap: 8px; align-items: center; }
+#quick-pop > #arp-set .arp-tap { min-height: 30px; padding: 2px 12px; font-size: 0.85rem; }
+html.steppers #quick-pop > #arp-set .seg button { min-height: 40px; min-width: 40px; }
+.quick-close {
+  position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; padding: 0;
+  border-radius: 50%; font-size: 1rem; line-height: 1; display: grid; place-items: center;
+}
+html.steppers .quick-close { width: 46px; height: 46px; }
 .quick-forms { display: grid; grid-template-columns: repeat(3, minmax(84px, 1fr)); gap: 6px; }
 .quick-roots { display: grid; grid-template-columns: repeat(6, minmax(42px, 1fr)); gap: 6px; }
 .quick-scales { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

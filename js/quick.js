@@ -84,7 +84,15 @@ function renderQuick() {
     if (pop.contains(set)) return;
     arpSetSpot = document.createComment('arp-set');
     set.replaceWith(arpSetSpot);
-    pop.replaceChildren(set);
+    // Stäng-knapp: lätt att träffa på mobil, där rutan täcker det mesta av spelytan
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'quick-close';
+    close.setAttribute('aria-label', 'Stäng arpens inställningar');
+    close.title = 'Stäng (arpen fortsätter)';
+    close.textContent = '✕';
+    close.addEventListener('click', closeQuick);
+    pop.replaceChildren(close, set);
     return;
   }
   arpSetHome();

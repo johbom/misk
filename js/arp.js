@@ -213,8 +213,10 @@ function setupArp() {
   const sync = syncArpToggle;
   // Byter man arpeggiator av/på mitt i spelet börjar man om från tyst läge
   ui.arpOn.addEventListener('change', () => { allPads().forEach(release); arpReset(); if (typeof xyStopAll === 'function') xyStopAll(); sync(); });
-  // Slås arpen på visas dess inställningar under knappen; slås den av stängs de
+  // Slås arpen på visas dess inställningar under knappen; slås den av stängs de.
+  // Är inställningarna öppna stänger knappen bara dem (arpen fortsätter) – nästa tryck slår av.
   $('arp-toggle').addEventListener('click', () => {
+    if (quick.open === 'arp') { closeQuick(); return; }
     ui.arpOn.checked = !ui.arpOn.checked;
     ui.arpOn.dispatchEvent(new Event('change'));
     log(`Arpeggiator ${arpOn() ? 'på' : 'av'}`);
