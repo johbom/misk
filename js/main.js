@@ -114,7 +114,7 @@ async function startApp(tab) {
     const n = Number(p.data.settings?.chordCount) || 4;
     const sw = (p.data.chords || []).slice(0, n)
       .map((c) => `<i style="background:${c.color || '#3a3f55'}"></i>`).join('');
-    b.innerHTML = `<span class="swatches" aria-hidden="true">${sw}</span><span></span>`;
+    b.innerHTML = `<span class="swatches" aria-hidden="true">${sw}</span><span translate="no"></span>`;
     b.lastChild.textContent = p.name;
     b.title = describe(p.data);
     b.addEventListener('click', () => {

@@ -56,7 +56,12 @@ const xyRangeName = (n) => `C${7 - n}–C7`;
 const progMode = (scale) => (scale === 'minor' || scale === 'blues' ? 'minor' : 'major');
 const funcTable = (mode) => (mode === 'minor' ? FUNC_MINOR : FUNC_MAJOR);
 // Funktionsnamnet med upphöjd siffra/tillägg, t.ex. D⁷
-const funcLabel = (f) => f.replace(/^([A-Za-z]+?)(maj7|7)$/, '$1<sup>$2</sup>');
+// På engelska: romerska siffror (I, IV, V, vi …) i stället för funktionsbeteckningar
+const FUNC_ROMAN = {
+  T: 'I', S: 'IV', D: 'V', Tp: 'vi', Sp: 'ii', Dp: 'iii', D7: 'V7', DD: 'V/V', T7: 'I7', S7: 'IV7',
+  Tmaj7: 'Imaj7', Sp7: 'ii7', Tp7: 'vi7', t: 'i', s: 'iv', d: 'v', tP: 'III', sP: 'VI', dP: 'VII',
+};
+const funcLabel = (f) => (EN_MODE ? FUNC_ROMAN[f] || f : f).replace(/^([A-Za-z/]+?)(maj7|7)$/, '$1<sup>$2</sup>');
 
 function progChords(prog, mode, root) {
   const table = funcTable(mode);
@@ -307,7 +312,7 @@ function renderWizard() {
       html = `${drums}${cur}${QUICK_SOUNDS.map(([engineName, names]) => `<h5 class="wiz-engine">${engineName}</h5>
         <div class="wiz-sounds" role="radiogroup" aria-label="Ljud: ${engineName}">${
         names.map((n) => wizOption('sound', n, n, !d.drumKit && d.sound === n)).join('')}</div>`).join('')}
-        <p class="wiz-hint">Tryck för att lyssna. Alla 500 ljud finns under Inställningar → Ljud.</p>`;
+        <p class="wiz-hint">Tryck för att lyssna. Alla 560 ljud finns under Inställningar → Ljud.</p>`;
     }
   } else if (step === 'xyfeel') {
     title = 'Omfång och reverb';

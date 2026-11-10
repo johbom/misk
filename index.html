@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=106" />
+  <link rel="stylesheet" href="css/style.css?v=107" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -23,6 +23,8 @@
     });
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
+  <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
+  <script src="js/i18n.js?v=107"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -40,6 +42,7 @@
     </div>
     <p id="start-msg" role="status"></p>
     <p id="start-install" hidden><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3M10.5 18.5h3"/></svg><span><strong>Hover Pads går att installera som app</strong> – den startar då från hemskärmen och fungerar utan internet. <span id="start-install-how"></span></span><button type="button" id="start-install-btn" hidden>Installera</button></p>
+    <div class="lang-switch" role="group" aria-label="Språk / Language" translate="no"><button type="button" data-lang="sv">Svenska</button><button type="button" data-lang="en">English</button></div>
     <a class="start-tfh" href="https://tfhsensory.se" target="_blank" rel="noopener"><img src="icons/tfh-logo.png" alt="" width="40" height="40" /><span>Med stöd från <strong>TFH Sensory</strong><small>tfhsensory.se</small></span></a>
   </div>
 
@@ -70,7 +73,7 @@
     <div id="up-bar" role="group" aria-label="Mina presets" hidden>
       <button type="button" id="up-prev" class="up-step" aria-label="Föregående preset" title="Föregående preset">◀</button>
       <label>Mina presets
-        <select id="up-select" data-no-stepper></select>
+        <select id="up-select" data-no-stepper translate="no"></select>
       </label>
       <button type="button" id="up-next" class="up-step" aria-label="Nästa preset" title="Nästa preset">▶</button>
     </div>
@@ -311,7 +314,7 @@
             </optgroup>
           </select>
         </label>
-        <p class="hint" id="pos-hint">Rör pekaren över rutan medan den låter.
+        <p class="hint" id="pos-hint" data-i18n="pos-hint">Rör pekaren över rutan medan den låter.
           <strong>Rutnät och Bikupa:</strong> från nederkanten och uppåt.
           <strong>Cirkel, Ring och Båge:</strong> från innerkanten (mot mitten) och utåt.
           <strong>Strängar:</strong> längs strängen på Toner, tvärs över på Ackord.
@@ -337,7 +340,7 @@
           <input type="range" id="xy-reverb" min="0" max="1" step="0.05" value="0.35" />
           <output id="xy-reverb-value" class="val">35 %</output>
         </label>
-        <p class="hint xy-wide">Högerkanten är C7. Uppåt öppnas filtret. Sinus, Triangel och Varm får också FM uppåt (fler övertoner), och Sinus även vibrato. Klang och reverb går också att ställa på XY-sidan. Reverb under <em>Ljud</em> gäller bara rutorna.</p>
+        <p class="hint xy-wide" data-i18n="xy-hint">Högerkanten är C7. Uppåt öppnas filtret. Sinus, Triangel och Varm får också FM uppåt (fler övertoner), och Sinus även vibrato. Klang och reverb går också att ställa på XY-sidan. Reverb under <em>Ljud</em> gäller bara rutorna.</p>
       </fieldset>
     </div>
 
@@ -345,7 +348,7 @@
     <div class="panel" data-panel="access">
       <fieldset id="access-quick">
         <legend>Snabbval</legend>
-        <p class="hint">Välj en profil och finjustera nedan. Allt följer med i <em>Mina presets</em>.</p>
+        <p class="hint" data-i18n="access-hint">Välj en profil och finjustera nedan. Allt följer med i <em>Mina presets</em>.</p>
         <div id="access-profiles"></div>
       </fieldset>
 
@@ -402,7 +405,7 @@
         <label class="check"><input type="checkbox" id="high-contrast" /> <span>Hög kontrast<small>Svart bakgrund, vita kanter, gul markering.</small></span></label>
         <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter.</small></span></label>
         <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar<small>Ändra alla värden utan att dra eller öppna listor.</small></span></label>
-        <p class="hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i två sekunder.</p>
+        <p class="hint" data-i18n="lock-hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i två sekunder.</p>
       </fieldset>
 
       <fieldset class="access-set">
@@ -425,7 +428,7 @@
         <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
         <details class="help">
           <summary>Vilka tangenter gör vad?</summary>
-          <ul class="hint keys">
+          <ul class="hint keys" data-i18n="keys">
             <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
             <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
             <li>Två kontakter: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.</li>
@@ -473,7 +476,7 @@
 
       <fieldset id="osc-set">
         <legend>OSC</legend>
-        <p class="hint">Kräver bryggan på datorn: <code>node tools/osc-bridge.mjs</code> (skickar till port 9000). I Safari: öppna appen på <code>http://localhost:8765</code>.</p>
+        <p class="hint" data-i18n="osc-hint">Kräver bryggan på datorn: <code>node tools/osc-bridge.mjs</code> (skickar till port 9000). I Safari: öppna appen på <code>http://localhost:8765</code>.</p>
         <label>Brygga
           <input type="text" id="osc-url" value="ws://localhost:8765" spellcheck="false" autocomplete="off" />
         </label>
@@ -570,18 +573,18 @@
         <p class="about-by">En app från <a href="https://tfhsensory.se" target="_blank" rel="noopener">TFH Sensory</a></p>
       </div>
     </div>
-    <p>
+    <p data-i18n="about-credits">
       Skapat av John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, utifrån erfarenheterna
       från <strong>MISK</strong> – ett projekt med stöd av Allmänna Arvsfonden. MISK drevs av Eldorado
       Resurscenter Göteborg Stad, Furuboda Folkhögskola och Certec.
     </p>
     <h3>Installera som app</h3>
-    <p>
+    <p data-i18n="about-install">
       Hover Pads kan installeras som en app. Den startar då från hemskärmen eller programlistan,
       visas i helskärm utan webbläsarlist och fungerar <strong>utan internet</strong> efter första besöket.
     </p>
     <p id="about-install-status" hidden></p>
-    <ul class="about-install">
+    <ul class="about-install" data-i18n="about-install-list">
       <li><strong>iPhone och iPad:</strong> öppna sidan i <em>Safari</em>, tryck på <em>Dela</em>
         (fyrkanten med en pil uppåt) och välj <em>Lägg till på hemskärmen</em>.</li>
       <li><strong>Android:</strong> öppna sidan i <em>Chrome</em>, tryck på menyn ⋮ och välj
@@ -592,23 +595,29 @@
     </ul>
     <p>När du är uppkopplad hämtar appen själv den senaste versionen.</p>
     <h3>TFH Sensory</h3>
-    <p>
+    <p data-i18n="about-tfh">
       Appen har idag utvecklats med stöd av TFH Sensory,
       <a href="https://tfhsensory.se" target="_blank" rel="noopener">tfhsensory.se</a>.
     </p>
     <a class="about-tfh" href="https://tfhsensory.se" target="_blank" rel="noopener"><img src="icons/tfh-logo.png" alt="" width="40" height="40" /><span>Besök <strong>tfhsensory.se</strong></span></a>
     <p class="about-motto">Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.</p>
-    <p>
+    <p data-i18n="about-tfh-text">
       Sedan 1983 har TFH utvecklat sinnesstimulerande produkter som skapar möjligheter till lärande,
       utveckling, trygghet och glädje. Vi levererar till vård, skola, omsorg, äldreomsorg och privatpersoner,
       med produkter som gör det lättare att övervinna hinder – på varje människas egna villkor. Vår expertis
       inom utformning av Sinnesrum delar vi med er och kontakta oss gärna för tips och råd.
     </p>
     <h3>Tips</h3>
-    <p>
+    <p data-i18n="about-tip">
       Vill också tipsa om <strong>Lyssna till mitt öga</strong>, vårt systerprojekt drivet av
       Studieförbundet Vuxenskolan.
     </p>
+    <p class="about-disclaimer" data-i18n="about-disclaimer">
+      <strong>Ansvarsfriskrivning:</strong> Hover Pads tillhandahålls kostnadsfritt och i befintligt skick. TFH tar inget
+      ansvar för hur appen används, eller för fel, buggar eller andra problem som kan uppstå när den används – till exempel
+      med ljud, anslutna enheter eller sparade inställningar. Använd appen med omsorg och anpassa volymen efter den som lyssnar.
+    </p>
+    <div class="lang-switch" role="group" aria-label="Språk / Language" translate="no"><button type="button" data-lang="sv">Svenska</button><button type="button" data-lang="en">English</button></div>
     <p class="about-version">Version <span id="about-version"></span></p>
   </dialog>
 
@@ -645,34 +654,34 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=106"></script>
-  <script src="js/fm-library.js?v=106"></script>
-  <script src="js/pm-library.js?v=106"></script>
-  <script src="js/wt-library.js?v=106"></script>
-  <script src="js/vwg-library.js?v=106"></script>
-  <script src="js/lib-levels.js?v=106"></script>
-  <script src="js/sound-library.js?v=106"></script>
-  <script src="js/layout.js?v=106"></script>
-  <script src="js/core.js?v=106"></script>
-  <script src="js/audio.js?v=106"></script>
-  <script src="js/drums.js?v=106"></script>
-  <script src="js/pads.js?v=106"></script>
-  <script src="js/osc.js?v=106"></script>
-  <script src="js/arp.js?v=106"></script>
-  <script src="js/xy.js?v=106"></script>
-  <script src="js/vibrato.js?v=106"></script>
-  <script src="js/position.js?v=106"></script>
-  <script src="js/notes.js?v=106"></script>
-  <script src="js/chords.js?v=106"></script>
-  <script src="js/sound.js?v=106"></script>
-  <script src="js/view.js?v=106"></script>
-  <script src="js/controls.js?v=106"></script>
-  <script src="js/access.js?v=106"></script>
-  <script src="js/settings.js?v=106"></script>
-  <script src="js/user-presets.js?v=106"></script>
-  <script src="js/wizard.js?v=106"></script>
-  <script src="js/quick.js?v=106"></script>
-  <script src="js/pwa.js?v=106"></script>
-  <script src="js/main.js?v=106"></script>
+  <script src="js/synth.js?v=107"></script>
+  <script src="js/fm-library.js?v=107"></script>
+  <script src="js/pm-library.js?v=107"></script>
+  <script src="js/wt-library.js?v=107"></script>
+  <script src="js/vwg-library.js?v=107"></script>
+  <script src="js/lib-levels.js?v=107"></script>
+  <script src="js/sound-library.js?v=107"></script>
+  <script src="js/layout.js?v=107"></script>
+  <script src="js/core.js?v=107"></script>
+  <script src="js/audio.js?v=107"></script>
+  <script src="js/drums.js?v=107"></script>
+  <script src="js/pads.js?v=107"></script>
+  <script src="js/osc.js?v=107"></script>
+  <script src="js/arp.js?v=107"></script>
+  <script src="js/xy.js?v=107"></script>
+  <script src="js/vibrato.js?v=107"></script>
+  <script src="js/position.js?v=107"></script>
+  <script src="js/notes.js?v=107"></script>
+  <script src="js/chords.js?v=107"></script>
+  <script src="js/sound.js?v=107"></script>
+  <script src="js/view.js?v=107"></script>
+  <script src="js/controls.js?v=107"></script>
+  <script src="js/access.js?v=107"></script>
+  <script src="js/settings.js?v=107"></script>
+  <script src="js/user-presets.js?v=107"></script>
+  <script src="js/wizard.js?v=107"></script>
+  <script src="js/quick.js?v=107"></script>
+  <script src="js/pwa.js?v=107"></script>
+  <script src="js/main.js?v=107"></script>
 </body>
 </html>

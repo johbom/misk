@@ -109,6 +109,7 @@ function renderPresetBar() {
   sel.innerHTML = '';
   if (!list.some((p) => p.name === active)) {
     const o = new Option('– välj –', '');
+    o.setAttribute('translate', 'yes');
     o.disabled = true;
     sel.append(o);
   }
@@ -137,7 +138,7 @@ function renderUserPresets() {
     const swatches = (p.data.chords || []).slice(0, n)
       .map((c) => `<i style="background:${c.color || '#3a3f55'}"></i>`).join('');
     row.innerHTML = `<span class="swatches">${swatches}</span>
-      <div><strong></strong><br><small></small></div>
+      <div><strong translate="no"></strong><br><small></small></div>
       <button type="button" class="up-load">Ladda</button>
       <button type="button" class="up-over" title="Spara nuvarande inställningar under det här namnet">Skriv över</button>
       <button type="button" class="up-del" title="Ta bort" aria-label="Ta bort">✕</button>`;

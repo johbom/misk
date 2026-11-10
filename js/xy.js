@@ -482,7 +482,7 @@ function xyDrawGrid(g, W, H, hc) {
   g.translate(14, H / 2);
   g.rotate(-Math.PI / 2);
   g.fillStyle = hc ? '#fff' : 'rgba(170,175,200,0.55)';
-  g.fillText(xyYIsVibrato() ? 'Mer vibrato  →' : 'Filter öppnas  →', 0, 0);
+  g.fillText(t(xyYIsVibrato() ? 'Mer vibrato  →' : 'Filter öppnas  →'), 0, 0);
   g.restore();
 }
 

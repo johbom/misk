@@ -1640,3 +1640,13 @@ body:not(.drums) .drums-only { display: none !important; }
 .pad.drum { font-size: 0.9em; line-height: 1.15; text-align: center; }
 .pad .drum-icon { display: block; width: 2.6em; height: 2.6em; margin: -0.3em auto 0.3em; }
 .pad.drum-sym { font-size: 1.2rem; }
+
+/* Språkval (startrutan och Om-rutan) */
+.lang-switch { display: inline-flex; gap: 4px; padding: 3px; border: 1px solid var(--border); border-radius: 10px; }
+.lang-switch button { min-height: 32px; padding: 4px 12px; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-weight: 600; }
+.lang-switch button.on { background: var(--accent); color: #fff; }
+html.steppers .lang-switch button { min-height: 46px; }
+html.high-contrast .lang-switch button.on { background: #ffd400 !important; color: #000 !important; }
+#start-overlay > .lang-switch { margin-top: 4px; }
+#about .lang-switch { margin: 4px 0 8px; }
+.about-disclaimer { font-size: 0.85rem; color: var(--muted); }

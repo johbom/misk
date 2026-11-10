@@ -8,6 +8,14 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 Hover Pads är en app från **TFH Sensory**. TFH-loggan står uppe till vänster vid rubriken, på startrutan och i Om-rutan. Den länkar till [tfhsensory.se](https://tfhsensory.se) i en ny flik. På smal mobil ligger loggan på raden med Lås och MIDI.
 
+Om-rutan har också en **ansvarsfriskrivning**: appen är gratis och tillhandahålls i befintligt skick, och TFH tar inget ansvar för hur den används eller för fel, buggar och andra problem.
+
+## Engelska / English
+
+Appen finns på **svenska och engelska**. Språket väljs med knapparna **Svenska / English** på startrutan och i Om-rutan, eller med adressen: [?lang=en](https://johbom.github.io/misk/?lang=en) och [?lang=sv](https://johbom.github.io/misk/?lang=sv). Valet sparas. Första gången följer appen webbläsarens språk (svenska om webbläsaren är på svenska, annars engelska); den som redan använt appen behåller svenska. I den engelska versionen leder TFH-länkarna till [specialneedstoys.com](https://specialneedstoys.com), alla 560 ljud har engelska namn (sökningen hittar både svenska och engelska namn), decimaler skrivs med punkt, och startguiden visar ackordens funktion med romerska siffror (I, IV, V, vi …). Installerad som app på engelska får den ett eget appnamn och en egen beskrivning (`manifest-en.webmanifest`). Egna presetnamn översätts aldrig.
+
+Tekniskt: appen skrivs på svenska, och `js/i18n.js` översätter sidan medan den körs – även text som skapas senare (loggraden, listor, startguiden). Ny text i gränssnittet behöver en rad i ordlistan `EN` (eller ett mönster i `EN_PATTERNS` om den innehåller siffror och namn); längre stycken med länkar markeras med `data-i18n` och har sin engelska text i `EN_HTML`.
+
 ## Flikar
 
 När appen öppnas väljer man var man vill börja – **Toner**, **Ackord**, **XY** eller **Inställningar** – med stora knappar. Klicket startar också ljudet (webbläsare kräver ett klick först). Det man använde senast är markerat och har fokus, så Enter eller en kontakt startar direkt där.
@@ -233,7 +241,8 @@ python3 -m http.server 8080
 ## Filer
 
 - `index.html` – sidan
-- `manifest.webmanifest`, `sw.js` – PWA: appinformation och offline-cache. Kör `python3 tools/bump_version.py` före varje ny version (höjer cacheversionen och `?v=` på filerna så att telefoner hämtar det nya)
+- `js/i18n.js` – engelsk översättning (ordlista, mönster och språkval); laddas först
+- `manifest.webmanifest`, `manifest-en.webmanifest`, `sw.js` – PWA: appinformation och offline-cache. Kör `python3 tools/bump_version.py` före varje ny version (höjer cacheversionen och `?v=` på filerna så att telefoner hämtar det nya)
 - `app.js` – ersättning för gamla cachade sidor: laddar om dem till den nya versionen
 - `css/style.css` – utseende
 - `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`) och TFH Sensorys logga `tfh-logo.png`

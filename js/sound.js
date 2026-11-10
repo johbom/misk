@@ -237,6 +237,7 @@ function renderPresetLibrary() {
     // Sökning gäller alla ljud; annars grupp och kategori
     const hit = libQuery
       ? b.dataset.name.toLowerCase().includes(libQuery) || b.dataset.cat.toLowerCase().includes(libQuery)
+        || b.textContent.toLowerCase().includes(libQuery) // även översatta namn
       : (libGroup === 'Alla' || b.dataset.group === libGroup) && (libCategory === 'Alla' || b.dataset.cat === libCategory);
     b.hidden = !hit;
     if (hit) shown++;
