@@ -167,11 +167,11 @@ const PRESET_CATEGORIES = [
 ];
 
 // Ett bibliotek per motor, i samma ordning som motorvalet: Oscillatorer (kategorierna ovan),
-// Sträng och Resonans (js/pm-library.js), FM (js/fm-library.js), Vågtabell (js/wt-library.js) samt
+// Sträng och Resonans (js/pm-library.js), FM (js/fm-library.js), Wavetable (js/wt-library.js) samt
 // Röst, Blås och Granulär (js/vwg-library.js).
 PRESET_CATEGORIES.forEach((c) => { c.group = 'Oscillatorer'; });
 [
-  ['Sträng', STRING_CATEGORIES], ['Resonans', MODAL_CATEGORIES], ['FM', FM_CATEGORIES], ['Vågtabell', WT_CATEGORIES],
+  ['Sträng', STRING_CATEGORIES], ['Resonans', MODAL_CATEGORIES], ['FM', FM_CATEGORIES], ['Wavetable', WT_CATEGORIES],
   ['Röst', VOICE_CATEGORIES], ['Blås', WIND_CATEGORIES], ['Granulär', GRAIN_CATEGORIES],
 ].forEach(([group, cats]) => cats.forEach((c) => PRESET_CATEGORIES.push({ ...c, group })));
 
@@ -188,7 +188,7 @@ const QUICK_SOUNDS = [
   ['Sträng', ['Gitarr', 'Piano', 'Elgitarr', 'Kontrabas', 'Sitar']],
   ['Resonans', ['Marimbaträ', 'Vibrafonstav', 'Tumkalimba', 'Trinidadpan', 'Klangskål']],
   ['FM', ['Klassiskt FM-piano', 'FM-klocka', 'Slapbas FM', 'FM-brass', 'Jazz-FM']],
-  ['Vågtabell', ['Morfmatta', 'Synklead', 'Reesebas', 'Vågpiano', 'Vokalsvep']],
+  ['Wavetable', ['Morfmatta', 'Synklead', 'Reesebas', 'Vågpiano', 'Vokalsvep']],
   ['Röst', ['Blandad kör', 'Altsolo', 'Nynnande', 'Vokalglid', 'Rymdkör']],
   ['Blås', ['Tvärflöjt', 'Panflöjt', 'Ocarina', 'Konsertklarinett', 'Shakuhachi']],
   ['Granulär', ['Körmoln', 'Stråkmoln', 'Regn', 'Bäck', 'Fågelsång']],

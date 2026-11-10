@@ -116,10 +116,13 @@ html.steppers .quick-close { width: 46px; height: 46px; }
 .quick-forms { display: grid; grid-template-columns: repeat(3, minmax(84px, 1fr)); gap: 6px; }
 .quick-roots { display: grid; grid-template-columns: repeat(6, minmax(42px, 1fr)); gap: 6px; }
 .quick-scales { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.quick-roots button, .quick-scales button { min-height: 38px; padding: 4px 10px; font-weight: 600; }
-.quick-roots button.on, .quick-scales button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-html.steppers .quick-roots button, html.steppers .quick-scales button { min-height: 50px; }
-html.high-contrast .quick-roots button.on, html.high-contrast .quick-scales button.on { background: #ffd400 !important; color: #000 !important; }
+.quick-octaves { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
+.quick-octaves > span { margin-right: 4px; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
+.quick-octaves button { min-width: 38px; }
+.quick-roots button, .quick-scales button, .quick-octaves button { min-height: 38px; padding: 4px 10px; font-weight: 600; }
+.quick-roots button.on, .quick-scales button.on, .quick-octaves button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+html.steppers .quick-roots button, html.steppers .quick-scales button, html.steppers .quick-octaves button { min-height: 50px; }
+html.high-contrast .quick-roots button.on, html.high-contrast .quick-scales button.on, html.high-contrast .quick-octaves button.on { background: #ffd400 !important; color: #000 !important; }
 
 /* Fliken Inställningar */
 #settings {

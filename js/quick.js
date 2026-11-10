@@ -1,4 +1,4 @@
-// Snabbknappar i spelraden: Formation (sidorna Toner och Ackord) och Tonart (alla spelsidor).
+// Snabbknappar i spelraden: Formation (sidorna Toner och Ackord) och Tonart (Toner och Ackord).
 // Ett tryck öppnar en liten ruta med valen. Det är samma inställningar som under Inställningar → Spel.
 // Arp-knappen öppnar samma ruta med arpeggiatorns inställningar när arpen slås på (js/arp.js):
 // då flyttas själva inställningsrutan (#arp-set) dit, och tillbaka när rutan stängs.
@@ -119,18 +119,43 @@ function renderQuick() {
     const scales = chordsTab ? [] : [...ui.scale.options];
     pop.innerHTML = `<div class="quick-roots" role="radiogroup" aria-label="Grundton">${
       NOTE_NAMES.map((n, r) => `<button type="button" role="radio" aria-checked="${r === root}" class="${
-        r === root ? 'on' : ''}" data-root="${r}">${n}</button>`).join('')}</div>${
+        r === root ? 'on' : ''}" data-root="${r}">${n}</button>`).join('')}</div>${octaveRow()}${
       scales.length ? `<div class="quick-scales" role="radiogroup" aria-label="Skala">${
         scales.map((o) => `<button type="button" role="radio" aria-checked="${o.value === ui.scale.value}" class="${
           o.value === ui.scale.value ? 'on' : ''}" data-scale="${o.value}">${o.textContent}</button>`).join('')}</div>` : ''}${
       `<p class="hint">${chordsTab ? 'Ackorden' : 'Ackorden på sidan Ackord'} flyttas med till den nya tonarten.</p>`}`;
     pop.querySelectorAll('[data-root]').forEach((b) => b.addEventListener('click', () => setKeyRoot(Number(b.dataset.root))));
+    pop.querySelectorAll('[data-octave]').forEach((b) => b.addEventListener('click', () => {
+      const el = quickOctaveInput();
+      if (el.value === b.dataset.octave) return;
+      el.value = b.dataset.octave;
+      el.dispatchEvent(new Event('change')); // sparar och stämmer om rutorna
+      log(`Oktav ${el.value}`);
+      renderQuick();
+    }));
     pop.querySelectorAll('[data-scale]').forEach((b) => b.addEventListener('click', () => {
       ui.scale.value = b.dataset.scale;
       ui.scale.dispatchEvent(new Event('change'));
       log(`Tonart: ${NOTE_NAMES[Number(ui.root.value)]} ${scaleName()}`);
     }));
   }
+}
+
+// Oktaven hör till sidan: Toner har sin egen, Ackord sin (XY har ett omfång i stället, ingen oktav)
+function quickOctaveInput() {
+  const tab = document.body.dataset.tab;
+  return tab === 'chords' ? ui.chordOctave : tab === 'notes' ? ui.octave : null;
+}
+
+function octaveRow() {
+  const el = quickOctaveInput();
+  if (!el) return '';
+  const cur = Number(el.value);
+  const octs = [];
+  for (let o = Number(el.min); o <= Number(el.max); o++) octs.push(o);
+  return `<div class="quick-octaves" role="radiogroup" aria-label="Oktav"><span>Oktav</span>${
+    octs.map((o) => `<button type="button" role="radio" aria-checked="${o === cur}" class="${
+      o === cur ? 'on' : ''}" data-octave="${o}">${o}</button>`).join('')}</div>`;
 }
 
 // Ny grundton. Alla ackord flyttas lika många halvtoner.

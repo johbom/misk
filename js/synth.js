@@ -106,8 +106,8 @@ const ENGINE_CTLS = {
   osc: ['Oscillator 2 (nivå eller FM-djup)', 'Wah (resonansfilter)'],
   string: ['Ljushet', 'Dämpning (klingtid)'],
   modal: ['Ljushet (övertonerna)', 'Dämpning (klingtid)'],
-  fm: ['Modulationsdjup', 'Återkoppling'],
-  wt: ['Position i tabellen', 'Svävning (med flera röster)'],
+  fm: ['Modulationsdjup', 'Feedback'],
+  wt: ['Wavetable-position', 'Detune (med flera röster)'],
   voice: ['Vokal u → i', 'Luft'],
   wind: ['Blåstryck', 'Andning'],
   grain: ['Position i källan', 'Täthet'],
@@ -122,7 +122,7 @@ const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
 ]);
 
 const SYNTH_PARAMS = [
-  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Vågtabell'], ['voice', 'Röst'], ['wind', 'Blås'], ['grain', 'Granulär']] },
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Wavetable'], ['voice', 'Röst'], ['wind', 'Blås'], ['grain', 'Granulär']] },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
   { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
   { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
@@ -130,18 +130,18 @@ const SYNTH_PARAMS = [
   { key: 'pmPos', label: 'Anslagspunkt', min: 0.02, max: 0.5, step: 0.01, fmt: (v) => (v < 0.1 ? 'Vid kanten' : v > 0.4 ? 'Mitten' : pct(v)) },
 
   { group: 'FM', key: 'fmAlgo', label: 'Algoritm', options: Object.entries(FM_ALGOS).map(([k, a]) => [k, a.name]) },
-  { key: 'fmFb', label: 'Återkoppling', min: 0, max: 1, step: 0.01, fmt: pct },
-  { key: 'fmDetune', label: 'Svävning', min: 0, max: 30, step: 1, fmt: (v) => `${v} cent` },
+  { key: 'fmFb', label: 'Feedback', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'fmDetune', label: 'Detune', min: 0, max: 30, step: 1, fmt: (v) => `${v} cent` },
   ...FM_OP_PARAMS,
 
-  { group: 'Vågtabell', key: 'wtTable', label: 'Tabell', options: WT_TABLES },
+  { group: 'Wavetable', key: 'wtTable', label: 'Tabell', options: WT_TABLES },
   { key: 'wtPos', label: 'Position', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'wtEnv', label: 'Rörelse', min: -1, max: 1, step: 0.01, fmt: (v) => `${v > 0 ? '+' : ''}${Math.round(v * 100)} %` },
   { key: 'wtEnvTime', label: 'Rörelsetid', min: 0.01, max: 10, log: true, fmt: sec },
   { key: 'wtMove', label: 'Svängning', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'wtMoveRate', label: 'Takt', min: 0.02, max: 8, log: true, fmt: (v) => `${v.toFixed(2)} Hz` },
-  { key: 'wtUnison', label: 'Röster', min: 1, max: 7, step: 1, fmt: (v) => `${v} st` },
-  { key: 'wtSpread', label: 'Svävning', min: 0, max: 50, step: 1, fmt: (v) => `${v} cent` },
+  { key: 'wtUnison', label: 'Unison', min: 1, max: 7, step: 1, fmt: (v) => `${v} röster` },
+  { key: 'wtSpread', label: 'Detune', min: 0, max: 50, step: 1, fmt: (v) => `${v} cent` },
 
   { group: 'Röst', key: 'voiceType', label: 'Röstläge', options: VOICE_TYPES },
   { key: 'voiceVowel', label: 'Vokal', min: 0, max: 1, step: 0.01, fmt: vowelFmt },
@@ -150,7 +150,7 @@ const SYNTH_PARAMS = [
   { key: 'voiceBreath', label: 'Luft', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'voiceVib', label: 'Sångvibrato', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'voiceChoir', label: 'Röster', min: 1, max: 6, step: 1, fmt: (v) => (v === 1 ? 'Solo' : `Kör, ${v} st`) },
-  { key: 'voiceSpread', label: 'Svävning', min: 0, max: 40, step: 1, fmt: (v) => `${v} cent` },
+  { key: 'voiceSpread', label: 'Detune', min: 0, max: 40, step: 1, fmt: (v) => `${v} cent` },
 
   { group: 'Blås', key: 'windKind', label: 'Instrument', options: [['flute', 'Flöjt'], ['reed', 'Rörblad (klarinett)']] },
   { key: 'windPressure', label: 'Blåstryck', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -203,7 +203,7 @@ const SYNTH_PARAMS = [
   { key: 'chorus', label: 'Chorus', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'delayMix', label: 'Delay', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'delayTime', label: 'Delaytid', min: 0.05, max: 1.5, log: true, fmt: sec },
-  { key: 'delayFeedback', label: 'Återkoppling', min: 0, max: 0.9, step: 0.01, fmt: pct },
+  { key: 'delayFeedback', label: 'Feedback', min: 0, max: 0.9, step: 0.01, fmt: pct },
   { key: 'reverbMix', label: 'Reverb', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'reverbSize', label: 'Rumsstorlek', min: 0.3, max: 10, log: true, fmt: sec },
 ];

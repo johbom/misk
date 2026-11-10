@@ -111,7 +111,7 @@ function refreshSynthDisabled() {
     const k = Number(fs.dataset.op) - 1;
     const targets = algo.mods.map((m, i) => (m.includes(k) ? i + 1 : 0)).filter(Boolean);
     const role = algo.car.includes(k) ? 'hörs' : `→ modulerar ${targets.join(' och ')}`;
-    fs.querySelector('legend').textContent = `Operator ${k + 1} · ${role}${k === 3 && synthParams.fmFb > 0 ? ' (återkoppling)' : ''}`;
+    fs.querySelector('legend').textContent = `Operator ${k + 1} · ${role}${k === 3 && synthParams.fmFb > 0 ? ' (feedback)' : ''}`;
     fs.classList.toggle('fm-carrier', algo.car.includes(k));
   });
 }
