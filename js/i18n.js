@@ -766,8 +766,10 @@ const EN_HTML = {
     <a href="https://specialneedstoys.com" target="_blank" rel="noopener">specialneedstoys.com</a>.`,
   'about-tfh-text': `Since 1983 TFH has developed sensory products that create opportunities for learning,
     development, security and joy. We supply health and social care, schools, care for older people and private
-    customers, with products that make it easier to overcome barriers – on each person’s own terms. We are happy to
-    share our expertise in designing sensory rooms, so do get in touch for tips and advice.`,
+    customers, with products that make it easier to overcome barriers – on each person’s own terms.`,
+  'about-tfh-rooms': `TFH are experts in <strong>Multi Sensory Environments</strong>, with long and extensive experience of
+    designing and building sensory rooms – from a simple sensory corner to a complete multi-sensory room in early years
+    settings, schools, health and social care. Do get in touch for tips and advice.`,
   'about-disclaimer': `<strong>Disclaimer:</strong> Hover Pads is provided free of charge and as is. TFH accepts no responsibility for
     how the app is used, or for errors, bugs or other problems that may arise when using it – for example with sound,
     connected devices or saved settings. Use the app with care and set the volume to suit the person listening.`,
