@@ -4,7 +4,7 @@
 //  - Strängar: tvärs över strängen (lodräta: vänster → höger, vågräta: nederkant → överkant)
 // Ljudet ändras mjukt i varje röst (Synth.noteOn → stop.pos). MIDI skickar samma sak som CC eller pitch bend.
 
-const POS_MIDI = { filter: ['cc', 74], volume: ['cc', 11], vibrato: ['cc', 1], bend: ['bend'], timbre: ['cc', 2] };
+const POS_MIDI = { filter: ['cc', 74], volume: ['cc', 11], vibrato: ['cc', 1], bend: ['bend'], timbre: ['cc', 2], timbre2: ['cc', 71] };
 const posParam = () => ui.posParam.value;
 const posOn = () => posParam() !== 'off';
 
@@ -33,6 +33,15 @@ function formationCenter(container, f) {
     x: x0 + pl + (container.clientWidth - pl - pr) / 2,
     y: y0 + pt + (container.clientHeight - pt - pb) / 2,
   };
+}
+
+// Ljudmotorns egna val (klang 1 och 2) får namn efter vald motor (ENGINE_CTLS i js/synth.js).
+function syncPosOptions() {
+  const model = synthParams.model in ENGINE_CTLS ? synthParams.model : 'osc';
+  const engineName = SYNTH_PARAMS[0].options.find(([v]) => v === model)?.[1] || '';
+  const group = $('pos-engine');
+  group.label = `Ljudmotorn (${engineName})`;
+  group.querySelectorAll('option').forEach((o, i) => { o.textContent = ENGINE_CTLS[model][i]; });
 }
 
 // 0..1: var på rutan punkten (x, y) ligger, enligt formationen
@@ -133,6 +142,8 @@ function setupPosition() {
     allPads().forEach((p) => { if (p.posTarget) p.posTarget(posOn() ? p.posX ?? 1 : 1, false); });
     if (!posOn()) allPads().forEach((p) => { p.posX = null; });
     $('pos-hint').hidden = !posOn();
+    syncPosOptions();
   });
   $('pos-hint').hidden = !posOn();
+  syncPosOptions();
 }

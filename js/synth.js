@@ -99,8 +99,19 @@ const GRAIN_SOURCES = [
 ];
 // Motorer som räknas i ljudtråden (pm-worklet.js)
 const WORKLET_MODELS = new Set(['string', 'modal', 'fm', 'wt', 'voice', 'wind', 'grain']);
-// Motorer med en egen klangkontroll för Läge på rutan (vokal, blåstryck, position i källan)
+// Röst, Blås och Granulär (addVwgVoice)
 const CTL_MODELS = new Set(['voice', 'wind', 'grain']);
+// Läge på rutan: varje motor har två egna klangkontroller (timbre och timbre2)
+const ENGINE_CTLS = {
+  osc: ['Oscillator 2 (nivå eller FM-djup)', 'Wah (resonansfilter)'],
+  string: ['Ljushet', 'Dämpning (klingtid)'],
+  modal: ['Ljushet (övertonerna)', 'Dämpning (klingtid)'],
+  fm: ['Modulationsdjup', 'Återkoppling'],
+  wt: ['Position i tabellen', 'Svävning (med flera röster)'],
+  voice: ['Vokal u → i', 'Luft'],
+  wind: ['Blåstryck', 'Andning'],
+  grain: ['Position i källan', 'Täthet'],
+};
 
 const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
   { group: `Operator ${k}`, op: k, key: `op${k}Ratio`, label: 'Förhållande', min: 0.5, max: 16, log: true, fmt: ratioFmt },
@@ -404,6 +415,8 @@ const FM_MOD_SCALE = 6;
 const STRING_GAIN = { pluck: 2.6, hammer: 1.3, bow: 0.7 };
 const WT_GAIN = 1.4; // en modulator på full nivå = moduleringsindex 6 (mycket ljust)
 const VWG_GAIN = { voice: 5.4, wind: 5.7, grain: 4.5 }; // Röst, Blås, Granulär (uppmätt mot oscillatorljuden)
+// Läge på rutan: motorns två klangkontroller i en ljudtrådsnod
+const nodeCtls = (node) => [node.parameters.get('ctl'), node.parameters.get('ctl2')];
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
@@ -605,8 +618,8 @@ class SynthEngine {
   addModelVoice(p, freq, t, out, detunes, onRelease, onEnd, level = 1, ctls = []) {
     const { ctx } = this;
     if (CTL_MODELS.has(p.model)) { this.addVwgVoice(p, freq, t, out, detunes, onRelease, onEnd, ctls); return; }
-    if (p.model === 'fm') { this.addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level); return; }
-    if (p.model === 'wt') { this.addWtVoice(p, freq, t, out, detunes, onRelease, onEnd); return; }
+    if (p.model === 'fm') { this.addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level, ctls); return; }
+    if (p.model === 'wt') { this.addWtVoice(p, freq, t, out, detunes, onRelease, onEnd, ctls); return; }
     if (p.model === 'string' && this.pmReady) {
       const node = new AudioWorkletNode(ctx, 'pm-string', {
         numberOfInputs: 0,
@@ -616,6 +629,7 @@ class SynthEngine {
       });
       node.parameters.get('frequency').value = freq;
       detunes.push(node.parameters.get('detune'));
+      ctls.push(nodeCtls(node));
       // Nivå per anslag (uppmätt): knäppt sträng är svagast, stråke starkast
       const g = ctx.createGain();
       g.gain.value = STRING_GAIN[p.pmExciter] || 1;
@@ -651,6 +665,7 @@ class SynthEngine {
       });
       node.parameters.get('frequency').value = freq;
       detunes.push(node.parameters.get('detune'));
+      ctls.push(nodeCtls(node));
       node.connect(out);
       onRelease.push((r, end) => node.port.postMessage({ end }));
       onEnd.push(() => node.disconnect());
@@ -687,7 +702,7 @@ class SynthEngine {
   // FM-motorn: fyra operatorer i ljudtråden (pm-worklet.js, 'fm4'). Moduleringsdjupet minskar en
   // aning uppåt i registret (som på riktiga FM-syntar) så att höga toner inte blir vassa, och ökar
   // med anslagets styrka.
-  addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level) {
+  addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level, ctls = []) {
     const { ctx } = this;
     const algo = FM_ALGOS[p.fmAlgo] || FM_ALGOS[1];
     const ops = [1, 2, 3, 4].map((k) => ({
@@ -726,13 +741,14 @@ class SynthEngine {
     });
     node.parameters.get('frequency').value = freq;
     detunes.push(node.parameters.get('detune'));
+    ctls.push(nodeCtls(node));
     node.connect(out);
     onRelease.push((r, end) => node.port.postMessage({ end }));
     onEnd.push(() => node.disconnect());
   }
 
   // Vågtabellmotorn (pm-worklet.js, 'wavetable'): stereo, med unisonrösterna spridda åt sidorna
-  addWtVoice(p, freq, t, out, detunes, onRelease, onEnd) {
+  addWtVoice(p, freq, t, out, detunes, onRelease, onEnd, ctls = []) {
     const { ctx } = this;
     if (!this.pmReady) {
       // Reserv de första ögonblicken innan ljudtråden laddats
@@ -756,6 +772,7 @@ class SynthEngine {
     });
     node.parameters.get('frequency').value = freq;
     detunes.push(node.parameters.get('detune'));
+    ctls.push(nodeCtls(node));
     const g = ctx.createGain();
     g.gain.value = WT_GAIN;
     node.connect(g).connect(out);
@@ -801,7 +818,7 @@ class SynthEngine {
     });
     node.parameters.get('frequency').value = freq;
     detunes.push(node.parameters.get('detune'));
-    ctls.push(node.parameters.get('ctl'));
+    ctls.push(nodeCtls(node));
     const g = ctx.createGain();
     g.gain.value = VWG_GAIN[p.model] || 1;
     node.connect(g).connect(out);
@@ -848,7 +865,8 @@ class SynthEngine {
     const detunes = []; // tonhöjd (cent) för fysiska modeller – för LFO och vibrato
     const onRelease = []; // (r) => … när tonen släpps
     const onEnd = []; // städning när rösten tystnat
-    const ctls = []; // motorns egen klangkontroll (Röst, Blås, Granulär) för Läge på rutan
+    const ctls = []; // [klang 1, klang 2] per ljudtrådsnod – motorns egna kontroller för Läge på rutan
+    let osc2Ctl = null; // Oscillatorer: oscillator 2:s nivå eller FM-djup (klang 2)
 
     // Håller reda på när rösten är slut (även när den inte har några oscillatorer)
     const life = ctx.createConstantSource();
@@ -889,16 +907,23 @@ class SynthEngine {
       fm.gain.value = full; // startvärde direkt, även om förloppet nedan skulle hoppas över
       fm.gain.setValueAtTime(full, t);
       fm.gain.setTargetAtTime(full * Math.max(p.sustain, 0.2), t + p.attack, p.decay / 3);
-      mod.connect(fm);
-      carriers.forEach((c) => fm.connect(c.frequency));
+      // Läge på rutan (klang 2) skalar FM-djupet: 0 = inget … 0,5 = som ljudet är … 1 = dubbelt
+      const fmScale = ctx.createGain();
+      mod.connect(fm).connect(fmScale);
+      carriers.forEach((c) => fmScale.connect(c.frequency));
       sources.push(mod);
-    } else if (p.osc2Mode === 'mix' && p.osc2Level > 0) {
+      osc2Ctl = (x) => (x < 0 ? 1 : 2 * x);
+      osc2Ctl.param = fmScale.gain;
+    } else if (p.osc2Mode === 'mix' && (p.osc2Level > 0 || this.posMode === 'timbre')) {
+      // (Styr Läge på rutan oscillator 2 finns den med även när nivån är 0)
       const o2 = this.makeOsc(p.osc2Wave, freq2);
       pitched.push(o2);
       const g = ctx.createGain();
       g.gain.value = p.osc2Level;
       o2.connect(g).connect(mixer);
       sources.push(o2);
+      osc2Ctl = (x) => (x < 0 ? p.osc2Level : x); // nivå 0–100 %
+      osc2Ctl.param = g.gain;
     }
 
     // Brus
@@ -1037,14 +1062,22 @@ class SynthEngine {
         if (first) prm.setValueAtTime(v, now);
         else prm.setTargetAtTime(v, now, 0.03);
       };
-      const filt = param === 'filter' || (param === 'timbre' && !ctls.length);
-      set(posFilt.offset, filt ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
-      // Klangkontrollen: −1 = som ljudet är. Byter man till/från den sätts värdet direkt.
-      ctls.forEach((c) => {
-        if (param !== 'timbre') c.setValueAtTime(-1, now);
+      set(posFilt.offset, param === 'filter' ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
+      // Motorns egna kontroller (klang 1 och 2): −1 = som ljudet är. Till/från sätts direkt.
+      const ctl = (c, on) => {
+        if (!on) { if (c.value >= 0 || first) c.setValueAtTime(-1, now); }
         else if (first || c.value < 0) c.setValueAtTime(x, now);
         else c.setTargetAtTime(x, now, 0.03);
-      });
+      };
+      ctls.forEach(([c1, c2]) => { ctl(c1, param === 'timbre'); ctl(c2, param === 'timbre2'); });
+      if (!WORKLET_MODELS.has(p.model)) {
+        // Oscillatorer: klang 1 = oscillator 2 (nivå eller FM-djup), klang 2 = wah: ett
+        // resonansfilter som sveper 300 Hz → 9,6 kHz (aldrig ljusare än ljudets eget filter)
+        if (osc2Ctl) set(osc2Ctl.param, osc2Ctl(param === 'timbre' ? x : -1));
+        const wah = param === 'timbre2';
+        set(filter.frequency, wah ? Math.min(p.cutoff, 300 * Math.pow(2, 5 * x)) : p.cutoff);
+        set(filter.Q, wah ? Math.max(p.q, 5) : p.q);
+      }
       set(expr.gain, param === 'volume' ? 0.08 + 0.92 * x * x : 1);
       set(posBend.offset, param === 'bend' ? x * 200 : 0); // upp till en helton
       set(posVib.gain, param === 'vibrato' ? x * 50 : 0); // upp till 50 cent

@@ -22,6 +22,9 @@ class PmString extends AudioWorkletProcessor {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 8000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' }, // cent, för vibrato
+      // Läge på rutan (−1 = som ljudet är): ljushet och dämpning (0 = handen mot strängen)
+      { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -88,12 +91,15 @@ class PmString extends AudioWorkletProcessor {
     const t0 = currentTime;
     const freq = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
     // Lågpass i slingan: ljusare = mindre dämpning av diskanten
-    const a = 0.08 + 0.9 * this.bright;
+    const c1 = parameters.ctl[0];
+    const c2 = parameters.ctl2[0];
+    const a = c1 >= 0 ? 0.25 + 0.73 * c1 : 0.08 + 0.9 * this.bright; // (från rutan: aldrig helt dov)
     // Varvlängd i sampel (med decimaler). Lågpasset fördröjer också ca (1−a)/a sampel, vilket
     // annars gör strängen "längre" och tonen för låg – dra av det.
     const period = Math.max(2, sampleRate / freq - (1 - a) / a);
     // Förluster per varv: ger T60 = decay för grundtonen
-    const g = Math.pow(10, -3 / (this.decay * freq));
+    const t60 = c2 >= 0 ? Math.exp(Math.log(0.15) + (Math.log(Math.max(0.3, this.decay) * 1.5) - Math.log(0.15)) * c2) : this.decay;
+    const g = Math.pow(10, -3 / (t60 * freq));
     const N = this.buf.length;
     let peak = 0;
 
@@ -156,6 +162,9 @@ class PmModal extends AudioWorkletProcessor {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' },
+      // Läge på rutan (−1 = som ljudet är): ljushet (övertonernas styrka) och dämpning
+      { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -196,10 +205,17 @@ class PmModal extends AudioWorkletProcessor {
     const c1 = new Float64Array(m);
     const c2 = new Float64Array(m);
     const gin = new Float64Array(m);
+    const wout = new Float64Array(m);
+    const bx = parameters.ctl[0];
+    const dx = parameters.ctl2[0];
+    // Dämpning: 0 = kvävd (5 % av klingtiden) … 0,5 = som ljudet är … 1 = 50 % längre
+    const t60k = dx >= 0 ? (dx < 0.5 ? 0.05 + 1.9 * dx : 1 + (dx - 0.5)) : 1;
     for (let k = 0; k < m; k++) {
+      // Ljushet: 0 = bara grundtonen … 0,5 = som ljudet är … 1 = de höga deltonerna förstärkta
+      wout[k] = bx < 0 || k === 0 ? 1 : Math.min(3, Math.pow(2 * bx, 1 + 0.5 * k));
       const w = (2 * Math.PI * f0 * this.ratios[k]) / sampleRate;
       if (w >= Math.PI * 0.95) continue; // över halva samplingsfrekvensen: hoppa över
-      const r = Math.exp(-6.91 / (this.t60s[k] * sampleRate));
+      const r = Math.exp(-6.91 / (this.t60s[k] * t60k * sampleRate));
       c1[k] = 2 * r * Math.cos(w);
       c2[k] = r * r;
       gin[k] = Math.sin(w) * this.amps[k];
@@ -213,7 +229,7 @@ class PmModal extends AudioWorkletProcessor {
         const y = c1[k] * this.y1[k] - c2[k] * this.y2[k] + gin[k] * x;
         this.y2[k] = this.y1[k];
         this.y1[k] = y;
-        sum += y;
+        sum += y * wout[k];
       }
       out[i] = sum;
     }
@@ -241,6 +257,10 @@ class Fm4 extends AudioWorkletProcessor {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' },
+      // Läge på rutan (−1 = som ljudet är): modulationsdjup (0 = rena sinustoner … 0,5 = som ljudet
+      // är … 1 = dubbelt) och återkoppling
+      { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -290,6 +310,8 @@ class Fm4 extends AudioWorkletProcessor {
     }
     const TWO_PI = 2 * Math.PI;
     const { ops, mods, isCar, env, stage, phase } = this;
+    const index = parameters.ctl[0] >= 0 ? this.index * 2 * parameters.ctl[0] : this.index;
+    const fb = parameters.ctl2[0] >= 0 ? parameters.ctl2[0] * 1.6 : this.fb;
     for (let i = 0; i < out.length; i++) {
       if (t0 + i / sampleRate < this.start) { out[i] = 0; continue; }
       let sum = 0;
@@ -308,14 +330,14 @@ class Fm4 extends AudioWorkletProcessor {
         let pm = 0;
         const m = mods[k];
         for (let j = 0; j < m.length; j++) pm += this.out[m[j]];
-        if (k === 3 && this.fb) pm += this.fb * 0.5 * (this.fb1 + this.fb2);
+        if (k === 3 && fb) pm += fb * 0.5 * (this.fb1 + this.fb2);
         const y = Math.sin(TWO_PI * phase[k] + pm) * env[k];
         if (k === 3) { this.fb2 = this.fb1; this.fb1 = y; }
         if (isCar[k]) {
           sum += y * ops[k].level;
           this.out[k] = 0;
         } else {
-          this.out[k] = y * ops[k].level * this.index;
+          this.out[k] = y * ops[k].level * index;
         }
       }
       out[i] = sum * this.carNorm;
@@ -465,6 +487,9 @@ class Wavetable extends AudioWorkletProcessor {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' },
+      // Läge på rutan (−1 = som ljudet är): position i tabellen och svävning (0–50 cent)
+      { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -488,6 +513,7 @@ class Wavetable extends AudioWorkletProcessor {
       const pan = x * this.width;
       return {
         phase: this.unison === 1 ? 0 : Math.random(),
+        x,
         cents: x * this.spread,
         gl: Math.cos(((pan + 1) * Math.PI) / 4),
         gr: Math.sin(((pan + 1) * Math.PI) / 4),
@@ -513,19 +539,21 @@ class Wavetable extends AudioWorkletProcessor {
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
+    const posCtl = parameters.ctl[0];
+    const spread = parameters.ctl2[0] >= 0 ? parameters.ctl2[0] * 50 : this.spread;
     // Tonområde: så många övertoner som ryms (i steg om oktaver, så att tabellerna kan delas)
-    const fit = Math.max(1, Math.floor((sampleRate * 0.45) / (f0 * Math.pow(2, this.spread / 1200))));
+    const fit = Math.max(1, Math.floor((sampleRate * 0.45) / (f0 * Math.pow(2, spread / 1200))));
     let maxH = 1;
     while (maxH * 2 <= Math.min(256, fit)) maxH *= 2;
     if (maxH !== this.maxH) { this.maxH = maxH; this.frames = wtTable(this.name, maxH); }
     const frames = this.frames;
-    const incs = this.voices.map((v) => (f0 * Math.pow(2, v.cents / 1200)) / sampleRate);
+    const incs = this.voices.map((v) => (f0 * Math.pow(2, (v.x * spread) / 1200)) / sampleRate);
     for (let i = 0; i < L.length; i++) {
       if (t0 + i / sampleRate < this.start) { L[i] = 0; R[i] = 0; continue; }
       // Position i tabellen (räknas om var 16:e sampel räcker, men det är billigt nog per sampel)
       this.elapsed += 1 / sampleRate;
       this.lfoPhase += this.moveRate / sampleRate;
-      let p = this.pos + this.env * (1 - Math.exp((-3 * this.elapsed) / this.envTime))
+      let p = posCtl >= 0 ? posCtl : this.pos + this.env * (1 - Math.exp((-3 * this.elapsed) / this.envTime))
         + this.move * 0.5 * Math.sin(2 * Math.PI * this.lfoPhase);
       p = Math.min(1, Math.max(0, p)) * (WT_FRAMES - 1);
       const fa = Math.min(WT_FRAMES - 2, Math.floor(p));
@@ -669,8 +697,12 @@ class VoiceSynth {
   }
 
   // Ett block: f0 i Hz, ctl = vokal (0–1) från Läge på rutan, eller < 0 = som ljudet är
-  render(L, R, start, n, f0, ctl = -1) {
+  render(L, R, start, n, f0, ctl = -1, ctl2 = -1) {
     const sr = sampleRate;
+    // Luft från Läge på rutan (annars ljudets egen)
+    const breath = ctl2 >= 0 ? ctl2 : this.breath;
+    this.voicedGain = 1 - 0.9 * breath * breath;
+    this.noiseGain = breath * 9;
     this.movePhase += (this.moveRate * n) / sr;
     let x = ctl >= 0 ? ctl : this.vowel + this.move * 0.5 * Math.sin(2 * Math.PI * this.movePhase);
     x = Math.min(1, Math.max(0, x));
@@ -730,6 +762,7 @@ class Voice extends AudioWorkletProcessor {
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' },
       { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -752,7 +785,7 @@ class Voice extends AudioWorkletProcessor {
     for (let i = 0; i < skip; i++) { L[i] = 0; R[i] = 0; }
     if (skip >= L.length) return true;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
-    this.synth.render(L, R, skip, L.length - skip, f0, parameters.ctl[0]);
+    this.synth.render(L, R, skip, L.length - skip, f0, parameters.ctl[0], parameters.ctl2[0]);
     return true;
   }
 }
@@ -773,6 +806,7 @@ class Wind extends AudioWorkletProcessor {
       { name: 'frequency', defaultValue: 440, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' },
       { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -842,7 +876,8 @@ class Wind extends AudioWorkletProcessor {
     const h4 = f * 4 < sr * 0.45 ? 0.12 * this.bright * press * press : 0;
     const toneGain = 0.35 + 0.65 * press;
     const reedP = 0.68 + 0.27 * press; // rörbladet börjar svänga vid ca 0,64
-    const nGain = this.noise * (flute ? 1.4 - 0.6 * press : 0.2);
+    const noise = parameters.ctl2[0] >= 0 ? parameters.ctl2[0] : this.noise; // andning
+    const nGain = noise * (flute ? 1.4 - 0.6 * press : 0.2);
     const toneRate = 1 / (Math.max(0.02, this.attack * 1.6) * sr);
     const inc = f / sr;
     for (let i = 0; i < out.length; i++) {
@@ -1070,6 +1105,7 @@ class Grain extends AudioWorkletProcessor {
       { name: 'frequency', defaultValue: 261.6, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
       { name: 'detune', defaultValue: 0, automationRate: 'k-rate' },
       { name: 'ctl', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
+      { name: 'ctl2', defaultValue: -1, minValue: -1, maxValue: 1, automationRate: 'k-rate' },
     ];
   }
 
@@ -1110,6 +1146,10 @@ class Grain extends AudioWorkletProcessor {
     const rate = f / GRAIN_F0;
     const ctl = parameters.ctl[0];
     const glen = Math.max(16, Math.round(this.size * sr));
+    // Täthet från Läge på rutan: 2 → 120 korn/s (annars ljudets egen)
+    const density = parameters.ctl2[0] >= 0 ? 2 * Math.pow(60, parameters.ctl2[0]) : this.density;
+    const level = 0.75 / Math.sqrt(Math.max(1, density * this.size));
+    if (this.next > (sr / density) * 1.4) this.next = (sr / density) * Math.random(); // tätare: genast
     for (let i = 0; i < L.length; i++) {
       if (t0 + i / sr < this.start) { L[i] = 0; R[i] = 0; continue; }
       this.elapsed += 1 / sr;
@@ -1126,7 +1166,7 @@ class Grain extends AudioWorkletProcessor {
           gl: Math.cos(((pan + 1) * Math.PI) / 4),
           gr: Math.sin(((pan + 1) * Math.PI) / 4),
         });
-        this.next = (sr / this.density) * (0.6 + Math.random() * 0.8);
+        this.next = (sr / density) * (0.6 + Math.random() * 0.8);
       }
       let l = 0;
       let r = 0;
@@ -1145,8 +1185,8 @@ class Grain extends AudioWorkletProcessor {
         if (g.x >= n) g.x -= n;
         if (++g.age >= glen) this.grains.splice(k, 1);
       }
-      L[i] = l * this.level;
-      R[i] = r * this.level;
+      L[i] = l * level;
+      R[i] = r * level;
     }
     return true;
   }

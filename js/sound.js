@@ -104,6 +104,7 @@ function refreshSynthDisabled() {
   document.querySelectorAll('#synth-groups > fieldset').forEach((fs) => {
     fs.hidden = !fs.querySelector('.knob:not(.hide)');
   });
+  syncPosOptions(); // Läge på rutan: motorns egna val följer motorn
   // FM: rubriken visar vad varje operator gör i den valda algoritmen
   const algo = FM_ALGOS[synthParams.fmAlgo] || FM_ALGOS[1];
   document.querySelectorAll('#synth-groups > fieldset[data-op]').forEach((fs) => {

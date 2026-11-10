@@ -17,6 +17,8 @@ function initAudio() {
     if (audioCtx.state !== 'running') audioCtx.resume();
   } catch {}
   engine = new SynthEngine(audioCtx, synthParams);
+  // Läge på rutan: synten behöver veta om oscillator 2 styrs (då finns den med i varje ton)
+  Object.defineProperty(engine, 'posMode', { get: () => ui.posParam.value });
   engine.setVolume(Number(ui.volume.value));
 }
 

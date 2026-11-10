@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=103" />
+  <link rel="stylesheet" href="css/style.css?v=104" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -304,16 +304,20 @@
             <option value="volume">Volym: svagt → starkt</option>
             <option value="vibrato">Vibrato: inget → mycket</option>
             <option value="bend">Tonhöjd: böj upp en helton</option>
-            <option value="timbre">Motorns klang: vokal, blåstryck eller korn</option>
+            <!-- Ljudmotorns egna (texten följer vald motor, js/position.js) -->
+            <optgroup id="pos-engine" label="Ljudmotorns egna">
+              <option value="timbre">Klang 1</option>
+              <option value="timbre2">Klang 2</option>
+            </optgroup>
           </select>
         </label>
         <p class="hint" id="pos-hint">Rör pekaren över rutan medan den låter.
           <strong>Rutnät och Bikupa:</strong> från nederkanten och uppåt.
           <strong>Cirkel, Ring och Båge:</strong> från innerkanten (mot mitten) och utåt.
           <strong>Strängar:</strong> tvärs över strängen.
-          <strong>Motorns klang:</strong> Röst glider mellan vokalerna u–o–a–e–i, Blås från svag till stark
-          blåsning, Granulär väljer var i ljudet kornen tas (andra motorer: som Filter).
-          Med MIDI skickas samma sak: CC74 (filter), CC11 (volym), CC1 (vibrato), CC2 (klang) eller pitch bend.</p>
+          <strong>Ljudmotorns egna</strong> val följer vald motor, t.ex. position i tabellen (Vågtabell),
+          modulationsdjup (FM), vokal (Röst) eller blåstryck (Blås).
+          Med MIDI skickas samma sak: CC74 (filter), CC11 (volym), CC1 (vibrato), CC2 och CC71 (motorns egna) eller pitch bend.</p>
       </fieldset>
 
       <fieldset id="xy-set">
@@ -641,34 +645,34 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=103"></script>
-  <script src="js/fm-library.js?v=103"></script>
-  <script src="js/pm-library.js?v=103"></script>
-  <script src="js/wt-library.js?v=103"></script>
-  <script src="js/vwg-library.js?v=103"></script>
-  <script src="js/lib-levels.js?v=103"></script>
-  <script src="js/sound-library.js?v=103"></script>
-  <script src="js/layout.js?v=103"></script>
-  <script src="js/core.js?v=103"></script>
-  <script src="js/audio.js?v=103"></script>
-  <script src="js/drums.js?v=103"></script>
-  <script src="js/pads.js?v=103"></script>
-  <script src="js/osc.js?v=103"></script>
-  <script src="js/arp.js?v=103"></script>
-  <script src="js/xy.js?v=103"></script>
-  <script src="js/vibrato.js?v=103"></script>
-  <script src="js/position.js?v=103"></script>
-  <script src="js/notes.js?v=103"></script>
-  <script src="js/chords.js?v=103"></script>
-  <script src="js/sound.js?v=103"></script>
-  <script src="js/view.js?v=103"></script>
-  <script src="js/controls.js?v=103"></script>
-  <script src="js/access.js?v=103"></script>
-  <script src="js/settings.js?v=103"></script>
-  <script src="js/user-presets.js?v=103"></script>
-  <script src="js/wizard.js?v=103"></script>
-  <script src="js/quick.js?v=103"></script>
-  <script src="js/pwa.js?v=103"></script>
-  <script src="js/main.js?v=103"></script>
+  <script src="js/synth.js?v=104"></script>
+  <script src="js/fm-library.js?v=104"></script>
+  <script src="js/pm-library.js?v=104"></script>
+  <script src="js/wt-library.js?v=104"></script>
+  <script src="js/vwg-library.js?v=104"></script>
+  <script src="js/lib-levels.js?v=104"></script>
+  <script src="js/sound-library.js?v=104"></script>
+  <script src="js/layout.js?v=104"></script>
+  <script src="js/core.js?v=104"></script>
+  <script src="js/audio.js?v=104"></script>
+  <script src="js/drums.js?v=104"></script>
+  <script src="js/pads.js?v=104"></script>
+  <script src="js/osc.js?v=104"></script>
+  <script src="js/arp.js?v=104"></script>
+  <script src="js/xy.js?v=104"></script>
+  <script src="js/vibrato.js?v=104"></script>
+  <script src="js/position.js?v=104"></script>
+  <script src="js/notes.js?v=104"></script>
+  <script src="js/chords.js?v=104"></script>
+  <script src="js/sound.js?v=104"></script>
+  <script src="js/view.js?v=104"></script>
+  <script src="js/controls.js?v=104"></script>
+  <script src="js/access.js?v=104"></script>
+  <script src="js/settings.js?v=104"></script>
+  <script src="js/user-presets.js?v=104"></script>
+  <script src="js/wizard.js?v=104"></script>
+  <script src="js/quick.js?v=104"></script>
+  <script src="js/pwa.js?v=104"></script>
+  <script src="js/main.js?v=104"></script>
 </body>
 </html>
