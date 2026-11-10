@@ -1,7 +1,8 @@
 // Läge på rutan (avancerat): var på rutan pekaren är styr en parameter medan rutan låter.
 //  - Rutnät och Bikupa: från rutans nederkant (0) till överkant (1)
 //  - Cirkel, Ring och Båge: från innerkanten (den sida som vetter mot mitten) och utåt
-//  - Strängar: tvärs över strängen (lodräta: vänster → höger, vågräta: nederkant → överkant)
+//  - Strängar på Toner: längs strängen (lodräta: nederkant → överkant, vågräta: vänster → höger)
+//  - Strängar på Ackord: tvärs över strängen (lodräta: vänster → höger, vågräta: nederkant → överkant)
 // Ljudet ändras mjukt i varje röst (Synth.noteOn → stop.pos). MIDI skickar samma sak som CC eller pitch bend.
 
 const POS_MIDI = { filter: ['cc', 74], volume: ['cc', 11], vibrato: ['cc', 1], bend: ['bend'], timbre: ['cc', 2], timbre2: ['cc', 71] };
@@ -51,7 +52,13 @@ function padPos(pad, x, y) {
   const f = ui.formation.value;
   const container = pad.el.parentElement;
   const fromBottom = () => clamp01((r.bottom - y) / r.height);
-  if (f === 'strings') return ui.stringDir.value === 'h' ? fromBottom() : clamp01((x - r.left) / r.width);
+  if (f === 'strings') {
+    const h = ui.stringDir.value === 'h';
+    const fromLeft = () => clamp01((x - r.left) / r.width);
+    // Toner: längs strängen. Ackord: tvärs över, eftersom harpan dras längs strängen.
+    if (container.id === 'pads') return h ? fromLeft() : fromBottom();
+    return h ? fromBottom() : fromLeft();
+  }
   if (f === 'ring') {
     // Varje sektor är en hel kvadrat runt ringens mitt (klippt till sin form)
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = r.width / 2;
