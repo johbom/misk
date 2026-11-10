@@ -85,6 +85,23 @@ const WT_TABLES = [
   ['basic', 'Grund'], ['pulse', 'Puls'], ['vowel', 'Vokal'], ['organ', 'Orgel'],
   ['sync', 'Synk'], ['fold', 'Veck'], ['glass', 'Glas'], ['digital', 'Digital'],
 ];
+// Röst, Blås och Granulär (pm-worklet.js: 'voice', 'wind', 'grain')
+const VOICE_TYPES = [['bass', 'Bas'], ['tenor', 'Tenor'], ['alto', 'Alt'], ['soprano', 'Sopran'], ['child', 'Barn']];
+// Vokalreglaget: u → o → a → e → i
+const vowelFmt = (v) => {
+  const y = v * 4;
+  const i = Math.round(y);
+  return Math.abs(y - i) < 0.15 ? ['u', 'o', 'a', 'e', 'i'][i] : `${['u', 'o', 'a', 'e'][Math.floor(Math.min(3.99, y))]} → ${['o', 'a', 'e', 'i'][Math.floor(Math.min(3.99, y))]}`;
+};
+const GRAIN_SOURCES = [
+  ['choir', 'Kör (u → i)'], ['strings', 'Stråkar'], ['glass', 'Glas'], ['wind', 'Vind'],
+  ['rain', 'Regn'], ['water', 'Bäck'], ['birds', 'Fåglar'], ['glitter', 'Glitter'],
+];
+// Motorer som räknas i ljudtråden (pm-worklet.js)
+const WORKLET_MODELS = new Set(['string', 'modal', 'fm', 'wt', 'voice', 'wind', 'grain']);
+// Motorer med en egen klangkontroll för Läge på rutan (vokal, blåstryck, position i källan)
+const CTL_MODELS = new Set(['voice', 'wind', 'grain']);
+
 const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
   { group: `Operator ${k}`, op: k, key: `op${k}Ratio`, label: 'Förhållande', min: 0.5, max: 16, log: true, fmt: ratioFmt },
   { key: `op${k}Level`, label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -94,7 +111,7 @@ const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
 ]);
 
 const SYNTH_PARAMS = [
-  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Vågtabell']] },
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Vågtabell'], ['voice', 'Röst'], ['wind', 'Blås'], ['grain', 'Granulär']] },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
   { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
   { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
@@ -114,6 +131,31 @@ const SYNTH_PARAMS = [
   { key: 'wtMoveRate', label: 'Takt', min: 0.02, max: 8, log: true, fmt: (v) => `${v.toFixed(2)} Hz` },
   { key: 'wtUnison', label: 'Röster', min: 1, max: 7, step: 1, fmt: (v) => `${v} st` },
   { key: 'wtSpread', label: 'Svävning', min: 0, max: 50, step: 1, fmt: (v) => `${v} cent` },
+
+  { group: 'Röst', key: 'voiceType', label: 'Röstläge', options: VOICE_TYPES },
+  { key: 'voiceVowel', label: 'Vokal', min: 0, max: 1, step: 0.01, fmt: vowelFmt },
+  { key: 'voiceMove', label: 'Vokalglidning', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'voiceMoveRate', label: 'Takt', min: 0.05, max: 8, log: true, fmt: (v) => `${v.toFixed(2)} Hz` },
+  { key: 'voiceBreath', label: 'Luft', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'voiceVib', label: 'Sångvibrato', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'voiceChoir', label: 'Röster', min: 1, max: 6, step: 1, fmt: (v) => (v === 1 ? 'Solo' : `Kör, ${v} st`) },
+  { key: 'voiceSpread', label: 'Svävning', min: 0, max: 40, step: 1, fmt: (v) => `${v} cent` },
+
+  { group: 'Blås', key: 'windKind', label: 'Instrument', options: [['flute', 'Flöjt'], ['reed', 'Rörblad (klarinett)']] },
+  { key: 'windPressure', label: 'Blåstryck', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'windNoise', label: 'Andning', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'windBright', label: 'Ljushet', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'windVib', label: 'Vibrato', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'windAttack', label: 'Anblåsning', min: 0.005, max: 1.5, log: true, fmt: sec },
+
+  { group: 'Granulär', key: 'grainSource', label: 'Källa', options: GRAIN_SOURCES },
+  { key: 'grainPos', label: 'Position', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'grainScan', label: 'Vandring', min: -1, max: 1, step: 0.01, fmt: (v) => (v === 0 ? 'Står still' : `${v > 0 ? 'Framåt' : 'Bakåt'} ${Math.round(Math.abs(v) * 100)} %`) },
+  { key: 'grainSpread', label: 'Spridning', min: 0, max: 1, step: 0.01, fmt: pct },
+  { key: 'grainSize', label: 'Kornstorlek', min: 0.01, max: 0.5, log: true, fmt: sec },
+  { key: 'grainDensity', label: 'Täthet', min: 2, max: 120, log: true, fmt: (v) => `${Math.round(v)} korn/s` },
+  { key: 'grainJitter', label: 'Tonslump', min: 0, max: 100, step: 1, fmt: (v) => `${v} cent` },
+  { key: 'grainWidth', label: 'Stereobredd', min: 0, max: 1, step: 0.01, fmt: pct },
 
   { group: 'Oscillator 1', key: 'osc1Wave', label: 'Vågform', options: WAVES },
   { key: 'osc1Level', label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -160,6 +202,9 @@ const notOsc = (p) => p.model && p.model !== 'osc';
 const notPm = (p) => p.model !== 'string' && p.model !== 'modal';
 const notFm = (p) => p.model !== 'fm';
 const notWt = (p) => p.model !== 'wt';
+const notVoice = (p) => p.model !== 'voice';
+const notWind = (p) => p.model !== 'wind';
+const notGrain = (p) => p.model !== 'grain';
 // Reglage som hör till en annan motor döljs helt (en grupp utan synliga reglage döljs också)
 const SYNTH_HIDDEN_WHEN = {
   pmExciter: (p) => p.model !== 'string',
@@ -171,6 +216,9 @@ const SYNTH_HIDDEN_WHEN = {
     'fmAmount', 'osc2Semi', 'osc2Fine', 'noise'].map((k) => [k, notOsc])),
   ...Object.fromEntries(['fmAlgo', 'fmFb', 'fmDetune', ...FM_OP_PARAMS.map((d) => d.key)].map((k) => [k, notFm])),
   ...Object.fromEntries(['wtTable', 'wtPos', 'wtEnv', 'wtEnvTime', 'wtMove', 'wtMoveRate', 'wtUnison', 'wtSpread'].map((k) => [k, notWt])),
+  ...Object.fromEntries(['voiceType', 'voiceVowel', 'voiceMove', 'voiceMoveRate', 'voiceBreath', 'voiceVib', 'voiceChoir', 'voiceSpread'].map((k) => [k, notVoice])),
+  ...Object.fromEntries(['windKind', 'windPressure', 'windNoise', 'windBright', 'windVib', 'windAttack'].map((k) => [k, notWind])),
+  ...Object.fromEntries(['grainSource', 'grainPos', 'grainScan', 'grainSpread', 'grainSize', 'grainDensity', 'grainJitter', 'grainWidth'].map((k) => [k, notGrain])),
 };
 const SYNTH_DISABLED_WHEN = {
   pmExciter: (p) => p.model !== 'string',
@@ -195,6 +243,8 @@ const SYNTH_DISABLED_WHEN = {
   wtEnvTime: (p) => p.wtEnv === 0,
   wtMoveRate: (p) => p.wtMove === 0,
   wtSpread: (p) => p.wtUnison === 1,
+  voiceMoveRate: (p) => p.voiceMove === 0,
+  voiceSpread: (p) => p.voiceChoir === 1,
   lfoRate: (p) => p.lfoTarget === 'off',
   lfoDepth: (p) => p.lfoTarget === 'off',
   delayTime: (p) => p.delayMix === 0,
@@ -215,6 +265,10 @@ const SYNTH_DEFAULTS = {
   op4Ratio: 14, op4Level: 0.2, op4Attack: 0.002, op4Decay: 0.12, op4Sustain: 0,
   // Vågtabellmotorn
   wtTable: 'basic', wtPos: 0.35, wtEnv: 0, wtEnvTime: 1, wtMove: 0, wtMoveRate: 0.3, wtUnison: 1, wtSpread: 12,
+  // Röst, Blås och Granulär
+  voiceType: 'alto', voiceVowel: 0.5, voiceMove: 0, voiceMoveRate: 0.3, voiceBreath: 0.15, voiceVib: 0.4, voiceChoir: 1, voiceSpread: 12,
+  windKind: 'flute', windPressure: 0.5, windNoise: 0.3, windBright: 0.5, windVib: 0.3, windAttack: 0.06,
+  grainSource: 'choir', grainPos: 0.5, grainScan: 0, grainSpread: 0.15, grainSize: 0.12, grainDensity: 30, grainJitter: 8, grainWidth: 0.7,
   filterType: 'lowpass', cutoff: 18000, q: 0.7, fEnv: 0, fAttack: 0.01, fDecay: 0.3, fSustain: 1,
   attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25, vol: 1,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
@@ -349,6 +403,7 @@ const FM_MOD_SCALE = 6;
 // Motorernas grundnivå (uppmätt mot oscillatorljuden)
 const STRING_GAIN = { pluck: 2.6, hammer: 1.3, bow: 0.7 };
 const WT_GAIN = 1.4; // en modulator på full nivå = moduleringsindex 6 (mycket ljust)
+const VWG_GAIN = { voice: 5.4, wind: 5.7, grain: 4.5 }; // Röst, Blås, Granulär (uppmätt mot oscillatorljuden)
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
@@ -447,6 +502,7 @@ class SynthEngine {
       ? ctx.audioWorklet.addModule(PM_WORKLET_URL).then(() => {
         this.pmReady = true;
         if (this.p.model === 'wt') this.warmWavetable(this.p.wtTable);
+        if (this.p.model === 'grain') this.warmGrain(this.p.grainSource);
       }).catch(() => {})
       : Promise.resolve();
 
@@ -472,6 +528,7 @@ class SynthEngine {
   updateEffects() {
     const { ctx, p } = this;
     if (p.model === 'wt') this.warmWavetable(p.wtTable);
+    if (p.model === 'grain') this.warmGrain(p.grainSource);
     const t = ctx.currentTime;
     const smooth = (param, v) => param.setTargetAtTime(v, t, 0.03);
 
@@ -545,8 +602,9 @@ class SynthEngine {
   }
 
   // Fysisk modell: en sträng (AudioWorklet) eller en resonanskropp (bandpassfilter som ringer).
-  addModelVoice(p, freq, t, out, detunes, onRelease, onEnd, level = 1) {
+  addModelVoice(p, freq, t, out, detunes, onRelease, onEnd, level = 1, ctls = []) {
     const { ctx } = this;
+    if (CTL_MODELS.has(p.model)) { this.addVwgVoice(p, freq, t, out, detunes, onRelease, onEnd, ctls); return; }
     if (p.model === 'fm') { this.addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level); return; }
     if (p.model === 'wt') { this.addWtVoice(p, freq, t, out, detunes, onRelease, onEnd); return; }
     if (p.model === 'string' && this.pmReady) {
@@ -705,6 +763,63 @@ class SynthEngine {
     onEnd.push(() => node.disconnect());
   }
 
+  // Röst, Blås och Granulär (pm-worklet.js: 'voice', 'wind', 'grain'). ctls: motorns klangkontroll
+  // (vokal, blåstryck, position i källan) som Läge på rutan kan styra.
+  addVwgVoice(p, freq, t, out, detunes, onRelease, onEnd, ctls) {
+    const { ctx } = this;
+    if (!this.pmReady) {
+      // Reserv de första ögonblicken innan ljudtråden laddats
+      const o = this.makeOsc(p.model === 'voice' ? 'vox' : p.model === 'wind' ? 'sine' : 'triangle', freq);
+      const g = ctx.createGain();
+      g.gain.value = 0.6;
+      o.connect(g).connect(out);
+      o.start(t);
+      detunes.push(o.detune);
+      onRelease.push((r, end) => o.stop(end));
+      return;
+    }
+    const opts = {
+      voice: () => ({
+        type: p.voiceType, vowel: p.voiceVowel, move: p.voiceMove, moveRate: p.voiceMoveRate,
+        breath: p.voiceBreath, vib: p.voiceVib, voices: p.voiceChoir, spread: p.voiceSpread,
+      }),
+      wind: () => ({
+        kind: p.windKind, pressure: p.windPressure, noise: p.windNoise, bright: p.windBright,
+        vib: p.windVib, attack: p.windAttack,
+      }),
+      grain: () => ({
+        source: p.grainSource, pos: p.grainPos, scan: p.grainScan, spread: p.grainSpread, size: p.grainSize,
+        density: p.grainDensity, jitter: p.grainJitter, width: p.grainWidth,
+      }),
+    }[p.model]();
+    const stereo = p.model !== 'wind';
+    const node = new AudioWorkletNode(ctx, p.model, {
+      numberOfInputs: 0,
+      numberOfOutputs: 1,
+      outputChannelCount: [stereo ? 2 : 1],
+      processorOptions: { start: t, ...opts },
+    });
+    node.parameters.get('frequency').value = freq;
+    detunes.push(node.parameters.get('detune'));
+    ctls.push(node.parameters.get('ctl'));
+    const g = ctx.createGain();
+    g.gain.value = VWG_GAIN[p.model] || 1;
+    node.connect(g).connect(out);
+    onRelease.push((r, end) => node.port.postMessage({ release: r, end }));
+    onEnd.push(() => node.disconnect());
+  }
+
+  // Granulär: bygg ljudkällan i förväg, så att första tonen inte hackar
+  warmGrain(source) {
+    if (!this.pmReady || this.grainWarmed?.has(source)) return;
+    (this.grainWarmed || (this.grainWarmed = new Set())).add(source);
+    try {
+      new AudioWorkletNode(this.ctx, 'grain', {
+        numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [1], processorOptions: { source, warm: true },
+      });
+    } catch {}
+  }
+
   // Bygger vågtabellen i förväg (alla tonområden), så att första tonen inte hackar
   warmWavetable(table) {
     if (!this.pmReady || this.warmed?.has(table)) return;
@@ -733,6 +848,7 @@ class SynthEngine {
     const detunes = []; // tonhöjd (cent) för fysiska modeller – för LFO och vibrato
     const onRelease = []; // (r) => … när tonen släpps
     const onEnd = []; // städning när rösten tystnat
+    const ctls = []; // motorns egen klangkontroll (Röst, Blås, Granulär) för Läge på rutan
 
     // Håller reda på när rösten är slut (även när den inte har några oscillatorer)
     const life = ctx.createConstantSource();
@@ -740,8 +856,8 @@ class SynthEngine {
     life.connect(mixer);
     sources.push(life);
 
-    if (p.model === 'string' || p.model === 'modal' || p.model === 'fm' || p.model === 'wt') {
-      this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd, level);
+    if (WORKLET_MODELS.has(p.model)) {
+      this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd, level, ctls);
     } else {
     // Oscillator 1, med unison (flera lätt ostämda kopior spridda i stereo)
     const osc1Gain = ctx.createGain();
@@ -912,7 +1028,8 @@ class SynthEngine {
       sources.forEach((s) => { try { s.stop(); } catch {} });
       return true;
     };
-    // Läge på rutan, x = 0..1. param: filter, volume, bend, vibrato (annat = som ljudet är).
+    // Läge på rutan, x = 0..1. param: filter, volume, bend, vibrato, timbre (motorns klang: vokal,
+    // blåstryck eller position i källan – filter för motorer utan egen) – annat = som ljudet är.
     // first: precis vid anslaget – sätts direkt i stället för att glida dit.
     stop.pos = (x, param, first = false) => {
       const now = ctx.currentTime;
@@ -920,7 +1037,14 @@ class SynthEngine {
         if (first) prm.setValueAtTime(v, now);
         else prm.setTargetAtTime(v, now, 0.03);
       };
-      set(posFilt.offset, param === 'filter' ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
+      const filt = param === 'filter' || (param === 'timbre' && !ctls.length);
+      set(posFilt.offset, filt ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
+      // Klangkontrollen: −1 = som ljudet är. Byter man till/från den sätts värdet direkt.
+      ctls.forEach((c) => {
+        if (param !== 'timbre') c.setValueAtTime(-1, now);
+        else if (first || c.value < 0) c.setValueAtTime(x, now);
+        else c.setTargetAtTime(x, now, 0.03);
+      });
       set(expr.gain, param === 'volume' ? 0.08 + 0.92 * x * x : 1);
       set(posBend.offset, param === 'bend' ? x * 200 : 0); // upp till en helton
       set(posVib.gain, param === 'vibrato' ? x * 50 : 0); // upp till 50 cent

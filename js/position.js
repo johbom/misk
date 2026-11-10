@@ -4,7 +4,7 @@
 //  - Strängar: tvärs över strängen (lodräta: vänster → höger, vågräta: nederkant → överkant)
 // Ljudet ändras mjukt i varje röst (Synth.noteOn → stop.pos). MIDI skickar samma sak som CC eller pitch bend.
 
-const POS_MIDI = { filter: ['cc', 74], volume: ['cc', 11], vibrato: ['cc', 1], bend: ['bend'] };
+const POS_MIDI = { filter: ['cc', 74], volume: ['cc', 11], vibrato: ['cc', 1], bend: ['bend'], timbre: ['cc', 2] };
 const posParam = () => ui.posParam.value;
 const posOn = () => posParam() !== 'off';
 

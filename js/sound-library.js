@@ -1,4 +1,4 @@
-// Presetbibliotek: 500 färdiga ljud, 100 per ljudmotor (10 kategorier med 10 ljud var).
+// Presetbibliotek: 560 färdiga ljud – 100 per ljudmotor (10 kategorier med 10 ljud var) och 20 var för Röst, Blås och Granulär.
 // Här finns oscillatormotorns 100; de andra motorernas ljud ligger i egna filer (se nedan).
 // Väljer man ett av dem laddas inställningarna in i "Eget", så kan man fortsätta skruva därifrån.
 // Varje kategori har en bas; varje ljud ändrar bara det som skiljer sig (ovanpå SYNTH_DEFAULTS).
@@ -167,10 +167,12 @@ const PRESET_CATEGORIES = [
 ];
 
 // Ett bibliotek per motor, i samma ordning som motorvalet: Oscillatorer (kategorierna ovan),
-// Sträng och Resonans (js/pm-library.js), FM (js/fm-library.js) och Vågtabell (js/wt-library.js).
+// Sträng och Resonans (js/pm-library.js), FM (js/fm-library.js), Vågtabell (js/wt-library.js) samt
+// Röst, Blås och Granulär (js/vwg-library.js).
 PRESET_CATEGORIES.forEach((c) => { c.group = 'Oscillatorer'; });
 [
   ['Sträng', STRING_CATEGORIES], ['Resonans', MODAL_CATEGORIES], ['FM', FM_CATEGORIES], ['Vågtabell', WT_CATEGORIES],
+  ['Röst', VOICE_CATEGORIES], ['Blås', WIND_CATEGORIES], ['Granulär', GRAIN_CATEGORIES],
 ].forEach(([group, cats]) => cats.forEach((c) => PRESET_CATEGORIES.push({ ...c, group })));
 
 // Platt lista: { group, cat, name, params } – params är kompletta (defaults + kategori + ljud)
@@ -187,6 +189,9 @@ const QUICK_SOUNDS = [
   ['Resonans', ['Marimbaträ', 'Vibrafonstav', 'Tumkalimba', 'Trinidadpan', 'Klangskål']],
   ['FM', ['Klassiskt FM-piano', 'FM-klocka', 'Slapbas FM', 'FM-brass', 'Jazz-FM']],
   ['Vågtabell', ['Morfmatta', 'Synklead', 'Reesebas', 'Vågpiano', 'Vokalsvep']],
+  ['Röst', ['Blandad kör', 'Altsolo', 'Nynnande', 'Vokalglid', 'Rymdkör']],
+  ['Blås', ['Tvärflöjt', 'Panflöjt', 'Ocarina', 'Konsertklarinett', 'Shakuhachi']],
+  ['Granulär', ['Körmoln', 'Stråkmoln', 'Regn', 'Bäck', 'Fågelsång']],
 ];
 QUICK_SOUNDS.forEach(([, names]) => names.forEach((name) => {
   if (!(name in SYNTH_PRESETS)) SYNTH_PRESETS[name] = { ...PRESET_LIBRARY.find((e) => e.name === name).params };
