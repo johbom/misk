@@ -152,7 +152,8 @@ function octaveRow() {
   if (!el) return '';
   const cur = Number(el.value);
   const octs = [];
-  for (let o = Number(el.min); o <= Number(el.max); o++) octs.push(o);
+  // Oktav 7 och 8 är för höga för att vara med i snabbvalet (de finns kvar under Inställningar)
+  for (let o = Number(el.min); o <= Math.min(6, Number(el.max)); o++) octs.push(o);
   return `<div class="quick-octaves" role="radiogroup" aria-label="Oktav"><span>Oktav</span>${
     octs.map((o) => `<button type="button" role="radio" aria-checked="${o === cur}" class="${
       o === cur ? 'on' : ''}" data-octave="${o}">${o}</button>`).join('')}</div>`;
