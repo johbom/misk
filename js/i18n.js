@@ -392,7 +392,7 @@ const EN = {
   'En app från': 'An app from',
   'Installera som app': 'Install as an app',
   'När du är uppkopplad hämtar appen själv den senaste versionen.': 'When you are online, the app fetches the latest version by itself.',
-  'Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.': 'Sensory experiences for everyone! Everyone has the right to play, whatever their abilities.',
+  'Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.': 'Overcoming obstacles to play. Sensory, calming and skill-building toys, chosen with care.', // TFH UK:s egen devis
   'Besök': 'Visit',
   'Tips': 'Tip',
   'Version': 'Version',
