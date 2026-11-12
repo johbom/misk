@@ -116,8 +116,8 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 **Kontakt och tangentbord**
 - Tangenterna <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt (på sidan Ackord ackordruta 1–8); håll inne för lång ton. Flera tangenter kan hållas samtidigt, så **flera kontakter** – via ett kontaktinterface som skickar siffror – kan spela var sitt ackord. Både sifferraden och det numeriska tangentbordet fungerar, och siffrorna spelar även om preset-listan eller volymen nyss använts (listan byter inte värde).
 - *Visa tangentsiffror på rutorna* – en liten siffra på varje ruta visar vilken tangent/kontakt som spelar den.
-- *Stegning med en kontakt*: rutorna markeras en i taget i vald takt (medan stegningen är på spelar pekare och finger inte rutorna, och harpan är avstängd). <kbd>Mellanslag</kbd>, <kbd>Enter</kbd> eller ett klick/tryck på spelytan spelar den markerade, och stegningen står still medan kontakten hålls in.
-- *Två kontakter*: <kbd>Mellanslag</kbd> stegar vidare, <kbd>Enter</kbd> (eller klick) spelar.
+- *Stegning med en kontakt*: rutorna markeras en i taget i vald takt (medan stegningen är på spelar pekare och finger inte rutorna, och harpan är avstängd). <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick/tryck på spelytan spelar den markerade, och stegningen står still medan kontakten hålls in.
+- *Två kontakter*: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar. F1 och F2 passar kontaktinterface som skickar funktionstangenter; webbläsarens hjälp (F1) öppnas inte medan stegningen är på.
 - <kbd>Tab</kbd> flyttar mellan rutor och knappar med tydlig fokusram; <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.
 
 **Lås spelytan** – knappen *🔒 Lås* (på Toner och Ackord) gömmer flikar, ljudval och volym så att bara rutorna syns. Lås upp genom att **hålla inne** knappen i hörnet i två sekunder. Ett vanligt klick, ett klick med ögonstyrning eller en blick räcker inte, så spelaren kan inte råka hamna i inställningarna. Låset finns kvar om sidan laddas om.

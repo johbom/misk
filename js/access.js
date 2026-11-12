@@ -404,11 +404,13 @@ function setupKeys() {
     if (!$('start-overlay').classList.contains('hidden')) return; // startrutan: tangenterna väljer där
     if (inFormField(e.target) || e.target.id === 'unlock-btn' || picker.open) return;
     const isSwitch = e.key === ' ' || e.key === 'Enter';
+    // Kontaktinterface som skickar F1 (kontakt 1) och F2 (kontakt 2): samma som mellanslag och Enter
+    const isF = e.key === 'F1' || e.key === 'F2';
     if (isSwitch && e.target.matches?.('select')) return; // mellanslag öppnar listan
-    if (scanning() && isSwitch) {
-      e.preventDefault();
+    if (scanning() && (isSwitch || isF)) {
+      e.preventDefault(); // F1 öppnar annars webbläsarens hjälp
       if (e.repeat) return;
-      if (ui.scanMode.value === 'two' && e.key === ' ') scanStep();
+      if (ui.scanMode.value === 'two' && (e.key === ' ' || e.key === 'F1')) scanStep();
       else scanPress();
       return;
     }
@@ -427,7 +429,7 @@ function setupKeys() {
     activate(pad);
   });
   document.addEventListener('keyup', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') scanRelease();
+    if (e.key === ' ' || e.key === 'Enter' || e.key === 'F1' || e.key === 'F2') scanRelease();
     const pad = keyPads.get(e.code);
     if (!pad) return;
     keyPads.delete(e.code);

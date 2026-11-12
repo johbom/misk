@@ -746,8 +746,8 @@ const EN_HTML = {
   'access-hint': 'Choose a profile and fine-tune below. Everything is saved in <em>My presets</em>.',
   'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds.',
   'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–8. Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>
-    <li>One switch: <kbd>Space</kbd>, <kbd>Enter</kbd> or a click on the play area plays the highlighted pad.</li>
-    <li>Two switches: <kbd>Space</kbd> moves on, <kbd>Enter</kbd> (or a click) plays.</li>
+    <li>One switch: <kbd>Space</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> or a click on the play area plays the highlighted pad.</li>
+    <li>Two switches: switch 1 (<kbd>Space</kbd> or <kbd>F1</kbd>) moves on, switch 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> or a click) plays.</li>
     <li><kbd>Tab</kbd> moves between pads and buttons, <kbd>Space</kbd>/<kbd>Enter</kbd> plays the pad that has focus.</li>`,
   'osc-hint': 'Needs the bridge on the computer: <code>node tools/osc-bridge.mjs</code> (sends to port 9000). In Safari: open the app at <code>http://localhost:8765</code>.',
   'about-credits': `Created by John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, building on the experience
