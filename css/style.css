@@ -1379,15 +1379,13 @@ html.high-contrast .tab-sep { background: #fff; }
 #start-msg { text-align: center; line-height: 1.5; margin: 0 16px; }
 #start-msg:empty { display: none; }
 /* Startrutan: tips om att installera som app (döljs när appen redan körs installerad) */
-#start-install {
-  display: flex; align-items: center; gap: 10px; max-width: 520px; margin: 4px 16px 0;
-  font-size: 0.85rem; line-height: 1.4; color: var(--muted);
-}
+#start-install { display: flex; flex-direction: column; align-items: center; gap: 8px; max-width: min(620px, 94vw); }
 #start-install[hidden] { display: none; }
-#start-install strong { color: var(--text); }
-#start-install .tab-icon { flex: none; width: 26px; height: 26px; color: #8fb0ff; }
-#start-install-btn { flex: none; border-radius: 999px; font-size: 0.8rem; padding: 4px 12px; border-color: var(--accent); }
-#start-install-btn[hidden] { display: none; }
+#start-install-how {
+  margin: 0 16px; padding: 10px 14px; border-radius: 12px; background: var(--panel); border: 1px solid var(--border);
+  font-size: 0.9rem; line-height: 1.45; color: var(--text); text-align: center;
+}
+#start-install-how[hidden] { display: none; }
 /* Startrutan: välj var du vill börja (klicket startar också ljudet) */
 #start-title { margin: 0 0 6px; color: var(--text); font-size: 1.35rem; font-weight: 600; }
 #start-choices {

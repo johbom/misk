@@ -387,10 +387,12 @@ const EN = {
   'Öppna webbläsarens meny ⋮ och välj Installera app.': 'Open the browser menu ⋮ and choose Install app.',
   'Öppna sidan i Chrome, Edge eller Safari för att installera.': 'Open the page in Chrome, Edge or Safari to install.',
   'I Safari: välj Arkiv → Lägg till i Dock.': 'In Safari: choose File → Add to Dock.',
-  'Tryck på Installera eller på installera-ikonen i adressfältet.': 'Press Install or the install icon in the address bar.',
+  'Använd installera-ikonen i adressfältet eller webbläsarens meny (Installera Hover Pads). Finns inget sådant val kan appen redan vara installerad.':
+    'Use the install icon in the address bar or the browser menu (Install Hover Pads). If there is no such option, the app may already be installed.',
   'Om Hover Pads': 'About Hover Pads',
   'En app från': 'An app from',
   'Installera som app': 'Install as an app',
+  'Startar från hemskärmen och fungerar utan internet': 'Starts from the home screen and works without internet',
   'När du är uppkopplad hämtar appen själv den senaste versionen.': 'When you are online, the app fetches the latest version by itself.',
   'Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.': 'Overcoming obstacles to play. Sensory, calming and skill-building toys, chosen with care.', // TFH UK:s egen devis
   'Besök': 'Visit',

@@ -15,35 +15,42 @@ function setupPwa() {
     });
   }
 
-  // Installera-knappar: uppe till höger och på startrutan
-  const btns = [$('install-btn'), $('start-install-btn')];
+  // Installera-knappen uppe till höger syns bara när webbläsaren själv kan installera (Chrome, Edge, Android).
+  // Knappen på startrutan syns alltid (utom i den installerade appen): finns webbläsarens installation
+  // används den, annars visas hur man installerar i just den här webbläsaren.
+  const headerBtn = $('install-btn');
+  const startBtn = $('start-install-btn');
+  const how = $('start-install-how');
   let deferred = null;
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferred = e;
-    btns.forEach((b) => { b.hidden = false; });
+    headerBtn.hidden = false;
   });
   const install = async () => {
-    if (!deferred) return;
-    deferred.prompt();
-    await deferred.userChoice;
+    if (!deferred) return false;
+    const d = deferred;
     deferred = null;
-    btns.forEach((b) => { b.hidden = true; });
+    headerBtn.hidden = true;
+    d.prompt();
+    await d.userChoice;
+    return true;
   };
-  btns.forEach((b) => b.addEventListener('click', install));
+  headerBtn.addEventListener('click', install);
+  startBtn.addEventListener('click', async () => {
+    if (await install()) return;
+    how.textContent = installHowTo();
+    how.hidden = !how.hidden;
+    startBtn.setAttribute('aria-expanded', !how.hidden);
+  });
   window.addEventListener('appinstalled', () => {
-    btns.forEach((b) => { b.hidden = true; });
+    headerBtn.hidden = true;
     $('start-install').hidden = true;
     log('Hover Pads är installerad som app.');
   });
 
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-
-  // Startrutan: berätta att appen går att installera, och hur i just den här webbläsaren
-  if (!standalone) {
-    $('start-install-how').textContent = installHowTo();
-    $('start-install').hidden = false;
-  }
+  if (!standalone) $('start-install').hidden = false;
 
   // Om-rutan: säg till när appen redan körs installerad
   const status = $('about-install-status');
@@ -63,5 +70,5 @@ function installHowTo() {
   if (/Macintosh/.test(ua) && /Safari\//.test(ua) && !/Chrome|Chromium|Edg\//.test(ua)) {
     return 'I Safari: välj Arkiv → Lägg till i Dock.';
   }
-  return 'Tryck på Installera eller på installera-ikonen i adressfältet.';
+  return 'Använd installera-ikonen i adressfältet eller webbläsarens meny (Installera Hover Pads). Finns inget sådant val kan appen redan vara installerad.';
 }

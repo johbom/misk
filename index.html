@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=111" />
+  <link rel="stylesheet" href="css/style.css?v=112" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=111"></script>
+  <script src="js/i18n.js?v=112"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -41,7 +41,11 @@
       <div id="start-preset-list" role="group" aria-labelledby="start-presets-title"></div>
     </div>
     <p id="start-msg" role="status"></p>
-    <p id="start-install" hidden><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3M10.5 18.5h3"/></svg><span><strong>Hover Pads går att installera som app</strong> – den startar då från hemskärmen och fungerar utan internet. <span id="start-install-how"></span></span><button type="button" id="start-install-btn" hidden>Installera</button></p>
+    <!-- Installera som app: webbläsarens egen installation där den finns (Chrome, Edge, Android), annars en instruktion -->
+    <div id="start-install" hidden>
+      <button type="button" id="start-install-btn" class="wizard-launch" aria-expanded="false" aria-controls="start-install-how"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3M10.5 18.5h3"/></svg><span>Installera som app<small>Startar från hemskärmen och fungerar utan internet</small></span></button>
+      <p id="start-install-how" role="status" hidden></p>
+    </div>
     <div class="lang-switch" role="group" aria-label="Språk / Language" translate="no"><button type="button" data-lang="sv">Svenska</button><button type="button" data-lang="en">English</button></div>
     <a class="start-tfh" href="https://tfhsensory.se" target="_blank" rel="noopener"><img src="icons/tfh-logo.png" alt="" width="40" height="40" /><span>Med stöd från <strong>TFH Sensory</strong><small>tfhsensory.se</small></span></a>
   </div>
@@ -658,34 +662,34 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=111"></script>
-  <script src="js/fm-library.js?v=111"></script>
-  <script src="js/pm-library.js?v=111"></script>
-  <script src="js/wt-library.js?v=111"></script>
-  <script src="js/vwg-library.js?v=111"></script>
-  <script src="js/lib-levels.js?v=111"></script>
-  <script src="js/sound-library.js?v=111"></script>
-  <script src="js/layout.js?v=111"></script>
-  <script src="js/core.js?v=111"></script>
-  <script src="js/audio.js?v=111"></script>
-  <script src="js/drums.js?v=111"></script>
-  <script src="js/pads.js?v=111"></script>
-  <script src="js/osc.js?v=111"></script>
-  <script src="js/arp.js?v=111"></script>
-  <script src="js/xy.js?v=111"></script>
-  <script src="js/vibrato.js?v=111"></script>
-  <script src="js/position.js?v=111"></script>
-  <script src="js/notes.js?v=111"></script>
-  <script src="js/chords.js?v=111"></script>
-  <script src="js/sound.js?v=111"></script>
-  <script src="js/view.js?v=111"></script>
-  <script src="js/controls.js?v=111"></script>
-  <script src="js/access.js?v=111"></script>
-  <script src="js/settings.js?v=111"></script>
-  <script src="js/user-presets.js?v=111"></script>
-  <script src="js/wizard.js?v=111"></script>
-  <script src="js/quick.js?v=111"></script>
-  <script src="js/pwa.js?v=111"></script>
-  <script src="js/main.js?v=111"></script>
+  <script src="js/synth.js?v=112"></script>
+  <script src="js/fm-library.js?v=112"></script>
+  <script src="js/pm-library.js?v=112"></script>
+  <script src="js/wt-library.js?v=112"></script>
+  <script src="js/vwg-library.js?v=112"></script>
+  <script src="js/lib-levels.js?v=112"></script>
+  <script src="js/sound-library.js?v=112"></script>
+  <script src="js/layout.js?v=112"></script>
+  <script src="js/core.js?v=112"></script>
+  <script src="js/audio.js?v=112"></script>
+  <script src="js/drums.js?v=112"></script>
+  <script src="js/pads.js?v=112"></script>
+  <script src="js/osc.js?v=112"></script>
+  <script src="js/arp.js?v=112"></script>
+  <script src="js/xy.js?v=112"></script>
+  <script src="js/vibrato.js?v=112"></script>
+  <script src="js/position.js?v=112"></script>
+  <script src="js/notes.js?v=112"></script>
+  <script src="js/chords.js?v=112"></script>
+  <script src="js/sound.js?v=112"></script>
+  <script src="js/view.js?v=112"></script>
+  <script src="js/controls.js?v=112"></script>
+  <script src="js/access.js?v=112"></script>
+  <script src="js/settings.js?v=112"></script>
+  <script src="js/user-presets.js?v=112"></script>
+  <script src="js/wizard.js?v=112"></script>
+  <script src="js/quick.js?v=112"></script>
+  <script src="js/pwa.js?v=112"></script>
+  <script src="js/main.js?v=112"></script>
 </body>
 </html>
