@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=113" />
+  <link rel="stylesheet" href="css/style.css?v=114" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=113"></script>
+  <script src="js/i18n.js?v=114"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -620,6 +620,32 @@
       Vill också tipsa om <strong>Lyssna till mitt öga</strong>, vårt systerprojekt drivet av
       Studieförbundet Vuxenskolan.
     </p>
+    <h3>Integritet och GDPR</h3>
+    <p data-i18n="about-privacy">
+      <strong>Ingen statistik och ingen spårning.</strong> Hover Pads har inga cookies, ingen besöksstatistik, inga annonser
+      och inga skript eller typsnitt från andra företag. Det finns inget konto och ingen inloggning, och appen skickar
+      inget om hur den används – varken till TFH eller till någon annan.
+    </p>
+    <ul class="about-install" data-i18n="about-privacy-list">
+      <li><strong>Sparas på enheten:</strong> inställningar, presets, egna ackord, valt språk och senast öppna flik sparas
+        i webbläsarens lokala lagring på den enhet du använder. Appens filer sparas i webbläsarens cache så att den fungerar
+        utan internet. Inget av detta lämnar enheten.</li>
+      <li><strong>Webbhotell:</strong> appen hämtas från GitHub Pages. Som vid alla webbesök ser servern enhetens IP-adress
+        när filerna hämtas, och GitHub sparar den en tid i loggar av säkerhetsskäl enligt GitHubs integritetspolicy.
+        TFH har ingen tillgång till de loggarna. En installerad app kontaktar bara servern för att hämta uppdateringar.</li>
+      <li><strong>Mikrofon och kamera</strong> används inte. Ögonstyrning sköts av enhetens eget ögonstyrningssystem, som en
+        vanlig muspekare – appen ser bara var pekaren är och sparar det inte.</li>
+      <li><strong>MIDI:</strong> ansluter du ett MIDI-instrument frågar webbläsaren först om lov. Tonerna går bara till dina
+        egna anslutna enheter.</li>
+      <li><strong>Länkar</strong> till tfhsensory.se och andra webbplatser leder till sidor med egna villkor och egen statistik.</li>
+    </ul>
+    <p data-i18n="about-gdpr">
+      <strong>Att tänka på:</strong> Appen samlar inte in några personuppgifter, så den behöver ingen cookie-ruta och
+      inget samtycke, och TFH har inga uppgifter om er att lämna ut eller radera. Det ni själva skriver in, till exempel
+      namn på presets, sparas däremot på enheten. Delar flera på samma enhet: undvik fullständiga namn och känsliga uppgifter
+      i presetnamn, och hantera exporterade presetfiler som andra dokument. Allt som appen sparat tas bort genom att rensa
+      webbplatsdata för sidan i webbläsarens inställningar (på iPhone och iPad: ta bort appen från hemskärmen).
+    </p>
     <p class="about-disclaimer" data-i18n="about-disclaimer">
       <strong>Ansvarsfriskrivning:</strong> Hover Pads tillhandahålls kostnadsfritt och i befintligt skick. TFH tar inget
       ansvar för hur appen används, eller för fel, buggar eller andra problem som kan uppstå när den används – till exempel
@@ -662,35 +688,35 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=113"></script>
-  <script src="js/fm-library.js?v=113"></script>
-  <script src="js/pm-library.js?v=113"></script>
-  <script src="js/wt-library.js?v=113"></script>
-  <script src="js/vwg-library.js?v=113"></script>
-  <script src="js/lib-levels.js?v=113"></script>
-  <script src="js/sound-library.js?v=113"></script>
-  <script src="js/layout.js?v=113"></script>
-  <script src="js/core.js?v=113"></script>
-  <script src="js/audio.js?v=113"></script>
-  <script src="js/drums.js?v=113"></script>
-  <script src="js/fx.js?v=113"></script>
-  <script src="js/pads.js?v=113"></script>
-  <script src="js/osc.js?v=113"></script>
-  <script src="js/arp.js?v=113"></script>
-  <script src="js/xy.js?v=113"></script>
-  <script src="js/vibrato.js?v=113"></script>
-  <script src="js/position.js?v=113"></script>
-  <script src="js/notes.js?v=113"></script>
-  <script src="js/chords.js?v=113"></script>
-  <script src="js/sound.js?v=113"></script>
-  <script src="js/view.js?v=113"></script>
-  <script src="js/controls.js?v=113"></script>
-  <script src="js/access.js?v=113"></script>
-  <script src="js/settings.js?v=113"></script>
-  <script src="js/user-presets.js?v=113"></script>
-  <script src="js/wizard.js?v=113"></script>
-  <script src="js/quick.js?v=113"></script>
-  <script src="js/pwa.js?v=113"></script>
-  <script src="js/main.js?v=113"></script>
+  <script src="js/synth.js?v=114"></script>
+  <script src="js/fm-library.js?v=114"></script>
+  <script src="js/pm-library.js?v=114"></script>
+  <script src="js/wt-library.js?v=114"></script>
+  <script src="js/vwg-library.js?v=114"></script>
+  <script src="js/lib-levels.js?v=114"></script>
+  <script src="js/sound-library.js?v=114"></script>
+  <script src="js/layout.js?v=114"></script>
+  <script src="js/core.js?v=114"></script>
+  <script src="js/audio.js?v=114"></script>
+  <script src="js/drums.js?v=114"></script>
+  <script src="js/fx.js?v=114"></script>
+  <script src="js/pads.js?v=114"></script>
+  <script src="js/osc.js?v=114"></script>
+  <script src="js/arp.js?v=114"></script>
+  <script src="js/xy.js?v=114"></script>
+  <script src="js/vibrato.js?v=114"></script>
+  <script src="js/position.js?v=114"></script>
+  <script src="js/notes.js?v=114"></script>
+  <script src="js/chords.js?v=114"></script>
+  <script src="js/sound.js?v=114"></script>
+  <script src="js/view.js?v=114"></script>
+  <script src="js/controls.js?v=114"></script>
+  <script src="js/access.js?v=114"></script>
+  <script src="js/settings.js?v=114"></script>
+  <script src="js/user-presets.js?v=114"></script>
+  <script src="js/wizard.js?v=114"></script>
+  <script src="js/quick.js?v=114"></script>
+  <script src="js/pwa.js?v=114"></script>
+  <script src="js/main.js?v=114"></script>
 </body>
 </html>

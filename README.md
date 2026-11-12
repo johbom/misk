@@ -10,6 +10,16 @@ Hover Pads är en app från **TFH Sensory**. TFH-loggan står uppe till vänster
 
 Om-rutan har också en **ansvarsfriskrivning**: appen är gratis och tillhandahålls i befintligt skick, och TFH tar inget ansvar för hur den används eller för fel, buggar och andra problem.
 
+## Integritet och GDPR
+
+Om-rutan har ett avsnitt **Integritet och GDPR** (på engelska *Privacy and GDPR*). Fakta som gäller för appen:
+
+- **Ingen statistik eller spårning:** inga cookies, ingen besöksstatistik, inga annonser och inga skript eller typsnitt från andra företag. Det finns inget konto, och appen skickar inget om hur den används.
+- **Lagring på enheten:** inställningar, presets, egna ackord, språk och senast öppna flik ligger i `localStorage`. Nycklarna börjar med `hoverPads`, och därtill finns `midiOut`. Appens filer ligger i service workerns cache. Inget lämnar enheten.
+- **Webbhotell:** GitHub Pages ser besökarens IP-adress och sparar den i loggar av säkerhetsskäl, enligt GitHubs integritetspolicy. Ägaren av webbplatsen får inte se loggarna.
+- **Annat:** varken mikrofon eller kamera används. Web MIDI frågar om lov först.
+- **Att tänka på:** inga personuppgifter samlas in, så det behövs ingen cookie-ruta och inget samtycke. Det man själv skriver in, till exempel presetnamn, sparas däremot lokalt. På delade enheter bör man därför undvika namn och känsliga uppgifter. Allt raderas genom att rensa webbplatsdata i webbläsaren.
+
 ## Engelska / English
 
 Appen finns på **svenska och engelska**. Språket väljs med knapparna **Svenska / English** på startrutan och i Om-rutan, eller med adressen: [?lang=en](https://johbom.github.io/misk/?lang=en) och [?lang=sv](https://johbom.github.io/misk/?lang=sv). Valet sparas. Första gången följer appen webbläsarens språk (svenska om webbläsaren är på svenska, annars engelska); den som redan använt appen behåller svenska. I den engelska versionen leder TFH-länkarna till [specialneedstoys.com](https://specialneedstoys.com), alla 560 ljud har engelska namn (sökningen hittar både svenska och engelska namn), decimaler skrivs med punkt, och startguiden visar ackordens funktion med romerska siffror (I, IV, V, vi …). Installerad som app på engelska får den ett eget appnamn och en egen beskrivning (`manifest-en.webmanifest`). Egna presetnamn översätts aldrig.

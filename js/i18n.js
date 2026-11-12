@@ -397,6 +397,7 @@ const EN = {
   'Sinnesupplevelser för alla! Alla har rätt till lek, oavsett förutsättningar.': 'Overcoming obstacles to play. Sensory, calming and skill-building toys, chosen with care.', // TFH UK:s egen devis
   'Besök': 'Visit',
   'Tips': 'Tip',
+  'Integritet och GDPR': 'Privacy and GDPR',
   'Version': 'Version',
 
   // ---------- Formationer, motorer och ljudreglage ----------
@@ -789,6 +790,25 @@ const EN_HTML = {
   'about-tfh-rooms': `TFH are experts in <strong>Multi Sensory Environments</strong>, with long and extensive experience of
     designing and building sensory rooms – from a simple sensory corner to a complete multi-sensory room in early years
     settings, schools, health and social care. Do get in touch for tips and advice.`,
+  'about-privacy': `<strong>No statistics and no tracking.</strong> Hover Pads has no cookies, no visitor statistics, no adverts
+    and no scripts or fonts from other companies. There is no account and no sign-in, and the app sends nothing about how it
+    is used – neither to TFH nor to anyone else.`,
+  'about-privacy-list': `<li><strong>Stored on the device:</strong> settings, presets, your own chords, the chosen language and
+    the last open tab are kept in the browser's local storage on the device you are using. The app's files are kept in the
+    browser's cache so that it works without internet. None of this leaves the device.</li>
+    <li><strong>Hosting:</strong> the app is served from GitHub Pages. As with any website, the server sees the device's IP
+    address when the files are fetched, and GitHub keeps it in logs for a while for security reasons, under GitHub's privacy
+    statement. TFH has no access to those logs. An installed app only contacts the server to fetch updates.</li>
+    <li><strong>Microphone and camera</strong> are not used. Eye gaze is handled by the device's own eye-gaze system, like an
+    ordinary mouse pointer – the app only sees where the pointer is and does not store it.</li>
+    <li><strong>MIDI:</strong> if you connect a MIDI instrument, the browser asks for permission first. The notes only go to
+    your own connected devices.</li>
+    <li><strong>Links</strong> to specialneedstoys.com and other websites lead to pages with their own terms and their own statistics.</li>`,
+  'about-gdpr': `<strong>Good to know:</strong> The app collects no personal data, so it needs no cookie banner and no consent,
+    and TFH holds no data about you to disclose or erase. What you type in yourselves, such as preset names, is however
+    stored on the device. If several people share a device, avoid full names and sensitive information in preset names, and
+    treat exported preset files like any other document. Everything the app has stored is removed by clearing the site data
+    for the page in the browser's settings (on iPhone and iPad: remove the app from the Home Screen).`,
   'about-disclaimer': `<strong>Disclaimer:</strong> Hover Pads is provided free of charge and as is. TFH accepts no responsibility for
     how the app is used, or for errors, bugs or other problems that may arise when using it – for example with sound,
     connected devices or saved settings. Use the app with care and set the volume to suit the person listening.`,
