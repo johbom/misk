@@ -267,8 +267,8 @@ function syncSoundSelect() {
   if (onNotes && !group) {
     group = document.createElement('optgroup');
     group.className = 'drum-group';
-    group.label = 'Trumset';
-    Object.entries(DRUM_KITS).forEach(([id, k]) => group.append(new Option(`Trumset: ${k.name}`, DRUM_OPT + id)));
+    group.label = 'Trumset och ljudeffekter';
+    Object.entries(DRUM_KITS).forEach(([id, k]) => group.append(new Option(`${k.fx ? 'Ljudeffekter' : 'Trumset'}: ${k.name}`, DRUM_OPT + id)));
     ui.preset.insertBefore(group, custom);
   } else if (!onNotes && group) group.remove();
   ui.preset.value = onNotes && drumKitOn() ? DRUM_OPT + ui.drumKit.value : synthPreset;
@@ -303,7 +303,8 @@ function setupSynthUi() {
     const v = ui.preset.value;
     if (v.startsWith(DRUM_OPT)) {
       setNotesKind(v.slice(DRUM_OPT.length));
-      log(`Trumset: ${DRUM_KITS[ui.drumKit.value].name}`);
+      const k = DRUM_KITS[ui.drumKit.value];
+      log(`${k.fx ? 'Ljudeffekter' : 'Trumset'}: ${k.name}`);
       return;
     }
     if (document.body.dataset.tab === 'notes' && drumKitOn()) setNotesKind(''); // tillbaka till toner

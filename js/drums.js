@@ -395,6 +395,7 @@ function drumBus(kitId) {
   }
   if (kit.lowpass) { const f = dFilt(ctx, 'lowpass', kit.lowpass, 0.9); last.connect(f); last = f; }
   last.connect(engine.volume);
+  if (kit.echo) fxEcho(ctx, last, engine.volume, kit.echo); // dubeko (js/fx.js)
   if (kit.room) {
     const send = ctx.createGain();
     send.gain.value = kit.room;
@@ -527,6 +528,7 @@ const DRUM_ICON_FOR = {
 };
 
 function drumIcon(piece) {
+  if (DRUM_KITS[piece.kit].fx) return ''; // ljudeffekterna visar sina namn
   // 808:s tre congas: låg, mellan, hög
   let id = DRUM_ICON_FOR[piece.gm];
   if (piece.name === 'Mellanconga') id = 'congaMid';

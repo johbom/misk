@@ -30,6 +30,13 @@ Rutorna på sidan **Toner** kan spela ett **trumset** i stället för toner. Vä
 - **Lo-fi** – dovt och grynigt (lågpassfilter, distorsion och färre bitar), för hiphop och lo-fi-beats.
 - **Slagverk** – congas (låg, hög, dämpad), bongos, timbales, koskälla, agogo, claves, träblock, shaker, guiro och triangel.
 
+**Ljudeffekter** väljs på samma sätt (*Ljudeffekter: Disco* … i listan *Ljud*, eller under *Inställningar → Spel → Toner*, och i startguiden). Varje ruta spelar en hel effekt som klingar ut av sig själv – bra för orsak och verkan. Allt syntetiseras, inga ljudfiler:
+- **Disco** – syntrummor (pew!), syntrumvirvel, laser och dubbellaser, disco-visselpipa, sirén, orkesterslag, stor handklapp, öppen hihat, tamburin, koskälla, uppsvep, nedsvep, rymdbubbla och glitterregn. Med lite eko och reverb.
+- **Reggae & dub** – dubsirén (ylande, snabb, stigande och pip), lufthorn (kort och långt), skott, bomb, fallande bomb, dubvirvel, kantslag, fjäderkrasch (som när man stöter till fjäderreverben), tillbakaspolning, skivskrap, visselpipa och åska. Med långt, mörkt dubeko.
+- **Tecknat & lek** – boing, glidflöjt upp och ner, busvissling, plopp, cykeltuta, bubblor, mynt, hopp, kraft, dörrklocka, ta-da, applåd, xylofonrusch, ba-dum-tss och smäll.
+
+Effekterna visar sina namn på rutorna och skickar MIDI 36, 37, 38 … (C1 och uppåt), som på en vanlig padkontroller. Nivåerna är uppmätta mot trumsetens virvel; långa, tonande effekter (sirén, lufthorn) ligger lite lägre.
+
 De vanligaste trummorna visas med en **symbol** i stället för namn (bastrumma, virvel, kantslag, tommar – större symbol = lägre tom, hihat stängd/öppen/pedal, crash, splash, ride, ride-klocka, handklapp, koskälla, tamburin, maracas, shaker, claves, träblock, triangel, congas och bongos); namnet finns kvar som verktygstips och för skärmläsare, och övriga trummor visar namnet. Varje ruta visar också trummans General MIDI-nummer, så att MIDI ut träffar rätt trumma i en trumsampler (GM-trummor ligger oftast på kanal 10 – ställ in kanalen under *Ut, MIDI & OSC*). Har man fler rutor än trummor börjar setet om. Allt syntetiseras i appen (inga ljudfiler). Trummorna klingar alltid ut av sig själva, går förbi syntens effekter och har en egen reverb per set. Öppen hihat tystas av stängd hihat och pedal, som på ett riktigt trumset. Med **arpeggiatorn** blir trummorna rytmer: håll flera trummor så spelas de i tur och ordning i takt (fler oktaver = fler slag på samma trumma, inte högre tonhöjd). Grundton, oktav och skala döljs när ett trumset är valt;  Trumsetet följer med i *Mina presets* och kan väljas i startguiden.
 
 ### Startguide
@@ -273,6 +280,7 @@ python3 -m http.server 8080
 - `js/settings.js` – sparade inställningar
 - `js/user-presets.js` – Mina presets (spara/ladda/exportera)
 - `js/drums.js` – Trumseten: syntetiserade trumljud och fem set
+- `js/fx.js` – Ljudeffekterna: Disco, Reggae & dub och Tecknat & lek (syntetiserade, med dubeko)
 - `js/wizard.js` – Startguiden och ackordmallarna (funktionsanalys utifrån tonarten)
 - `js/quick.js` – snabbknapparna Formation och Tonart i spelraden
 - `js/pwa.js` – service worker och Installera-knapp

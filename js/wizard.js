@@ -304,9 +304,12 @@ function renderWizard() {
           `${WAVE_ICONS?.[o.value] ? segIconSvg(WAVE_ICONS[o.value]) : ''}${o.textContent}`, d.xySound === o.value, 'wiz-wave')).join('')}</div>`;
     } else {
       title = 'Vilket ljud?';
+      const kits = (fx) => Object.entries(DRUM_KITS).filter(([, k]) => !!k.fx === fx)
+        .map(([id, k]) => wizOption('drumKit', id, k.name, d.drumKit === id)).join('');
       const drums = d.tab === 'notes' ? `<h4>Trumset</h4><p class="wiz-hint">Varje ruta blir en trumma.</p>
-        <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Trumset">${
-        Object.entries(DRUM_KITS).map(([id, k]) => wizOption('drumKit', id, k.name, d.drumKit === id)).join('')}</div>
+        <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Trumset">${kits(false)}</div>
+        <h4>Ljudeffekter</h4><p class="wiz-hint">Varje ruta blir en ljudeffekt: sirén, lufthorn, laser, boing …</p>
+        <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Ljudeffekter">${kits(true)}</div>
         <h4>Toner</h4>` : '';
       const cur = d.sound === null && !d.drumKit ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
       html = `${drums}${cur}${QUICK_SOUNDS.map(([engineName, names]) => `<h5 class="wiz-engine">${engineName}</h5>
