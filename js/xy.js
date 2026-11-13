@@ -589,13 +589,15 @@ function xyDraw() {
   if (alive) xyLoop();
 }
 
-// Skala-knappen: på = tonarten visas på knappen (t.ex. "C dur"), av = "Skala"
+// Skala-knappen. När den är på visas också Tonart-knappen på XY (annars är tonarten ointressant där).
 function syncXyQuant() {
   const b = $('xy-quant-toggle');
   const on = xyQuantOn();
   const key = `${NOTE_NAMES[Number(ui.root.value)]} ${t(scaleName())}`;
   b.classList.toggle('on', on);
   b.setAttribute('aria-pressed', on);
-  b.querySelector('span').textContent = on ? key : t('Skala');
+  b.querySelector('span').textContent = t('Skala');
+  $('quick-key').classList.toggle('xy-on', on);
+  if (!on && quick.open === 'key' && document.body.dataset.tab === 'xy') closeQuick();
   b.title = t(`Håll tonerna i skalan (${key}) – av: steglös tonhöjd`);
 }
