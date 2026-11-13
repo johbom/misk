@@ -82,6 +82,7 @@ function posApply(pad, x, first = false) {
   if (!first && pad.posX != null && Math.abs(x - pad.posX) < 0.004) return;
   pad.posX = x;
   pad.posTarget(x, first);
+  if (typeof seqPosMove === 'function') seqPosMove(pad, x); // stegsequencern minns läget (js/seq.js)
 }
 
 // En ruta börjar låta: läget tas från pekaren som ligger över den
