@@ -613,6 +613,35 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen header { padding-top: 6px; }
   html.fixed-screen #play-bar { padding: 4px 14px 2px; }
 }
+/* Mobil liggande (låg skärm): rubrik och spelrad på var sin smal rad, ingen statusrad – höjden går till rutorna */
+@media (orientation: landscape) and (max-height: 500px) {
+  html.fixed-screen header { padding: 4px 10px 0; gap: 6px; flex-wrap: nowrap; }
+  html.fixed-screen h1 { display: none; }
+  html.fixed-screen .tfh-link img { width: 24px; height: 24px; }
+  html.fixed-screen #tabs { min-width: 0; }
+  html.fixed-screen #tabs button { padding: 3px 9px; font-size: 0.85rem; }
+  html.fixed-screen #tabs .tab-icon { width: 16px; height: 16px; }
+  html.fixed-screen #lock-btn { padding: 3px 9px; font-size: 0.85rem; }
+  html.fixed-screen #midi-status { font-size: 0.7rem; padding: 2px 6px; max-width: 18vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.fixed-screen #play-bar { flex-wrap: nowrap; padding: 4px 10px 0; gap: 8px; }
+  html.fixed-screen #play-bar label { min-width: 0; }
+  html.fixed-screen #play-bar > .preset-label { flex: 0 1 220px; min-width: 0; }
+  html.fixed-screen #play-bar > .preset-label select { width: 100%; }
+  html.fixed-screen #play-bar > .vol-label,
+  html.fixed-screen #play-bar > .xy-reverb-bar { flex: 1 1 90px; min-width: 0; }
+  html.fixed-screen #play-bar input[type="range"] { min-width: 0; width: 100%; }
+  html.fixed-screen #play-bar .quick-btn,
+  html.fixed-screen #play-bar #arp-toggle { padding-top: 3px; padding-bottom: 3px; }
+  html.fixed-screen .pad-grid { padding: 6px 10px 6px; }
+  html.fixed-screen #xy-pad { margin: 6px 10px 6px; }
+  html.fixed-screen footer { display: none; }
+  /* XY: klangknapparna bara som ikoner (namnet finns i title), på en rad */
+  html.fixed-screen #play-bar .xy-sound .seg { flex-wrap: nowrap; }
+  html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 7px; }
+  html.fixed-screen #play-bar .xy-sound .seg button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"],
+  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 64px; }
+}
 /* Smal mobil: göm rubriken så flikarna får plats */
 @media (max-width: 480px) {
   html.fixed-screen h1 { display: none; }
@@ -633,6 +662,18 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   #play-bar > .preset-label select { min-width: 0; width: 100%; max-width: none; }
   #play-bar > .vol-label input[type="range"], #play-bar > .xy-reverb-bar input[type="range"] { min-width: 0; width: 100%; }
   #play-bar > .quick-btn, #play-bar > #arp-toggle { order: 2; }
+}
+/* Smal och låg (t.ex. iPhone SE liggande): flikarna bara som ikoner, ingen MIDI-status, mindre ljudlista */
+@media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
+  html.fixed-screen #tabs button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  html.fixed-screen #tabs button { padding: 4px 10px; }
+  html.fixed-screen #midi-status { display: none; }
+  html.fixed-screen #play-bar > .preset-label { flex-basis: 150px; }
+  html.fixed-screen #play-bar { gap: 6px; flex-wrap: nowrap; }
+  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar, #play-bar > .quick-btn, #play-bar > #arp-toggle { order: 0; }
+  /* XY: ordet "Klang" göms (knapparna har namnen i title och listan heter Klang för skärmläsare) */
+  html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; }
+  html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 5px; font-size: 0.9rem; }
 }
 
 /* Ring: sektorer runt ett tomt hål där muspekaren kan vila */

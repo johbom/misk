@@ -217,6 +217,8 @@ Hover Pads är en installerbar webbapp som fungerar **offline** efter första be
 
 På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymper för att få plats i alla formationer, stående som liggande. Bara fliken *Inställningar* scrollar inuti sig själv. På en dator kan samma läge slås på med `?fast` i adressen.
 
+**Mobil i liggande läge** (skärmhöjd högst 500 px): rubriken och spelraden ligger på var sin smal rad, och statusraden längst ned göms, så att höjden går till rutorna. På XY visas klangknapparna bara som ikoner. På smala telefoner, till exempel iPhone SE, visas även flikarna bara som ikoner och MIDI-statusen göms. Namnen finns kvar för skärmläsare och som verktygstips.
+
 ## MIDI
 
 Web MIDI fungerar i Chrome, Edge och Firefox (inte Safari) och kräver https eller localhost.
