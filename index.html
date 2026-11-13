@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=114" />
+  <link rel="stylesheet" href="css/style.css?v=115" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=114"></script>
+  <script src="js/i18n.js?v=115"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -577,6 +577,12 @@
         <p class="about-by">En app från <a href="https://tfhsensory.se" target="_blank" rel="noopener">TFH Sensory</a></p>
       </div>
     </div>
+    <div class="about-qr">
+      <img src="icons/qr-app.svg" alt="QR-kod till johbom.github.io/misk" width="132" height="132" />
+      <p><strong>Öppna Hover Pads på en annan enhet</strong><br />
+        Skanna QR-koden med kameran i en mobil eller surfplatta.<br />
+        <a href="https://johbom.github.io/misk/" target="_blank" rel="noopener" translate="no">johbom.github.io/misk</a></p>
+    </div>
     <p data-i18n="about-credits">
       Skapat av John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, utifrån erfarenheterna
       från <strong>MISK</strong> – ett projekt med stöd av Allmänna Arvsfonden. MISK drevs av Eldorado
@@ -643,8 +649,18 @@
       <strong>Att tänka på:</strong> Appen samlar inte in några personuppgifter, så den behöver ingen cookie-ruta och
       inget samtycke, och TFH har inga uppgifter om er att lämna ut eller radera. Det ni själva skriver in, till exempel
       namn på presets, sparas däremot på enheten. Delar flera på samma enhet: undvik fullständiga namn och känsliga uppgifter
-      i presetnamn, och hantera exporterade presetfiler som andra dokument. Allt som appen sparat tas bort genom att rensa
-      webbplatsdata för sidan i webbläsarens inställningar (på iPhone och iPad: ta bort appen från hemskärmen).
+      i presetnamn, och hantera exporterade presetfiler som andra dokument.
+    </p>
+    <h3>Radera sparade uppgifter</h3>
+    <p data-i18n="about-erase">
+      Knappen raderar allt som Hover Pads sparat på den här enheten: inställningar, presets, egna ackord och valda flikar.
+      Appen startar sedan om som vid första besöket. Vill du behålla dina presets, exportera dem först under
+      Inställningar → Mina presets. Appens egna filer ligger kvar, så att den fortfarande fungerar utan internet.
+    </p>
+    <button type="button" id="about-erase" class="about-erase">Radera sparade uppgifter</button>
+    <p class="about-disclaimer" data-i18n="about-erase-browser">
+      Du kan också rensa webbplatsdata för sidan i webbläsarens inställningar, som då även tar bort appens filer.
+      På iPhone och iPad: ta bort appen från hemskärmen.
     </p>
     <p class="about-disclaimer" data-i18n="about-disclaimer">
       <strong>Ansvarsfriskrivning:</strong> Hover Pads tillhandahålls kostnadsfritt och i befintligt skick. TFH tar inget
@@ -688,35 +704,35 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=114"></script>
-  <script src="js/fm-library.js?v=114"></script>
-  <script src="js/pm-library.js?v=114"></script>
-  <script src="js/wt-library.js?v=114"></script>
-  <script src="js/vwg-library.js?v=114"></script>
-  <script src="js/lib-levels.js?v=114"></script>
-  <script src="js/sound-library.js?v=114"></script>
-  <script src="js/layout.js?v=114"></script>
-  <script src="js/core.js?v=114"></script>
-  <script src="js/audio.js?v=114"></script>
-  <script src="js/drums.js?v=114"></script>
-  <script src="js/fx.js?v=114"></script>
-  <script src="js/pads.js?v=114"></script>
-  <script src="js/osc.js?v=114"></script>
-  <script src="js/arp.js?v=114"></script>
-  <script src="js/xy.js?v=114"></script>
-  <script src="js/vibrato.js?v=114"></script>
-  <script src="js/position.js?v=114"></script>
-  <script src="js/notes.js?v=114"></script>
-  <script src="js/chords.js?v=114"></script>
-  <script src="js/sound.js?v=114"></script>
-  <script src="js/view.js?v=114"></script>
-  <script src="js/controls.js?v=114"></script>
-  <script src="js/access.js?v=114"></script>
-  <script src="js/settings.js?v=114"></script>
-  <script src="js/user-presets.js?v=114"></script>
-  <script src="js/wizard.js?v=114"></script>
-  <script src="js/quick.js?v=114"></script>
-  <script src="js/pwa.js?v=114"></script>
-  <script src="js/main.js?v=114"></script>
+  <script src="js/synth.js?v=115"></script>
+  <script src="js/fm-library.js?v=115"></script>
+  <script src="js/pm-library.js?v=115"></script>
+  <script src="js/wt-library.js?v=115"></script>
+  <script src="js/vwg-library.js?v=115"></script>
+  <script src="js/lib-levels.js?v=115"></script>
+  <script src="js/sound-library.js?v=115"></script>
+  <script src="js/layout.js?v=115"></script>
+  <script src="js/core.js?v=115"></script>
+  <script src="js/audio.js?v=115"></script>
+  <script src="js/drums.js?v=115"></script>
+  <script src="js/fx.js?v=115"></script>
+  <script src="js/pads.js?v=115"></script>
+  <script src="js/osc.js?v=115"></script>
+  <script src="js/arp.js?v=115"></script>
+  <script src="js/xy.js?v=115"></script>
+  <script src="js/vibrato.js?v=115"></script>
+  <script src="js/position.js?v=115"></script>
+  <script src="js/notes.js?v=115"></script>
+  <script src="js/chords.js?v=115"></script>
+  <script src="js/sound.js?v=115"></script>
+  <script src="js/view.js?v=115"></script>
+  <script src="js/controls.js?v=115"></script>
+  <script src="js/access.js?v=115"></script>
+  <script src="js/settings.js?v=115"></script>
+  <script src="js/user-presets.js?v=115"></script>
+  <script src="js/wizard.js?v=115"></script>
+  <script src="js/quick.js?v=115"></script>
+  <script src="js/pwa.js?v=115"></script>
+  <script src="js/main.js?v=115"></script>
 </body>
 </html>

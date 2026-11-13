@@ -18,7 +18,10 @@ Om-rutan har ett avsnitt **Integritet och GDPR** (på engelska *Privacy and GDPR
 - **Lagring på enheten:** inställningar, presets, egna ackord, språk och senast öppna flik ligger i `localStorage`. Nycklarna börjar med `hoverPads`, och därtill finns `midiOut`. Appens filer ligger i service workerns cache. Inget lämnar enheten.
 - **Webbhotell:** GitHub Pages ser besökarens IP-adress och sparar den i loggar av säkerhetsskäl, enligt GitHubs integritetspolicy. Ägaren av webbplatsen får inte se loggarna.
 - **Annat:** varken mikrofon eller kamera används. Web MIDI frågar om lov först.
-- **Att tänka på:** inga personuppgifter samlas in, så det behövs ingen cookie-ruta och inget samtycke. Det man själv skriver in, till exempel presetnamn, sparas däremot lokalt. På delade enheter bör man därför undvika namn och känsliga uppgifter. Allt raderas genom att rensa webbplatsdata i webbläsaren.
+- **Att tänka på:** inga personuppgifter samlas in, så det behövs ingen cookie-ruta och inget samtycke. Det man själv skriver in, till exempel presetnamn, sparas däremot lokalt. På delade enheter bör man därför undvika namn och känsliga uppgifter.
+- **Radera sparade uppgifter:** en knapp i Om-rutan tar bort alla `hoverPads…`-nycklar och `midiOut` efter en bekräftelse, och startar sedan om appen i samma språk. Cachen med appens filer ligger kvar, så appen fungerar fortfarande utan internet. Vill man ta bort allt, även filerna, rensar man webbplatsdata i webbläsaren.
+
+Överst i Om-rutan finns en **QR-kod** till `https://johbom.github.io/misk/`. Den är en fast fil, `icons/qr-app.svg`, så den fungerar utan internet och utan någon QR-tjänst. Den skapas med `tools/make_qr.py`, som kräver `pip install segno`.
 
 ## Engelska / English
 
@@ -262,7 +265,7 @@ python3 -m http.server 8080
 - `manifest.webmanifest`, `manifest-en.webmanifest`, `sw.js` – PWA: appinformation och offline-cache. Kör `python3 tools/bump_version.py` före varje ny version (höjer cacheversionen och `?v=` på filerna så att telefoner hämtar det nya)
 - `app.js` – ersättning för gamla cachade sidor: laddar om dem till den nya versionen
 - `css/style.css` – utseende
-- `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`) och TFH Sensorys logga `tfh-logo.png`
+- `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`) , TFH Sensorys logga `tfh-logo.png` och QR-koden `qr-app.svg` (skapas med `tools/make_qr.py`)
 - `js/synth.js` – ljudmotorn (Web Audio), reglagen och de tio snabbpreseten
 - `js/sound-library.js` – presetbiblioteket: 110 klassiska ljud (och samlar ihop FM-ljuden)
 - `js/fm-library.js` – 100 ljud för FM-motorn (urval ur recept per instrumentfamilj)

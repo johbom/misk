@@ -398,6 +398,11 @@ const EN = {
   'Besök': 'Visit',
   'Tips': 'Tip',
   'Integritet och GDPR': 'Privacy and GDPR',
+  'Radera sparade uppgifter': 'Erase stored data',
+  'Radera alla inställningar, presets och egna ackord på den här enheten? Det går inte att ångra.': 'Erase all settings, presets and your own chords on this device? This cannot be undone.',
+  'Öppna Hover Pads på en annan enhet': 'Open Hover Pads on another device',
+  'Skanna QR-koden med kameran i en mobil eller surfplatta.': 'Scan the QR code with the camera on a phone or tablet.',
+  'QR-kod till johbom.github.io/misk': 'QR code for johbom.github.io/misk',
   'Version': 'Version',
 
   // ---------- Formationer, motorer och ljudreglage ----------
@@ -807,8 +812,12 @@ const EN_HTML = {
   'about-gdpr': `<strong>Good to know:</strong> The app collects no personal data, so it needs no cookie banner and no consent,
     and TFH holds no data about you to disclose or erase. What you type in yourselves, such as preset names, is however
     stored on the device. If several people share a device, avoid full names and sensitive information in preset names, and
-    treat exported preset files like any other document. Everything the app has stored is removed by clearing the site data
-    for the page in the browser's settings (on iPhone and iPad: remove the app from the Home Screen).`,
+    treat exported preset files like any other document.`,
+  'about-erase': `The button erases everything Hover Pads has stored on this device: settings, presets, your own chords and the
+    selected tabs. The app then restarts as on the first visit. If you want to keep your presets, export them first under
+    Settings → My presets. The app's own files stay, so that it still works without internet.`,
+  'about-erase-browser': `You can also clear the site data for the page in the browser's settings, which also removes the app's
+    files. On iPhone and iPad: remove the app from the Home Screen.`,
   'about-disclaimer': `<strong>Disclaimer:</strong> Hover Pads is provided free of charge and as is. TFH accepts no responsibility for
     how the app is used, or for errors, bugs or other problems that may arise when using it – for example with sound,
     connected devices or saved settings. Use the app with care and set the volume to suit the person listening.`,

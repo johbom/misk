@@ -32,6 +32,17 @@ function setupAbout() {
     const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     if (!inside) dlg.close();
   });
+  // Radera allt appen sparat i localStorage (inställningar, presets, ackord, flikar, språk).
+  // Cachen med appens filer får ligga kvar, så att appen fortfarande fungerar utan internet.
+  $('about-erase').addEventListener('click', () => {
+    if (!confirm(t('Radera alla inställningar, presets och egna ackord på den här enheten? Det går inte att ångra.'))) return;
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('hoverPads') || k === 'midiOut')
+        .forEach((k) => localStorage.removeItem(k));
+    } catch { /* ingen lagring att radera */ }
+    location.replace(`${location.pathname}?lang=${LANG}`); // behåll språket som visas nu
+  });
 }
 
 // ---------- Underflikar i Inställningar ----------

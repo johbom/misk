@@ -778,6 +778,14 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
 .about-head a { flex: none; border-radius: 50%; }
 #about .about-by { margin: 2px 0 0; color: var(--muted); font-size: 0.9rem; }
 #about .about-tfh { margin: 0 0 10px; color: var(--muted); }
+/* QR-kod till appens adress, överst i Om-rutan (vit kant = tyst zon, så att den går att skanna i mörkt läge) */
+.about-qr { display: flex; align-items: center; gap: 16px; margin: 0 0 16px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; }
+.about-qr img { flex: none; width: 132px; height: 132px; background: #fff; border-radius: 6px; image-rendering: pixelated; }
+#about .about-qr p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+#about .about-qr strong { color: var(--text); }
+@media (max-width: 420px) { .about-qr { flex-direction: column; text-align: center; } }
+.about-erase { margin: 0 0 10px; border-color: #c4566a; color: #ffb3c0; }
+.about-erase:hover { background: rgba(196, 86, 106, 0.15); }
 #about h3 {
   margin: 18px 0 6px; font-size: 0.75rem; color: var(--muted);
   text-transform: uppercase; letter-spacing: 0.08em;
