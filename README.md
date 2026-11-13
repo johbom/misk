@@ -76,7 +76,7 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, ljudval och volym. All
 - **XY** – en XY-platta där **varje muspekare och varje finger är en egen oscillator**. **X = tonhöjd** som steglöst frekvensglissando (inga fasta toner), **Y = highcut** (brant lågpassfilter, 24 dB/oktav med lite resonans) som öppnar uppåt och följer tonhöjden: längst ned hörs bara grundtonen (dovt), längst upp alla övertoner (helt öppet) – lika tydligt i hela registret. Skillnaden hörs mest på övertonsrika klanger (Sågtand, Fyrkant, Bred). En ren sinus har inga övertoner att filtrera bort, så med klangen **Sinus** styr Y i stället **vibrato**: inget längst ned, djupt och lite snabbare längst upp – varje finger har sitt eget. Klangerna med få övertoner (**Sinus, Triangel, Varm**) får dessutom **FM** på Y: ren längst ned, allt fler övertoner uppåt, så att Y hörs lika tydligt som på Sågtand och Fyrkant. Musen låter så länge den är över ytan, fingrar så länge de rör skärmen – flera fingrar ger flera röster samtidigt. Varje pekare ritar ett glödande spår i egen färg som bleknar bort. Svaga linjer visar skalans toner (grundtonen tydligast) bara som orientering. Högerkanten är alltid **C7**; omfånget (1–5 oktaver, 5 från början = **C2–C7**) väljs under *Inställningar → Instrument*. Tonen tystnar direkt när fingret släpper eller musen lämnar ytan – reverb och delay klingar ut som vanligt. XY har **egen klang** – välj *Sinus, Triangel, Varm, Sågtand, Fyrkant* eller *Bred* (fem ostämda sågtänder i stereo) med knapparna **Klang** i spelraden (ljudlistan för rutorna döljs på XY-sidan) – och egen **Reverb** med reglaget i spelraden (samma som under *Inställningar → Instrument*; *Reverb* under *Ljud* gäller bara rutorna). Rutornas ljud och effekter påverkar alltså inte XY. Vickar man pekaren eller fingret blir det vibrato (även i arpeggio).
 - **Avancerat (voicing)** – kryssa i under *Inställningar → Instrument → Ackord* för att välja voicing per ackord: *grundläge*, *1:a/2:a/3:e omvändning* (3:e kräver fyrklang), *öppen* eller *drop 2*, plus *oktavläge* −1/±0/+1 och **bas**: en egen baston under ackordet (snedstrecksackord, t.ex. *C/E* eller *C/G*). Ackordnamnet visar basen, och en vald baston spelas även om *Bas* är avkryssat. Valen syns både i listan och i högerklicksmenyn (som då också visar tonerna). Slår du av avancerat läge spelas ackorden i grundläge igen, men dina val sparas.
 
-**Snabbknappar i spelraden:** **Formation** (sidorna Toner och Ackord) visar vald formation och öppnar en liten ruta där man byter med ett tryck. **Tonart** (sidorna Toner och Ackord, t.ex. *C dur*) öppnar en ruta med de tolv grundtonerna, oktaven (på sidorna Toner och Ackord, var för sig, upp till oktav 6) och skalorna (skalorna visas inte på sidan Ackord). Tonarten gäller hela instrumentet: byter man grundton flyttas också ackorden på sidan Ackord med (transponeras). Klick utanför rutan eller Esc stänger den. På sidan Toner med trumset syns ingen tonartsknapp. Ljudlistan i spelraden har ingen rubrik (skärmläsare säger ”Ljud”). På smal skärm (mobil på höjden) delar ljudlistan och *Volym* (på XY: *Reverb* och *Volym*) den första raden, och snabbknapparna och *Arp* ligger på raden under.
+**Snabbknappar i spelraden:** **Formation** (sidorna Toner och Ackord) visar vald formation och öppnar en liten ruta där man byter med ett tryck. Där väljs också **antal**: 4, 8, 12 eller 16 rutor på Toner, och 2, 4, 6 eller 8 ackord på Ackord (andra antal finns under *Instrument*). **Tonart** (sidorna Toner och Ackord, t.ex. *C dur*) öppnar en ruta med de tolv grundtonerna, oktaven (på sidorna Toner och Ackord, var för sig, upp till oktav 6) och skalorna (skalorna visas inte på sidan Ackord). Tonarten gäller hela instrumentet: byter man grundton flyttas också ackorden på sidan Ackord med (transponeras). Klick utanför rutan eller Esc stänger den. På sidan Toner med trumset syns ingen tonartsknapp. Ljudlistan i spelraden har ingen rubrik (skärmläsare säger ”Ljud”). På smal skärm (mobil på höjden) delar ljudlistan och *Volym* (på XY: *Reverb* och *Volym*) den första raden, och snabbknapparna och *Arp* ligger på raden under.
 
 ## Inställningar (fliken)
 
@@ -105,7 +105,13 @@ Inställningarna är uppdelade i underflikar:
 
   **Läge på rutan i stegen:** varje ruta i ett steg minns också sitt läge på rutan, alltså var pekaren eller fingret var. Används *Läge på rutan* (filter, volym, vibrato, tonhöjd eller ljudmotorns egna) spelas steget med samma värde som när det skrevs in. Värdet följer pekaren så länge rutan låter efter inskrivningen, så det är där man stannar som räknas, inte kanten man gled in över. En liten stapel på stegets vänsterkant visar läget, och skärmläsare säger det i procent. Med MIDI skickas samma CC eller pitch bend strax före tonen. Steg som skrivits in med kontakt saknar läge och spelas som vanligt.
 
-  **Uppspelning:** **▶ Start / ■ Stopp** spelar stegen om och om igen, och steget som hörs markeras. **● Spela in** startar sequencern, och det man spelar hamnar då på närmaste steg.
+  **Uppspelning – och spela till:**
+  - **▶ Start / ■ Stopp** spelar sidans steg om och om igen, och steget som hörs markeras.
+  - Toner och Ackord har var sin slinga med egen ▶, men samma takt. En ackordrunda och ett trumkomp kan alltså gå samtidigt.
+  - Slingorna **fortsätter när man byter sida**, så man kan spela till dem: på den andra sidan, på XY eller på samma sida. Går den andra sidans slinga visas en grön knapp med dess namn (t.ex. *■ Ackord*) som stoppar den.
+  - På XY syns Seq-knappen, med en pulserande grön prick, medan en slinga går, och där stoppar den slingorna.
+  - Det man spelar till skrivs **inte** in. Att starta en slinga avmarkerar steget, och inskrivning sker bara med **● Spela in** eller i ett steg man själv valt.
+  - **● Spela in** startar sidans slinga, och det man spelar hamnar på närmaste steg. **■ Stopp** avslutar också inspelningen.
 
   **Inställningar:**
   - *Steg*.
@@ -118,7 +124,6 @@ Inställningarna är uppdelade i underflikar:
   - Noterna planeras i ljudklockan, precis som arpeggiatorns.
   - MIDI (med tidsstämplar), OSC, ljudfiler och trumset följer med, och varje ruta blinkar till när den spelas.
   - Man kan spela fritt på rutorna samtidigt som sequencern går.
-  - Byter man sida stannar sequencern.
   - Låst läge visar bara rutorna, och sequencern fortsätter.
   - Mönstren sparas i webbläsaren (`hoverPadsSeq`) och följer med i Mina presets.
 
@@ -248,6 +253,8 @@ Hover Pads är en installerbar webbapp som fungerar **offline** efter första be
 På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymper för att få plats i alla formationer, stående som liggande. Bara fliken *Inställningar* scrollar inuti sig själv. På en dator kan samma läge slås på med `?fast` i adressen.
 
 **Liggande läge på surfplatta** (iPad): rubriken och spelraden blir tätare och ryms på var sin rad, och statusraden längst ned göms. På skärmar upp till 1100 px breda visas XY-klangerna som ikoner. **Stående iPad** (601–900 px bred) döljer rubriken *Hover Pads*, så att flikarna, Lås och MIDI-status ryms på en rad.
+
+**Mobil i liggande läge, minst 700 px bred** (t.ex. iPhone 13–16): flikarna och spelraden delar en enda rad högst upp, med bara ikoner. Logga, MIDI-status och orden *Lås*, *Volym*, *Arp* och *Seq* göms, men namnen finns kvar för skärmläsare. Rutorna får då all höjd som blir över. Smalare telefoner (t.ex. iPhone SE) har två rader.
 
 **Mobil i liggande läge** (skärmhöjd högst 500 px): rubriken och spelraden ligger på var sin smal rad, och statusraden längst ned göms, så att höjden går till rutorna. På XY visas klangknapparna bara som ikoner. På smala telefoner, till exempel iPhone SE, visas även flikarna bara som ikoner och MIDI-statusen göms. Namnen finns kvar för skärmläsare och som verktygstips.
 
