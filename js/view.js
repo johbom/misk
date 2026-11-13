@@ -47,7 +47,7 @@ function setupAbout() {
 
 // ---------- Underflikar i Inställningar ----------
 function showSettingsPanel(panel) {
-  if (['notes', 'chords', 'surfaces'].includes(panel)) panel = 'play'; // gamla flikar (Spelytor ligger nu under Spel)
+  if (['notes', 'chords', 'surfaces'].includes(panel)) panel = 'play'; // gamla flikar (Spelytor ligger nu under Instrument)
   if (!document.querySelector(`#settings .panel[data-panel="${panel}"]`)) panel = 'play';
   document.querySelectorAll('#settings-nav button').forEach((b) =>
     b.classList.toggle('on', b.dataset.panel === panel));

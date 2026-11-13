@@ -1,5 +1,5 @@
 // Snabbknappar i spelraden: Formation (sidorna Toner och Ackord) och Tonart (Toner och Ackord).
-// Ett tryck öppnar en liten ruta med valen. Det är samma inställningar som under Inställningar → Spel.
+// Ett tryck öppnar en liten ruta med valen. Det är samma inställningar som under Inställningar → Instrument.
 // Arp-knappen öppnar samma ruta med arpeggiatorns inställningar när arpen slås på (js/arp.js):
 // då flyttas själva inställningsrutan (#arp-set) dit, och tillbaka när rutan stängs.
 // Tonarten gäller hela instrumentet: ackorden flyttas med till den nya tonarten (transponeras),
@@ -57,7 +57,7 @@ function closeQuick() {
   quickBtns().forEach((b) => b.setAttribute('aria-expanded', 'false'));
 }
 
-// Arpens inställningar tillbaka till sin plats under Inställningar → Spel
+// Arpens inställningar tillbaka till sin plats under Inställningar → Instrument
 let arpSetSpot = null;
 function arpSetHome() {
   const set = $('arp-set');

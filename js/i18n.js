@@ -64,14 +64,14 @@ const EN = {
   'Bred': 'Wide',
   'Tonart': 'Key',
   'Reverb för XY': 'Reverb for XY',
-  'Arpeggiator på/av (inställningar under Spel)': 'Arpeggiator on/off (settings under Play)',
+  'Arpeggiator på/av (inställningar under Instrument)': 'Arpeggiator on/off (settings under Instrument)',
   'Volym': 'Volume',
   'Senast använd': 'Last used',
   'Svenska': 'Svenska',
   'English': 'English',
   'Språk': 'Language',
 
-  // ---------- Inställningar: Spel ----------
+  // ---------- Inställningar: Instrument ----------
   'Spel': 'Play',
   'Tillgänglighet': 'Accessibility',
   'Ut, MIDI & OSC': 'Output, MIDI & OSC',

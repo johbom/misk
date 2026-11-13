@@ -33,7 +33,7 @@ const xy = {
 };
 
 // ---------- Tonhöjd och filter ----------
-// Högerkanten är alltid C7; omfånget (oktaver, under Spel) räknas nedåt därifrån.
+// Högerkanten är alltid C7; omfånget (oktaver, under Instrument) räknas nedåt därifrån.
 const XY_TOP_MIDI = 96; // C7
 const xyOctaves = () => Number(ui.xyOctaves.value) || 5; // 5 = C2–C7
 const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
@@ -363,7 +363,7 @@ function setupXY() {
     ui.xyOctaves.value = '5';
     saveSettings();
   }
-  // Reverben finns både i spelraden på XY-sidan och under Inställningar → Spel – de följs åt
+  // Reverben finns både i spelraden på XY-sidan och under Inställningar → Instrument – de följs åt
   const revBar = $('xy-reverb-bar');
   revBar.value = ui.xyReverb.value;
   ui.xyReverb.addEventListener('input', () => {

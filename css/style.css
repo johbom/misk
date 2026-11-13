@@ -613,6 +613,32 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen header { padding-top: 6px; }
   html.fixed-screen #play-bar { padding: 4px 14px 2px; }
 }
+/* Liggande på surfplatta och mobil: tätare rubrik och spelrad, ingen statusrad – höjden går till rutorna.
+   (Mobilen, max 500 px hög, gör det ännu tätare nedan.) */
+@media (orientation: landscape) {
+  html.fixed-screen header { padding-top: 6px; }
+  html.fixed-screen #play-bar { flex-wrap: nowrap; padding: 6px 14px 0; gap: 12px; }
+  html.fixed-screen #play-bar > .vol-label,
+  html.fixed-screen #play-bar > .xy-reverb-bar { flex: 0 1 220px; min-width: 0; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"],
+  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 80px; width: 100%; }
+  html.fixed-screen .pad-grid { padding-top: 8px; padding-bottom: 10px; }
+  html.fixed-screen #xy-pad { margin-top: 8px; margin-bottom: 10px; }
+  html.fixed-screen footer { display: none; }
+}
+/* Mindre surfplatta liggande: XY-klangerna som ikoner så att spelraden ryms på en rad */
+@media (orientation: landscape) and (max-width: 1100px) {
+  html.fixed-screen #play-bar .xy-sound .seg button { padding: 4px 9px; }
+  html.fixed-screen #play-bar .xy-sound .seg button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* Surfplatta på höjden: utan rubriken "Hover Pads" ryms flikar, Lås och MIDI-status på en rad */
+@media (orientation: portrait) and (min-width: 601px) and (max-width: 900px) {
+  html.fixed-screen h1 { display: none; }
+  html.fixed-screen .brand { flex: none; }
+  html.fixed-screen #tabs { min-width: 0; }
+  html.fixed-screen #tabs button { padding-left: 10px; padding-right: 10px; }
+  html.fixed-screen #midi-status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16vw; font-size: 0.75rem; }
+}
 /* Mobil liggande (låg skärm): rubrik och spelrad på var sin smal rad, ingen statusrad – höjden går till rutorna */
 @media (orientation: landscape) and (max-height: 500px) {
   html.fixed-screen header { padding: 4px 10px 0; gap: 6px; flex-wrap: nowrap; }
