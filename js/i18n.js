@@ -213,6 +213,26 @@ const EN = {
   'Ögon – bara titta': 'Eyes – just look',
   'Utan klick: knappar trycks genom att titta, tonen ligger kvar tills nästa ruta.': 'No clicks: buttons are pressed by looking, the note keeps sounding until the next pad.',
   'Kontakt': 'Switch',
+  'Kontakter': 'Switches',
+  'Kontakt 1': 'Switch 1',
+  'Kontakt 2': 'Switch 2',
+  'Lär': 'Learn',
+  'Väntar …': 'Waiting …',
+  'Återställ till standard': 'Reset to default',
+  'Avbrutet. Kontakten är oförändrad.': 'Cancelled. The switch is unchanged.',
+  'Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.': 'No key arrived. Press Learn again to try once more.',
+  'Kontakterna använder standardtangenterna igen.': 'The switches use the default keys again.',
+  'Kontakter: standard': 'Switches: default',
+  'Backsteg': 'Backspace',
+  'Vänsterpil': 'Left arrow',
+  'Högerpil': 'Right arrow',
+  'Uppil': 'Up arrow',
+  'Nedpil': 'Down arrow',
+  'Skift': 'Shift',
+  'Skift (höger)': 'Shift (right)',
+  'Ctrl (höger)': 'Ctrl (right)',
+  'Cmd (höger)': 'Cmd (right)',
+  'Enter (numeriskt)': 'Enter (numpad)',
   'En kontakt (eller mellanslag) med automatisk stegning. Håll in för lång ton.': 'One switch (or the space bar) with automatic scanning. Hold for a long note.',
   'Föregående': 'Previous',
   'Nästa': 'Next',
@@ -348,7 +368,7 @@ const EN = {
   'Omfång och reverb': 'Range and reverb',
   'Omfång i oktaver': 'Range in octaves',
   'Hur många oktaver plattan räcker över. Färre oktaver gör det lättare att träffa rätt ton.': 'How many octaves the pad spans. Fewer octaves make it easier to hit the right note.',
-  'Varje finger upprepas i takt, över oktaverna.': 'Each finger repeats in time, across the octaves.',
+  'Fingrarnas toner spelas en i taget, i takt.': 'The fingers\' notes play one at a time, in time.',
   'Torr': 'Dry',
   'Lite': 'A little',
   'Mellan': 'Medium',
@@ -770,9 +790,11 @@ const EN_HTML = {
   'xy-hint': 'The right edge is C7. Moving up opens the filter. Sine, Triangle and Warm also get FM upwards (more overtones), and Sine vibrato too. Tone and reverb can also be set on the XY page. Reverb under <em>Sound</em> only applies to the pads.',
   'access-hint': 'Choose a profile and fine-tune below. Everything is saved in <em>My presets</em>.',
   'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds.',
+  'switch-learn-msg': 'Press <strong>Learn</strong> and then the switch or key to use.',
   'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–8. Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>
     <li>One switch: <kbd>Space</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> or a click on the play area plays the highlighted pad.</li>
     <li>Two switches: switch 1 (<kbd>Space</kbd> or <kbd>F1</kbd>) moves on, switch 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> or a click) plays.</li>
+    <li>Other keys for the switches: press <strong>Learn</strong> next to Switch 1 or 2 (shown when Scanning is on) and then the switch.</li>
     <li><kbd>Tab</kbd> moves between pads and buttons, <kbd>Space</kbd>/<kbd>Enter</kbd> plays the pad that has focus.</li>`,
   'osc-hint': 'Needs the bridge on the computer: <code>node tools/osc-bridge.mjs</code> (sends to port 9000). In Safari: open the app at <code>http://localhost:8765</code>.',
   'about-credits': `Created by John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, building on the experience
@@ -827,6 +849,11 @@ const EN_HTML = {
 // Texter som byggs ihop med siffror och namn. Varje mönster gäller hela texten.
 const q = (s) => `"${s}"`;
 const EN_PATTERNS = [
+  [/^Kontakt (\d) är nu (.+)\.$/, (n, k) => `Switch ${n} is now ${k}.`],
+  [/^Kontakt (\d): (.+)$/, (n, k) => `Switch ${n}: ${k}`],
+  [/^(.+) används redan av kontakt (\d)\. Tryck på en annan kontakt eller tangent\.$/, (k, n) => `${k} is already used by switch ${n}. Press another switch or key.`],
+  [/^Tryck nu på kontakt (\d) \(eller tangenten som ska användas\)\. Esc avbryter\.$/, (n) => `Now press switch ${n} (or the key to use). Esc cancels.`],
+  [/^(\d) \(numeriskt\)$/, (d) => `${d} (numpad)`],
   [/^Laddade "(.+)" till (.+)$/, (n, p) => `Loaded ${q(n)} on ${p}`],
   [/^Kunde inte läsa "(.+)" som ljud\.$/, (n) => `Could not read ${q(n)} as audio.`],
   [/^Laddade presetet "(.+)"$/, (n) => `Loaded the preset ${q(n)}`],

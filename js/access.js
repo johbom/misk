@@ -46,6 +46,7 @@ function refreshAccess() {
   syncSegments();
   syncArpToggle();
   root.dataset.pointer = ui.showPointer.value;
+  renderSwitchKeys(); // (även efter ett laddat preset)
   syncPlayModeButtons();
   document.body.dataset.playMode = ui.playMode.value;
   document.body.dataset.scan = ui.scanMode.value;
@@ -398,19 +399,107 @@ function scanRelease() {
 // ---------- Tangentbord och kontakt ----------
 const keyPads = new Map(); // tangent -> ruta som hålls
 
+// ---------- Kontakter: standardtangenter eller inlärda ----------
+// Kontaktinterface skickar oftast mellanslag/Enter eller F1/F2, men kan ställas om. Med "Lär" under
+// Hjälpmedel får varje kontakt i stället den tangent man trycker på (sparas med inställningarna).
+const SWITCH_DEFAULT = { 1: ['Space', 'F1'], 2: ['Enter', 'NumpadEnter', 'F2'] };
+const switchCodes = (n) => (ui[`switch${n}Key`].value ? [ui[`switch${n}Key`].value] : SWITCH_DEFAULT[n]);
+const switchOf = (code) => (switchCodes(1).includes(code) ? 1 : switchCodes(2).includes(code) ? 2 : 0);
+
+// Tangentens namn att visa (e.code → t.ex. "A", "Mellanslag", "Vänsterpil")
+function keyName(code) {
+  const named = {
+    Space: 'Mellanslag', Enter: 'Enter', NumpadEnter: 'Enter (numeriskt)', Tab: 'Tab', Backspace: 'Backsteg',
+    ArrowLeft: 'Vänsterpil', ArrowRight: 'Högerpil', ArrowUp: 'Uppil', ArrowDown: 'Nedpil',
+    ShiftLeft: 'Skift', ShiftRight: 'Skift (höger)', ControlLeft: 'Ctrl', ControlRight: 'Ctrl (höger)',
+    AltLeft: 'Alt', AltRight: 'Alt Gr', MetaLeft: 'Cmd', MetaRight: 'Cmd (höger)', CapsLock: 'Caps Lock',
+    PageUp: 'Page Up', PageDown: 'Page Down', Home: 'Home', End: 'End', Insert: 'Insert', Delete: 'Delete',
+  };
+  if (named[code]) return t(named[code]);
+  let m;
+  if ((m = code.match(/^Key([A-Z])$/))) return m[1];
+  if ((m = code.match(/^Digit(\d)$/))) return m[1];
+  if ((m = code.match(/^Numpad(\d)$/))) return t(`${m[1]} (numeriskt)`);
+  return code;
+}
+
+function renderSwitchKeys() {
+  for (const n of [1, 2]) {
+    const learned = ui[`switch${n}Key`].value;
+    $(`switch${n}-name`).textContent = learned ? keyName(learned) : SWITCH_DEFAULT[n].filter((c) => c !== 'NumpadEnter').map(keyName).join(' / ');
+  }
+  $('switch-reset').disabled = !ui.switch1Key.value && !ui.switch2Key.value;
+}
+
+let learning = null; // { n, btn, timer }
+
+function stopLearning(msg) {
+  if (!learning) return;
+  document.removeEventListener('keydown', learnKey, true);
+  clearTimeout(learning.timer);
+  learning.btn.classList.remove('learning');
+  learning.btn.textContent = t('Lär');
+  learning = null;
+  if (msg) $('switch-learn-msg').textContent = msg;
+}
+
+function learnKey(e) {
+  // Fångas före allt annat, så att tangenten inte också spelar eller klickar
+  e.preventDefault();
+  e.stopImmediatePropagation();
+  if (e.repeat) return;
+  const { n } = learning;
+  if (e.code === 'Escape') { stopLearning(t('Avbrutet. Kontakten är oförändrad.')); return; }
+  const other = n === 1 ? 2 : 1;
+  if (switchCodes(other).includes(e.code)) {
+    $('switch-learn-msg').textContent = t(`${keyName(e.code)} används redan av kontakt ${other}. Tryck på en annan kontakt eller tangent.`);
+    return;
+  }
+  ui[`switch${n}Key`].value = e.code;
+  saveSettings();
+  renderSwitchKeys();
+  stopLearning(t(`Kontakt ${n} är nu ${keyName(e.code)}.`));
+  log(t(`Kontakt ${n}: ${keyName(e.code)}`));
+}
+
+function setupSwitchLearn() {
+  document.querySelectorAll('[data-learn]').forEach((btn) => btn.addEventListener('click', () => {
+    const n = Number(btn.dataset.learn);
+    const again = learning?.n === n;
+    stopLearning();
+    if (again) { $('switch-learn-msg').textContent = t('Avbrutet. Kontakten är oförändrad.'); return; }
+    learning = { n, btn, timer: setTimeout(() => stopLearning(t('Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.')), 15000) };
+    btn.classList.add('learning');
+    btn.textContent = t('Väntar …');
+    $('switch-learn-msg').textContent = t(`Tryck nu på kontakt ${n} (eller tangenten som ska användas). Esc avbryter.`);
+    // Vänta tills tangenten som eventuellt klickade på knappen (mellanslag/Enter) har släppts
+    setTimeout(() => { if (learning?.btn === btn) document.addEventListener('keydown', learnKey, true); }, 0);
+  }));
+  $('switch-reset').addEventListener('click', () => {
+    stopLearning();
+    ui.switch1Key.value = '';
+    ui.switch2Key.value = '';
+    saveSettings();
+    renderSwitchKeys();
+    $('switch-learn-msg').textContent = t('Kontakterna använder standardtangenterna igen.');
+    log(t('Kontakter: standard'));
+  });
+  renderSwitchKeys();
+}
+
 function setupKeys() {
   document.addEventListener('keydown', (e) => {
     if (!isPlayTab() || e.metaKey || e.ctrlKey || e.altKey) return;
     if (!$('start-overlay').classList.contains('hidden')) return; // startrutan: tangenterna väljer där
     if (inFormField(e.target) || e.target.id === 'unlock-btn' || picker.open) return;
     const isSwitch = e.key === ' ' || e.key === 'Enter';
-    // Kontaktinterface som skickar F1 (kontakt 1) och F2 (kontakt 2): samma som mellanslag och Enter
-    const isF = e.key === 'F1' || e.key === 'F2';
     if (isSwitch && e.target.matches?.('select')) return; // mellanslag öppnar listan
-    if (scanning() && (isSwitch || isF)) {
+    // Kontakterna (standard: kontakt 1 = mellanslag/F1, kontakt 2 = Enter/F2, eller inlärda tangenter)
+    const sw = switchOf(e.code);
+    if (scanning() && sw) {
       e.preventDefault(); // F1 öppnar annars webbläsarens hjälp
       if (e.repeat) return;
-      if (ui.scanMode.value === 'two' && (e.key === ' ' || e.key === 'F1')) scanStep();
+      if (ui.scanMode.value === 'two' && sw === 1) scanStep();
       else scanPress();
       return;
     }
@@ -429,7 +518,7 @@ function setupKeys() {
     activate(pad);
   });
   document.addEventListener('keyup', (e) => {
-    if (e.key === ' ' || e.key === 'Enter' || e.key === 'F1' || e.key === 'F2') scanRelease();
+    if (switchOf(e.code)) scanRelease();
     const pad = keyPads.get(e.code);
     if (!pad) return;
     keyPads.delete(e.code);
@@ -485,6 +574,7 @@ function setupAccess() {
   setupSteppers();
   setupLock();
   setupKeys();
+  setupSwitchLearn();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
     'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb', 'arpBpm', 'arpGate']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));

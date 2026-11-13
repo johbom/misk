@@ -327,7 +327,7 @@ function renderWizard() {
       <div class="wiz-row" role="radiogroup" aria-label="Reverb">${
       WIZ_REVERBS.map(([v, name]) => wizOption('xyReverb', v, name, d.xyReverb === v)).join('')}</div>
       <button type="button" class="wiz-toggle" role="switch" aria-checked="${d.arpOn}" data-act="arp">
-        ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Varje finger upprepas i takt, över oktaverna.</small></span><i class="wiz-switch"></i>
+        ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Fingrarnas toner spelas en i taget, i takt.</small></span><i class="wiz-switch"></i>
       </button>`;
   }
 

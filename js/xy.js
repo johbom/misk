@@ -206,23 +206,24 @@ function xyVoiceStop(id) {
 }
 
 // ---------- Arpeggio på XY ----------
-// Varje finger behåller sin egen ton (steglös tonhöjd och eget filter) och arpeggieras för sig, över
-// oktaverna, i gemensam takt: flera fingrar spelar samtidigt på varje steg. 1 oktav = rytmisk
+// Alla fingrar bildar tillsammans ett arpeggio, som tonerna i ett ackord på rutorna: varje finger
+// är en ton (steglös tonhöjd och eget filter), och mönstret stegar genom fingrarnas toner – över
+// oktaverna – en i taget. Bara Strum spelar alla på varje slag. Ett finger och 1 oktav = rytmisk
 // upprepning. Mönster, tempo, notvärde, oktaver och tonlängd är samma som för rutorna (js/arp.js).
-const xyArp = { pts: new Map(), timer: 0, nextTime: 0, emptySince: 0 };
+const xyArp = { pts: new Map(), timer: 0, nextTime: 0, emptySince: 0, step: 0, last: -1, order: 0 };
 
 function xyArpAdd(id, nx, ny) {
-  xyArp.pts.set(id, { id, nx, ny, step: 0, last: -1, vib: 0, voices: new Set() });
+  xyArp.pts.set(id, { id, nx, ny, order: xyArp.order++, vib: 0, voices: new Set() });
   if (!xyArp.timer) {
     // Första steget vid nästa runda: fingrar som landar samtidigt hinner med
+    xyArp.step = 0;
+    xyArp.last = -1;
     xyArp.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
     xyArp.timer = setInterval(xyArpTick, ARP_TICK_MS);
   } else if (arpRetrig()) {
-    // Retrigg: alla fingrar börjar om från första steget, nu. Planerat men inte hört stryks.
+    // Retrigg: mönstret börjar om från första tonen, nu. Planerat men inte hört stryks.
     const now = audioCtx.currentTime;
     for (const p of xyArp.pts.values()) {
-      p.step = 0;
-      p.last = -1;
       p.voices.forEach((v) => {
         if (v.t > now) {
           try { v.amp.disconnect(); v.oscs.forEach((o) => o.stop()); v.yLfo?.stop(); v.fmMod?.stop(); } catch {}
@@ -230,6 +231,8 @@ function xyArpAdd(id, nx, ny) {
         }
       });
     }
+    xyArp.step = 0;
+    xyArp.last = -1;
     xyArp.nextTime = now + NOTE_LOOKAHEAD + 0.03;
   }
 }
@@ -250,13 +253,18 @@ function xyArpReset() {
   xyArp.pts.clear();
 }
 
-// Oktavföljden för ett finger enligt mönstret (0 = fingrets egen ton, 1 = en oktav upp …)
-function xyArpOctaves() {
-  const n = Number(ui.arpOctaves.value) || 1;
-  let seq = [...Array(n).keys()];
+// Tonföljden för alla fingrar enligt mönstret: [{ p, f }] (f = frekvens i Hz)
+function xyArpSequence() {
   const pattern = ui.arpPattern.value;
-  if (pattern === 'down') seq.reverse(); // (Strum: alla oktaver på varje slag, nedifrån)
+  const base = [...xyArp.pts.values()].map((p) => ({ p, f: xyFreq(p.nx) }));
+  if (pattern === 'order') base.sort((a, b) => a.p.order - b.p.order); // i den ordning fingrarna kom
+  else base.sort((a, b) => a.f - b.f);
+  const octaves = Number(ui.arpOctaves.value) || 1;
+  let seq = [];
+  for (let o = 0; o < octaves; o++) seq.push(...base.map((e) => ({ p: e.p, f: e.f * 2 ** o })));
+  if (pattern === 'down') seq.reverse();
   else if (pattern === 'updown' && seq.length > 2) seq = seq.concat(seq.slice(1, -1).reverse());
+  else if (arpStrum()) seq.sort((a, b) => a.f - b.f); // Strum: alla toner nedifrån och upp
   return seq;
 }
 
@@ -274,43 +282,38 @@ function xyArpTick() {
   }
 }
 
+// En ton i arpeggiot: start t, slut end
+function xyArpNote({ p, f }, t, end) {
+  const v = xyMakeVoice(f, p.ny, t);
+  if (p.vib) v.vib.gain.value = p.vib;
+  xyVoiceEnd(v, end);
+  p.voices.add(v);
+  setTimeout(() => p.voices.delete(v), (end - audioCtx.currentTime) * 1000 + 150);
+}
+
 function xyArpStep(time) {
-  if (!xyArp.pts.size) return;
-  const seq = xyArpOctaves();
+  const seq = xyArpSequence();
+  if (!seq.length) return;
   const dur = arpGateDur();
   const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
-  const hits = [];
-  for (const p of xyArp.pts.values()) {
-    if (arpStrum()) {
-      // Strum: fingrets ton i alla oktaver, snabbt efter varandra (Ner & upp: vartannat slag uppifrån)
-      const oct = ui.arpPattern.value === 'strumud' && p.step % 2 ? [...seq].reverse() : seq;
-      p.step++;
-      const gap = arpStrumGap(oct.length);
-      oct.forEach((o, i) => {
-        const t = time + i * gap;
-        const v = xyMakeVoice(xyFreq(p.nx) * Math.pow(2, o), p.ny, t);
-        if (p.vib) v.vib.gain.value = p.vib;
-        xyVoiceEnd(v, Math.max(time + dur, t + 0.05));
-        p.voices.add(v);
-        setTimeout(() => p.voices.delete(v), wait + (i * gap + dur) * 1000 + 150);
-      });
-      hits.push(p);
-      continue;
-    }
+  let hits;
+  if (arpStrum()) {
+    // Strum: alla fingrars toner på varje slag, snabbt efter varandra (Ner & upp: vartannat slag uppifrån)
+    if (ui.arpPattern.value === 'strumud' && xyArp.step % 2) seq.reverse();
+    xyArp.step++;
+    const gap = arpStrumGap(seq.length);
+    seq.forEach((e, i) => { const t = time + i * gap; xyArpNote(e, t, Math.max(time + dur, t + 0.05)); });
+    hits = [...new Set(seq.map((e) => e.p))];
+  } else {
     let idx;
     if (ui.arpPattern.value === 'random') {
       idx = Math.floor(Math.random() * seq.length);
-      if (seq.length > 1 && idx === p.last) idx = (idx + 1) % seq.length;
-    } else idx = p.step % seq.length;
-    p.last = idx;
-    p.step++;
-    const f = xyFreq(p.nx) * Math.pow(2, seq[idx]);
-    const v = xyMakeVoice(f, p.ny, time);
-    if (p.vib) v.vib.gain.value = p.vib;
-    xyVoiceEnd(v, time + dur);
-    p.voices.add(v);
-    setTimeout(() => p.voices.delete(v), wait + dur * 1000 + 100);
-    hits.push(p);
+      if (seq.length > 1 && idx === xyArp.last) idx = (idx + 1) % seq.length;
+    } else idx = xyArp.step % seq.length;
+    xyArp.last = idx;
+    xyArp.step++;
+    xyArpNote(seq[idx], time, time + dur);
+    hits = [seq[idx].p];
   }
   setTimeout(() => {
     const t = performance.now();

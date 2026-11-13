@@ -73,6 +73,8 @@ const ui = {
   highContrast: $('high-contrast'),
   reduceMotion: $('reduce-motion'),
   scanMode: $('scan-mode'),
+  switch1Key: $('switch1-key'), // inlärd tangent för kontakt 1 (tom = standard)
+  switch2Key: $('switch2-key'),
   scanSpeed: $('scan-speed'),
   showKeys: $('show-keys'),
   padSpace: $('pad-space'),
