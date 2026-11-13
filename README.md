@@ -195,6 +195,14 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 
 ## Ljudmotor
 
+**Slutmix och skydd mot överstyrning:** allt ljud samlas i en slutmix innan det går till högtalarna. Det gäller båda ljudmotorerna, och via dem trumset, ljudeffekter, ljudfiler och XY.
+- Varje motor har egen kompressor och toppbegränsare.
+- Slutmixen har en gemensam **limiter**: −1 dBFS, ratio 20, attack 1 ms. Den behövs eftersom två motorer som spelar samtidigt annars kan gå över full nivå.
+- Sist kommer ett **mjukt tak** (waveshaper): helt rakt upp till 0,9, sedan en mjuk böj. Utnivån kan aldrig bli högre än 0,968 (−0,28 dBFS), oavsett hur mycket som kommer in.
+- Mätt med två motorer med stora ackord på 30 gånger full volym: toppen blir 0,968 och inget sampel når 0 dB.
+- Vid vanliga nivåer är slutmixen helt neutral: limiterns automatiska nivåhöjning är bortkompenserad, så 0,25 in ger 0,25 ut.
+- Normalt spel ligger kring −8 till −12 dBFS.
+
 **Toner och Ackord har var sitt ljud.** Varje sida har en egen ljudmotor med egna effekter, så att en ackordrunda med pad kan gå i stegsequencern medan man spelar melodi med elpiano på Toner. Listan *Ljud* i spelraden visar och byter ljudet för sidan man spelar på. Under *Inställningar → Ljud* väljer man överst vilket av de två (Toner eller Ackord) man ändrar. Det följer med sidan man senast spelade på. Båda ljuden sparas (`hoverPadsSynth` och `hoverPadsSynthChords`) och följer med i Mina presets. Äldre presets, med ett ljud, ger samma ljud på båda sidorna. XY har som förut sin egen klang. Ljudfiler och trumset hör till Toner.
 
 Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljud** och skruva själv:

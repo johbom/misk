@@ -20,14 +20,55 @@ function initAudio() {
     silent.start(0);
     if (audioCtx.state !== 'running') audioCtx.resume();
   } catch {}
+  const master = makeMasterBus(audioCtx);
   for (const slot of ['notes', 'chords']) {
-    const e = new SynthEngine(audioCtx, soundState(slot).params);
+    const e = new SynthEngine(audioCtx, soundState(slot).params, master);
     // Läge på rutan: synten behöver veta om oscillator 2 styrs (då finns den med i varje ton)
     Object.defineProperty(e, 'posMode', { get: () => ui.posParam.value });
     e.setVolume(Number(ui.volume.value));
     engines[slot] = e;
   }
   engine = engines[soundSlot];
+}
+
+// Slutmixen: allt ljud (båda ljudmotorerna, och via dem trumset, ljudfiler och XY) samlas här innan det
+// går till högtalarna. Varje motor har redan egen kompressor och toppbegränsare, men två motorer som
+// spelar samtidigt kan tillsammans gå över full nivå. Därför:
+//  1. en gemensam limiter (−1 dBFS, snabb attack) som tar ner summan, och
+//  2. ett mjukt tak sist (waveshaper): helt rakt upp till 0,9 och sedan en mjuk böj som aldrig når 1,0 –
+//     så att inget någonsin klipper i ljudkortet, inte ens de första millisekunderna innan limitern hunnit
+//     reagera. Vid normala nivåer påverkar ingen av dem ljudet.
+const MASTER_CEILING = 0.98; // högsta möjliga nivå ut (ca −0,2 dBFS)
+function makeMasterBus(ctx) {
+  const input = ctx.createGain();
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -1;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.12;
+  const ceiling = ctx.createWaveShaper();
+  const n = 4096;
+  const curve = new Float32Array(n);
+  const knee = 0.9;
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n - 1)) * 2 - 1;
+    const a = Math.abs(x);
+    // Rakt upp till knee, sedan mjukt mot taket (tanh), utan hack i kurvan
+    const y = a <= knee ? a : knee + (MASTER_CEILING - knee) * Math.tanh((a - knee) / (MASTER_CEILING - knee));
+    curve[i] = Math.sign(x) * y;
+  }
+  ceiling.curve = curve;
+  // Ingen översampling: dess filter kan ringa en aning över taket. Utan den kan utnivån aldrig
+  // bli högre än kurvans slut (ca 0,97), oavsett vad som kommer in.
+  ceiling.oversample = 'none';
+  // Webbläsarens kompressor höjer nivån automatiskt (ca +0,6 dB vid de här värdena) – ta bort det,
+  // så att vanligt spel låter precis som förut
+  const makeup = ctx.createGain();
+  makeup.gain.value = 0.936;
+  input.connect(limiter).connect(makeup).connect(ceiling).connect(ctx.destination);
+  Object.assign(input, { limiter, ceiling }); // (för mätning och felsökning)
+  return input;
 }
 
 // Spelar en uppladdad ljudfil genom effekterna (spelar alltid klart).

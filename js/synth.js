@@ -421,7 +421,8 @@ const nodeCtls = (node) => [node.parameters.get('ctl'), node.parameters.get('ctl
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
 class SynthEngine {
-  constructor(ctx, params) {
+  // out: dit motorn spelar (slutmixen med gemensam limiter, js/audio.js); annars direkt till högtalarna
+  constructor(ctx, params, out = ctx.destination) {
     this.ctx = ctx;
     this.p = { ...params };
     this.waveCache = {};
@@ -495,7 +496,7 @@ class SynthEngine {
     // Kompressorn höjer automatiskt nivån (ca +1,7 dB vid de här värdena) – ta bort det igen
     const makeup = ctx.createGain();
     makeup.gain.value = 0.82;
-    this.volume.connect(comp).connect(limiter).connect(makeup).connect(ctx.destination);
+    this.volume.connect(comp).connect(limiter).connect(makeup).connect(out);
     Object.assign(this, { comp, limiter, makeup }); // (för mätning och felsökning)
 
     // Brus (en sekund som loopas)
