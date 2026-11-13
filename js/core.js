@@ -68,6 +68,7 @@ const ui = {
   seqGate: $('seq-gate'),
   seqAdvance: $('seq-advance'),
   xySound: $('xy-sound'),
+  xyQuantize: $('xy-quantize'),
   xyReverb: $('xy-reverb'),
   dwell: $('dwell'),
   releaseDelay: $('release-delay'),

@@ -462,7 +462,7 @@ code { font: 0.85em ui-monospace, Menlo, monospace; }
 #play-mode-desc { margin: 8px 0 4px; }
 #play-mode-set .only-fixed { margin-top: 6px; }
 @media (max-width: 480px) { #play-mode-buttons { gap: 5px; } }
-@media (max-width: 480px) { html.fixed-screen #arp-toggle, html.fixed-screen #seq-toggle { padding-left: 10px; padding-right: 10px; } }
+@media (max-width: 480px) { html.fixed-screen #arp-toggle, html.fixed-screen #seq-toggle, html.fixed-screen #xy-quant-toggle { padding-left: 10px; padding-right: 10px; } }
 @media (max-width: 480px) {
   #formation-buttons { gap: 5px; }
   .formation-btn { width: 60px; padding: 6px 2px 5px; font-size: 0.7rem; }
@@ -631,7 +631,8 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen footer { display: none; }
 }
 /* Mindre surfplatta liggande: XY-klangerna som ikoner så att spelraden ryms på en rad */
-@media (orientation: landscape) and (max-width: 1100px) {
+/* (även stående surfplatta, där annars reglagen för Reverb och Volym krymper till ingenting) */
+@media (orientation: landscape) and (max-width: 1100px), (orientation: portrait) and (min-width: 601px) and (max-width: 1100px) {
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 4px 9px; }
   html.fixed-screen #play-bar .xy-sound .seg button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
@@ -671,7 +672,8 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #play-bar input[type="range"] { min-width: 0; width: 100%; }
   html.fixed-screen #play-bar .quick-btn,
   html.fixed-screen #play-bar #arp-toggle,
-  html.fixed-screen #play-bar #seq-toggle { padding-top: 3px; padding-bottom: 3px; }
+  html.fixed-screen #play-bar #seq-toggle,
+  html.fixed-screen #play-bar #xy-quant-toggle { padding-top: 3px; padding-bottom: 3px; }
   html.fixed-screen .pad-grid { padding: 6px 10px 6px; }
   html.fixed-screen #xy-pad { margin: 6px 10px 6px; }
   html.fixed-screen footer { display: none; }
@@ -701,7 +703,7 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar { order: 1; flex: 1 1 40%; min-width: 0; }
   #play-bar > .preset-label select { min-width: 0; width: 100%; max-width: none; }
   #play-bar > .vol-label input[type="range"], #play-bar > .xy-reverb-bar input[type="range"] { min-width: 0; width: 100%; }
-  #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle { order: 2; }
+  #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #xy-quant-toggle { order: 2; }
 }
 /* Smal och låg (t.ex. iPhone SE liggande): flikarna bara som ikoner, ingen MIDI-status, mindre ljudlista */
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
@@ -710,9 +712,9 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #midi-status { display: none; }
   html.fixed-screen #play-bar > .preset-label { flex-basis: 150px; }
   html.fixed-screen #play-bar { gap: 6px; flex-wrap: nowrap; }
-  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle { order: 0; }
+  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #xy-quant-toggle { order: 0; }
   /* XY: ordet "Klang" göms (knapparna har namnen i title och listan heter Klang för skärmläsare) */
-  html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; }
+  html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; flex: none; } /* klangknapparna krymper inte in under reglagen */
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 5px; font-size: 0.9rem; }
 }
 
@@ -733,16 +735,18 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #play-bar > .preset-label { flex: 0 1 170px; min-width: 90px; }
   html.fixed-screen #quick-formation span,
   html.fixed-screen #arp-toggle span,
-  html.fixed-screen #seq-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  html.fixed-screen #seq-toggle span,
+  html.fixed-screen #xy-quant-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   html.fixed-screen #play-bar .quick-btn,
   html.fixed-screen #play-bar #arp-toggle,
-  html.fixed-screen #play-bar #seq-toggle { padding-left: 9px; padding-right: 9px; }
+  html.fixed-screen #play-bar #seq-toggle,
+  html.fixed-screen #play-bar #xy-quant-toggle { padding-left: 9px; padding-right: 9px; }
   /* Volym (och Reverb på XY): bara reglaget */
   html.fixed-screen #play-bar > .vol-label,
   html.fixed-screen #play-bar > .xy-reverb-bar { font-size: 0; gap: 0; flex: 0 1 110px; }
   html.fixed-screen #play-bar > .vol-label input[type="range"],
   html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 60px; }
-  html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; }
+  html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; flex: none; } /* klangknapparna krymper inte in under reglagen */
   html.fixed-screen #play-bar .xy-sound .seg button { font-size: 0.9rem; padding: 3px 6px; }
 }
 
@@ -1627,8 +1631,8 @@ html.high-contrast .arp-tap { background: #000; border: 2px solid #fff; color: #
 @media (max-width: 520px) { #seq-set { grid-template-columns: 1fr; } }
 
 /* ===== Stegsequencer: Sekv-knappen och raden med steg ===== */
-#seq-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 14px; border-radius: 999px; }
-#seq-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+#seq-toggle, #xy-quant-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 14px; border-radius: 999px; white-space: nowrap; }
+#seq-toggle.on, #xy-quant-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 /* En slinga går (syns även när raden är dold, t.ex. på XY): en pulserande prick */
 #seq-toggle { position: relative; }
 #seq-toggle.running::after {
@@ -1640,8 +1644,8 @@ html.reduce-motion #seq-toggle.running::after { animation: none; }
 #seq-other { border-color: #7be3a0; color: #c9f5d9; }
 #seq-other[hidden] { display: none; }
 #seq-other b { color: #7be3a0; }
-html.steppers #seq-toggle { min-height: 46px; padding: 6px 18px; }
-html.high-contrast #seq-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
+html.steppers #seq-toggle, html.steppers #xy-quant-toggle { min-height: 46px; padding: 6px 18px; }
+html.high-contrast #seq-toggle.on, html.high-contrast #xy-quant-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
 #seq-bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px 8px; padding: 6px 24px 0; }
 #seq-bar[hidden] { display: none; }
 .seq-ctl { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 4px 12px; white-space: nowrap; }

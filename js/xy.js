@@ -37,7 +37,27 @@ const xy = {
 const XY_TOP_MIDI = 96; // C7
 const xyOctaves = () => Number(ui.xyOctaves.value) || 5; // 5 = C2–C7
 const xyLowHz = () => 440 * Math.pow(2, (XY_TOP_MIDI - 12 * xyOctaves() - 69) / 12);
-const xyFreq = (nx) => xyLowHz() * Math.pow(2, nx * xyOctaves()); // nx 0..1, vänster..höger
+// nx 0..1, vänster..höger. Steglöst – eller, med Skala (kvantisera) på, närmaste ton i tonarten.
+const xyFreq = (nx) => {
+  const f = xyLowHz() * Math.pow(2, nx * xyOctaves());
+  if (!xyQuantOn()) return f;
+  return 440 * Math.pow(2, (xyQuantMidi(69 + 12 * Math.log2(f / 440)) - 69) / 12);
+};
+// Kvantisera: XY håller sig i tonarten (grundton och skala, samma som på Toner)
+const xyQuantOn = () => ui.xyQuantize.checked;
+function xyQuantMidi(m) {
+  const scale = SCALES[ui.scale.value] || SCALES.major;
+  const root = Number(ui.root.value);
+  let best = Math.round(m);
+  let dist = Infinity;
+  // Största glappet i skalorna är 3 halvtoner, så närmaste skalton ligger inom ±2
+  for (let c = Math.floor(m) - 2; c <= Math.ceil(m) + 2; c++) {
+    if (!scale.includes(((c - root) % 12 + 12) % 12)) continue;
+    const d = Math.abs(c - m);
+    if (d < dist) { dist = d; best = c; }
+  }
+  return best;
+}
 const xyCut = (ny, freq) => Math.min(XY_CUT_MAX, freq * Math.pow(2, ny * XY_CUT_OCTAVES)); // ny 0..1, nederkant..överkant
 // Vibrato på Y (sinus): djup i cent och takt i Hz. Kurvan gör nedre delen nästan rak.
 const XY_VIB_MAX = 55;
@@ -423,7 +443,15 @@ function setupXY() {
   window.addEventListener('blur', xyStopAll);
 
   new ResizeObserver(xyResize).observe(xy.el);
-  [ui.xyOctaves, ui.root, ui.scale, ui.xySound].forEach((el) => el.addEventListener('change', xyDraw));
+  [ui.xyOctaves, ui.root, ui.scale, ui.xySound, ui.xyQuantize].forEach((el) => el.addEventListener('change', xyDraw));
+  // Skala-knappen i spelraden (samma val som under Instrument → XY-platta)
+  $('xy-quant-toggle').addEventListener('click', () => {
+    ui.xyQuantize.checked = !xyQuantOn();
+    ui.xyQuantize.dispatchEvent(new Event('change')); // sparar och ritar om
+    log(xyQuantOn() ? `${t('Skala')}: ${NOTE_NAMES[Number(ui.root.value)]} ${t(scaleName())}` : t('Steglös tonhöjd'));
+  });
+  [ui.xyQuantize, ui.root, ui.scale].forEach((el) => el.addEventListener('change', syncXyQuant));
+  syncXyQuant();
 }
 
 // Anropas när fliken byts
@@ -455,7 +483,8 @@ function xyLoop() {
   if (!xy.frame) xy.frame = requestAnimationFrame(() => { xy.frame = 0; xyDraw(); });
 }
 
-// Bakgrund: svaga linjer för skalans toner (bara orientering – tonhöjden glider steglöst)
+// Bakgrund: linjer för skalans toner – svaga som orientering när tonhöjden glider steglöst,
+// tydligare med Skala (kvantisera) på, när varje linje är en ton man hamnar på
 function xyDrawGrid(g, W, H, hc) {
   const low = xyLowHz();
   const octs = xyOctaves();
@@ -469,7 +498,8 @@ function xyDrawGrid(g, W, H, hc) {
     if (!scale.includes(pc)) continue;
     const x = ((m - lowMidi) / (12 * octs)) * W;
     const isRoot = pc === 0;
-    g.strokeStyle = hc ? (isRoot ? '#fff' : '#777') : isRoot ? 'rgba(140,160,255,0.38)' : 'rgba(140,150,190,0.12)';
+    const q = xyQuantOn();
+    g.strokeStyle = hc ? (isRoot ? '#fff' : q ? '#bbb' : '#777') : isRoot ? `rgba(140,160,255,${q ? 0.55 : 0.38})` : `rgba(140,150,190,${q ? 0.3 : 0.12})`;
     g.lineWidth = isRoot ? 1.5 : 1;
     g.beginPath();
     g.moveTo(x, 0);
@@ -557,4 +587,15 @@ function xyDraw() {
   g.shadowBlur = 0;
   // Fortsätt rita medan något bleknar
   if (alive) xyLoop();
+}
+
+// Skala-knappen: på = tonarten visas på knappen (t.ex. "C dur"), av = "Skala"
+function syncXyQuant() {
+  const b = $('xy-quant-toggle');
+  const on = xyQuantOn();
+  const key = `${NOTE_NAMES[Number(ui.root.value)]} ${t(scaleName())}`;
+  b.classList.toggle('on', on);
+  b.setAttribute('aria-pressed', on);
+  b.querySelector('span').textContent = on ? key : t('Skala');
+  b.title = t(`Håll tonerna i skalan (${key}) – av: steglös tonhöjd`);
 }

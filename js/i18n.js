@@ -275,6 +275,10 @@ const EN = {
   'Gäller Toner och Ackord – XY har egen klang.': 'Applies to Notes and Chords – XY has its own tone.',
   'Toner och Ackord har var sitt ljud – välj ovan vilket du ändrar. Det följer med sidan du spelar på. XY har egen klang.': 'Notes and Chords each have their own sound – choose above which one you change. It follows the page you play on. XY has its own tone.',
   'Ljudet för': 'Sound for',
+  'Steglös tonhöjd': 'Gliding pitch',
+  'Håll i skalan (kvantisera)': 'Stay in the scale (quantise)',
+  'Tonhöjden hoppar till närmaste ton i tonarten – samma grundton och skala som på Toner – i stället för att glida steglöst. Knappen': 'The pitch jumps to the nearest note in the key – the same root and scale as on Notes – instead of gliding. The',
+  'på XY-sidan gör samma sak.': 'button on the XY page does the same.',
   'Pausat – appen var dold eller skärmen låst.': 'Paused – the app was hidden or the screen locked.',
   'Återställ': 'Reset',
   'Slumpa ljud': 'Random sound',
@@ -879,6 +883,7 @@ const EN_HTML = {
 // Texter som byggs ihop med siffror och namn. Varje mönster gäller hela texten.
 const q = (s) => `"${s}"`;
 const EN_PATTERNS = [
+  [/^Håll tonerna i skalan \((.+)\) – av: steglös tonhöjd$/, (k) => `Keep the notes in the scale (${k}) – off: gliding pitch`],
   [/^Ljudet för (Toner|Ackord)$/, (p) => `Sound for ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Antal (rutor|ackord): (\d+)$/, (w, n) => `Number of ${w === 'rutor' ? 'pads' : 'chords'}: ${n}`],
   [/^Stoppa slingan på (Toner|Ackord)$/, (p) => `Stop the loop on ${p === 'Toner' ? 'Notes' : 'Chords'}`],
