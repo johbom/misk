@@ -23,7 +23,8 @@ const SEQ_RATES = { 1: 4, 2: 2, 4: 1, 8: 0.5, 16: 0.25 };
 
 const seq = {
   pat: { notes: [], chords: [] },
-  running: false, timer: 0, nextTime: 0, step: 0, page: 'notes',
+  play: { notes: false, chords: false }, // vilka sidors slingor som spelar (samma takt)
+  timer: 0, nextTime: 0, step: 0,
   sel: -1, // markerat steg som det man spelar skrivs in i (-1 = inget)
   rec: false, // spela in medan sequencern går
   edit: null, // { pad, entry }: senast inskrivna rutan, vars läge följer pekaren medan den låter
@@ -74,30 +75,55 @@ function loadSeq() {
 }
 
 // ---------- Uppspelning ----------
-function seqStart() {
-  if (seq.running || !seqTab() || !audioCtx) return; // (ljudet startas av startrutan)
+// Toner och Ackord har var sin slinga med egen ▶, men samma takt: en ackordrunda och ett trumkomp kan gå
+// samtidigt. Slingorna fortsätter när man byter sida, så man kan spela till dem – på den andra sidan,
+// på XY eller på samma sida (det man spelar skrivs bara in med Spela in, eller i ett steg man valt).
+const seqPlaying = (page) => seq.play[page];
+const seqAny = () => seq.play.notes || seq.play.chords;
+const SEQ_PAGE_NAME = { notes: 'Toner', chords: 'Ackord' };
+
+function seqStart(page = seqPage()) {
+  if (seq.play[page] || !audioCtx) return; // (ljudet startas av startrutan)
   if (audioCtx.state !== 'running') audioCtx.resume();
-  seq.running = true;
-  seq.page = seqPage();
-  seq.step = 0;
-  seq.sched = [];
-  seq.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
-  seq.timer = setInterval(seqTick, ARP_TICK_MS);
+  seq.play[page] = true;
+  // Under uppspelning skrivs inget in steg för steg (bara med Spela in, eller om man själv väljer ett steg)
+  if (page === seqPage()) seq.sel = -1;
+  if (!seq.timer) {
+    // Takten börjar: första steget direkt. Går den redan hakar slingan på i takt.
+    seq.step = 0;
+    seq.sched = [];
+    seq.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
+    seq.timer = setInterval(seqTick, ARP_TICK_MS);
+  }
   renderSeq();
-  log('▶ Sequencer');
+  log(`▶ Sequencer: ${t(SEQ_PAGE_NAME[page])}`);
 }
 
-function seqStop() {
-  if (!seq.running) return;
-  clearInterval(seq.timer);
-  seq.timer = 0;
-  seq.running = false;
+function seqStop(page = seqPage()) {
+  if (!seq.play[page]) return;
+  seq.play[page] = false;
+  if (page === seqPage()) seq.rec = false; // stopp avslutar också inspelningen
   const now = audioCtx.currentTime;
-  seq.pending.forEach((e) => { if (e.time > now) e.cancel(); });
-  seq.pending = [];
-  seq.now = -1;
+  seq.pending = seq.pending.filter((e) => {
+    if (e.page !== page) return true;
+    if (e.time > now) e.cancel();
+    return false;
+  });
+  if (!seqAny()) {
+    clearInterval(seq.timer);
+    seq.timer = 0;
+    seq.now = -1;
+    seq.pending.forEach((e) => { if (e.time > now) e.cancel(); });
+    seq.pending = [];
+  }
   renderSeq();
-  log('■ Sequencer');
+  log(`■ Sequencer: ${t(SEQ_PAGE_NAME[page])}`);
+}
+
+function seqStopAll() {
+  seqStop('notes');
+  seqStop('chords');
+  seq.rec = false;
 }
 
 function seqTick() {
@@ -106,29 +132,30 @@ function seqTick() {
   if (seq.nextTime < now - 0.05) seq.nextTime = now + NOTE_LOOKAHEAD;
   while (seq.nextTime < now + ARP_LOOKAHEAD) {
     const i = seq.step % seqSteps();
-    seqPlayStep(i, seq.nextTime);
+    for (const page of ['notes', 'chords']) if (seq.play[page]) seqPlayStep(page, i, seq.nextTime);
     seq.sched.push({ t: seq.nextTime, i });
     if (seq.sched.length > 4) seq.sched.shift();
+    const time = seq.nextTime;
+    const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
+    const tm = setTimeout(() => { seq.now = i; markSeqNow(); }, wait);
+    seq.pending.push({ time, page: '', cancel: () => clearTimeout(tm) });
     seq.nextTime += seqStepDur();
     seq.step = i + 1;
   }
 }
 
-function seqPlayStep(i, time) {
-  const pads = seqPadsOf(seq.page);
-  const list = seq.pat[seq.page][i].map((e) => ({ pad: pads[e.p], x: e.x })).filter((e) => e.pad);
+function seqPlayStep(page, i, time) {
+  const pads = seqPadsOf(page);
+  const list = seq.pat[page][i].map((e) => ({ pad: pads[e.p], x: e.x })).filter((e) => e.pad);
   const off = time + seqGateDur();
   // Flera rutor i samma steg: lite svagare var, som när man spelar flera rutor samtidigt
   const count = list.reduce((n, e) => n + (e.pad.drum ? 1 : e.pad.notes().length), 0);
   const level = 0.8 / Math.sqrt(Math.max(1, count));
-  list.forEach((e) => seqPlayPad(e.pad, time, off, level, e.x));
-  const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
-  const t = setTimeout(() => { seq.now = i; markSeqNow(); }, wait);
-  seq.pending.push({ time, cancel: () => clearTimeout(t) });
+  list.forEach((e) => seqPlayPad(e.pad, time, off, level, e.x, page));
 }
 
 // En ruta i ett steg: från time till off (ljudklockans tid). x = sparat läge på rutan (eller null).
-function seqPlayPad(pad, time, off, level, x) {
+function seqPlayPad(pad, time, off, level, x, page) {
   const notes = pad.notes();
   const timers = [];
   const stops = [];
@@ -161,6 +188,7 @@ function seqPlayPad(pad, time, off, level, x) {
   seq.pending = seq.pending.filter((e) => e.time > now);
   seq.pending.push({
     time,
+    page,
     cancel: () => {
       timers.forEach(clearTimeout);
       stops.forEach((s) => s.cancel?.());
@@ -176,7 +204,7 @@ function seqInput(pad) {
   const k = seqPadsOf(page).indexOf(pad);
   if (k < 0) return;
   const steps = seq.pat[page];
-  const live = seq.running && seq.rec && seq.page === page;
+  const live = seq.rec && seq.play[page];
   const entry = { p: k, x: seqPosNow(pad) };
   let i;
   if (live) {
@@ -229,7 +257,7 @@ function stepText(page, i) {
 }
 
 function renderSeq() {
-  if (!seqOn() && seq.running) { seqStop(); return; } // (seqStop ritar om)
+  if (!seqOn() && seqAny()) { seqStopAll(); return; } // (seqStop ritar om)
   const bar = $('seq-bar');
   const show = seqOn();
   if (bar.hidden === show) {
@@ -280,26 +308,34 @@ function renderSeq() {
   });
   markSeqNow();
   const play = $('seq-play');
-  play.classList.toggle('on', seq.running);
-  play.setAttribute('aria-pressed', seq.running);
-  play.querySelector('span').textContent = t(seq.running ? 'Stopp' : 'Start');
-  play.querySelector('b').textContent = seq.running ? '■' : '▶';
+  const playing = seq.play[page];
+  play.classList.toggle('on', playing);
+  play.setAttribute('aria-pressed', playing);
+  play.querySelector('span').textContent = t(playing ? 'Stopp' : 'Start');
+  play.querySelector('b').textContent = playing ? '■' : '▶';
+  // Går den andra sidans slinga? Visa det, med en knapp som stoppar den.
+  const other = page === 'chords' ? 'notes' : 'chords';
+  const ob = $('seq-other');
+  ob.hidden = !seq.play[other];
+  ob.querySelector('span').textContent = t(SEQ_PAGE_NAME[other]);
+  ob.title = t(`Stoppa slingan på ${SEQ_PAGE_NAME[other]}`);
   $('seq-rec').classList.toggle('on', seq.rec);
   $('seq-rec').setAttribute('aria-pressed', seq.rec);
   $('seq-rest').disabled = seq.sel < 0;
   $('seq-clear').disabled = !seq.pat[page].slice(0, n).some((s) => s.length);
-  $('seq-hint').textContent = t(seq.running && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg.'
+  $('seq-hint').textContent = t(playing && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg.'
     : seq.sel >= 0 ? `Spela en ruta så hamnar den i steg ${seq.sel + 1}.` : 'Välj ett steg och spela en ruta för att skriva in den.');
 }
 
 function markSeqNow() {
-  const show = seq.running && seq.page === seqPage();
+  const show = seq.play[seqPage()];
   [...$('seq-steps').children].forEach((b, i) => b.classList.toggle('now', show && i === seq.now));
 }
 
 // Sekv-knappen i spelraden visar om sequencern är på
 function syncSeqToggle() {
   $('seq-toggle').classList.toggle('on', seqOn());
+  $('seq-toggle').classList.toggle('running', seqAny()); // en slinga går (även på XY, där raden inte syns)
   $('seq-toggle').setAttribute('aria-pressed', seqOn());
 }
 
@@ -313,11 +349,13 @@ function syncSeqBpm(from) {
 function setupSeq() {
   loadSeq();
   ui.seqOn.addEventListener('change', () => {
-    if (!seqOn()) { seqStop(); seq.sel = -1; seq.rec = false; }
+    if (!seqOn()) { seqStopAll(); seq.sel = -1; }
     else if (!seq.pat[seqPage()].some((s) => s.length)) seq.sel = 0; // tomt: börja skriva i steg 1
     renderSeq();
   });
   $('seq-toggle').addEventListener('click', () => {
+    // På XY syns knappen bara medan en slinga går: där stoppar den slingorna
+    if (document.body.dataset.tab === 'xy') { seqStopAll(); return; }
     if (quick.open === 'seq') { closeQuick(); return; }
     ui.seqOn.checked = !seqOn();
     ui.seqOn.dispatchEvent(new Event('change'));
@@ -326,7 +364,9 @@ function setupSeq() {
     else closeQuick();
   });
   $('seq-settings').addEventListener('click', () => toggleQuick('seq'));
-  $('seq-play').addEventListener('click', () => (seq.running ? seqStop() : seqStart()));
+  $('seq-play').addEventListener('click', () => (seq.play[seqPage()] ? seqStop() : seqStart()));
+  $('seq-other').addEventListener('click', () => seqStop(seqPage() === 'chords' ? 'notes' : 'chords'));
+  // Spela in: startar sequencern (om den inte går) – ett tryck till slutar spela in, och sequencern fortsätter
   $('seq-rec').addEventListener('click', () => {
     seq.rec = !seq.rec;
     if (seq.rec) { seq.sel = -1; seqStart(); }

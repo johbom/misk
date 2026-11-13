@@ -7,7 +7,7 @@ function showTab(tab) {
   resetHover();
   allPads().forEach(release);
   arpReset();
-  seqStop();
+  // (stegsequencerns slingor fortsätter: man ska kunna spela till dem på en annan sida)
   document.body.dataset.tab = tab;
   syncSoundSelect(); // trumseten finns i listan Ljud bara på sidan Toner
   if (tab === 'settings') setLocked(false);

@@ -273,7 +273,7 @@ footer p { margin: 0; font-family: ui-monospace, Menlo, monospace; }
 body:not([data-tab="notes"]) .only-notes,
 body:not([data-tab="chords"]) .only-chords,
 body:not([data-tab="xy"]) .only-xy,
-body[data-tab="xy"] .not-xy,
+body[data-tab="xy"] .not-xy:not(#seq-toggle.running),
 body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Ackordrutor */
@@ -714,6 +714,36 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   /* XY: ordet "Klang" göms (knapparna har namnen i title och listan heter Klang för skärmläsare) */
   html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; }
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 5px; font-size: 0.9rem; }
+}
+
+/* Mobil liggande (minst 700 px bred): flikarna och spelraden delar EN rad högst upp, bara ikoner –
+   så att rutorna får så mycket höjd som möjligt. Sidan blir ett rutnät: rad 1 flikar | spelrad,
+   rad 2 stegsequencern, rad 3 spelytan (eller inställningarna). Namnen finns kvar för skärmläsare. */
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 700px) {
+  html.fixed-screen body { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); }
+  html.fixed-screen header { grid-row: 1; grid-column: 1; padding: 4px 4px 0 10px; }
+  html.fixed-screen #play-bar { grid-row: 1; grid-column: 2; padding: 4px 10px 0 4px; gap: 6px; justify-content: flex-end; }
+  html.fixed-screen #seq-bar { grid-row: 2; grid-column: 1 / -1; }
+  html.fixed-screen main, html.fixed-screen #settings { grid-row: 3; grid-column: 1 / -1; min-height: 0; }
+  html.fixed-screen .brand, html.fixed-screen #midi-status { display: none; }
+  html.fixed-screen #tabs button { padding: 4px 8px; }
+  html.fixed-screen #tabs button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* Lås: bara hänglåset (texten finns kvar som namn) */
+  html.fixed-screen #lock-btn { width: 34px; padding: 3px 0 3px 8px; overflow: hidden; white-space: nowrap; text-align: left; }
+  html.fixed-screen #play-bar > .preset-label { flex: 0 1 170px; min-width: 90px; }
+  html.fixed-screen #quick-formation span,
+  html.fixed-screen #arp-toggle span,
+  html.fixed-screen #seq-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  html.fixed-screen #play-bar .quick-btn,
+  html.fixed-screen #play-bar #arp-toggle,
+  html.fixed-screen #play-bar #seq-toggle { padding-left: 9px; padding-right: 9px; }
+  /* Volym (och Reverb på XY): bara reglaget */
+  html.fixed-screen #play-bar > .vol-label,
+  html.fixed-screen #play-bar > .xy-reverb-bar { font-size: 0; gap: 0; flex: 0 1 110px; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"],
+  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 60px; }
+  html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; }
+  html.fixed-screen #play-bar .xy-sound .seg button { font-size: 0.9rem; padding: 3px 6px; }
 }
 
 /* Ring: sektorer runt ett tomt hål där muspekaren kan vila */
@@ -1598,6 +1628,17 @@ html.high-contrast .arp-tap { background: #000; border: 2px solid #fff; color: #
 /* ===== Stegsequencer: Sekv-knappen och raden med steg ===== */
 #seq-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 14px; border-radius: 999px; }
 #seq-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+/* En slinga går (syns även när raden är dold, t.ex. på XY): en pulserande prick */
+#seq-toggle { position: relative; }
+#seq-toggle.running::after {
+  content: ''; position: absolute; top: 3px; right: 5px; width: 8px; height: 8px; border-radius: 50%;
+  background: #7be3a0; box-shadow: 0 0 0 2px var(--bg); animation: seq-pulse 1s ease-in-out infinite;
+}
+@keyframes seq-pulse { 50% { opacity: 0.35; } }
+html.reduce-motion #seq-toggle.running::after { animation: none; }
+#seq-other { border-color: #7be3a0; color: #c9f5d9; }
+#seq-other[hidden] { display: none; }
+#seq-other b { color: #7be3a0; }
 html.steppers #seq-toggle { min-height: 46px; padding: 6px 18px; }
 html.high-contrast #seq-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
 #seq-bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px 8px; padding: 6px 24px 0; }

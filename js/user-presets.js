@@ -45,7 +45,7 @@ function applySnapshot(data) {
   saveSettings();
 
   // Stegsequencerns mönster (äldre presets saknar det: då behålls det som finns)
-  if (data.seq) { seqStop(); applySeqData(data.seq); saveSeq(); }
+  if (data.seq) { seqStopAll(); applySeqData(data.seq); saveSeq(); }
 
   // Ackord
   if (Array.isArray(data.chords) && data.chords.length === MAX_CHORDS) {

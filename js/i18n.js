@@ -876,6 +876,9 @@ const EN_HTML = {
 // Texter som byggs ihop med siffror och namn. Varje mönster gäller hela texten.
 const q = (s) => `"${s}"`;
 const EN_PATTERNS = [
+  [/^Antal (rutor|ackord): (\d+)$/, (w, n) => `Number of ${w === 'rutor' ? 'pads' : 'chords'}: ${n}`],
+  [/^Stoppa slingan på (Toner|Ackord)$/, (p) => `Stop the loop on ${p === 'Toner' ? 'Notes' : 'Chords'}`],
+  [/^([▶■]) Sequencer: (Toner|Ackord)$/, (s, p) => `${s} Sequencer: ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Spela en ruta så hamnar den i steg (\d+)\.$/, (n) => `Play a pad to put it in step ${n}.`],
   [/^Steg (\d+): (.+)$/, (n, x) => `Step ${n}: ${x === 'tomt' ? 'empty' : x}`],
   [/^Kontakt (\d) är nu (.+)\.$/, (n, k) => `Switch ${n} is now ${k}.`],

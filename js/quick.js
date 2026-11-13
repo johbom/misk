@@ -110,7 +110,15 @@ function renderQuick() {
     pop.innerHTML = `<div class="quick-forms" role="radiogroup" aria-label="Formation">${
       Object.entries(FORMATIONS).map(([v, name]) => `<button type="button" class="formation-btn${
         ui.formation.value === v ? ' on' : ''}" role="radio" aria-checked="${ui.formation.value === v}" data-formation="${v}">${
-        FORMATION_ICONS[v]}<span>${name}</span></button>`).join('')}</div>`;
+        FORMATION_ICONS[v]}<span>${name}</span></button>`).join('')}</div>${countRow()}`;
+    pop.querySelectorAll('[data-count]').forEach((b) => b.addEventListener('click', () => {
+      const el = quickCountInput();
+      if (!el || el.value === b.dataset.count) return;
+      el.value = b.dataset.count;
+      el.dispatchEvent(new Event('change')); // sparar och bygger om rutorna
+      log(`${document.body.dataset.tab === 'chords' ? 'Antal ackord' : 'Antal rutor'}: ${el.value}`);
+      renderQuick();
+    }));
     pop.querySelectorAll('[data-formation]').forEach((b) => b.addEventListener('click', () => {
       const v = b.dataset.formation;
       if (ui.formation.value !== v) {
@@ -147,6 +155,24 @@ function renderQuick() {
       log(`Tonart: ${NOTE_NAMES[Number(ui.root.value)]} ${scaleName()}`);
     }));
   }
+}
+
+// Antal rutor (Toner) eller ackord (Ackord) direkt i formationsrutan
+const QUICK_COUNTS = { notes: [4, 8, 12, 16], chords: [2, 4, 6, 8] };
+function quickCountInput() {
+  const tab = document.body.dataset.tab;
+  return tab === 'chords' ? ui.chordCount : tab === 'notes' ? ui.noteCount : null;
+}
+
+function countRow() {
+  const el = quickCountInput();
+  if (!el) return '';
+  const cur = Number(el.value);
+  const counts = QUICK_COUNTS[document.body.dataset.tab];
+  const what = document.body.dataset.tab === 'chords' ? 'Antal ackord' : 'Antal rutor';
+  return `<div class="quick-octaves quick-count" role="radiogroup" aria-label="${what}"><span>${what}</span>${
+    counts.map((n) => `<button type="button" role="radio" aria-checked="${n === cur}" class="${
+      n === cur ? 'on' : ''}" data-count="${n}">${n}</button>`).join('')}</div>`;
 }
 
 // Oktaven hör till sidan: Toner har sin egen, Ackord sin (XY har ett omfång i stället, ingen oktav)
