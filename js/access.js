@@ -346,15 +346,29 @@ function markKeys() {
   visiblePads().slice(0, 10).forEach((p, i) => p.el.setAttribute('data-key', (i + 1) % 10));
 }
 
+// Det som stegningen går igenom: rutorna, och sist stegsequencerns Start/Stopp (och knappen som stoppar
+// den andra sidans slinga) när raden syns – så att sequencern kan startas och stoppas med kontakt.
+const scanCtls = new Map(); // knapp -> { el, ctl: true } (samma objekt varje gång)
+function scanItems() {
+  const pads = visiblePads();
+  if (!pads.length || !seqOn()) return pads;
+  const ctls = [...document.querySelectorAll('#seq-play, #seq-other:not([hidden])')].map((el) => {
+    if (!scanCtls.has(el)) scanCtls.set(el, { el, ctl: true });
+    return scanCtls.get(el);
+  });
+  return [...pads, ...ctls];
+}
+
 function markScan() {
   markKeys();
   const on = scanning();
-  const current = visiblePads()[scan.idx];
+  const current = scanItems()[scan.idx];
   allPads().forEach((p) => p.el.classList.toggle('scan', on && p === current));
+  document.querySelectorAll('#seq-bar .seq-ctl').forEach((el) => el.classList.toggle('scan', on && current?.el === el));
 }
 
 function scanStep() {
-  const n = visiblePads().length;
+  const n = scanItems().length;
   if (!n) return;
   scan.idx = (scan.idx + 1) % n;
   markScan();
@@ -366,7 +380,7 @@ function syncScan() {
     clearInterval(scan.timer);
     scan.timer = 0;
   } else {
-    if (scan.idx >= visiblePads().length) scan.idx = 0;
+    if (scan.idx >= scanItems().length) scan.idx = 0;
     if (ui.scanMode.value === 'auto' && !scan.timer && !scan.held) {
       scan.timer = setInterval(scanStep, Number(ui.scanSpeed.value));
     }
@@ -382,19 +396,20 @@ function restartScan() {
 
 function scanPress() {
   if (scan.held) return;
-  const pad = visiblePads()[scan.idx];
+  const pad = scanItems()[scan.idx];
   if (!pad) return;
   scan.held = pad;
   clearInterval(scan.timer); // stå still medan kontakten hålls in
   scan.timer = 0;
-  activate(pad);
+  if (pad.ctl) pad.el.click(); // sequencerns Start/Stopp
+  else activate(pad);
 }
 
 function scanRelease() {
   const pad = scan.held;
   if (!pad) return;
   scan.held = null;
-  if (ui.playMode.value === 'hold') release(pad);
+  if (!pad.ctl && ui.playMode.value === 'hold') release(pad);
   restartScan();
 }
 

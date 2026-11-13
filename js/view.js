@@ -9,6 +9,7 @@ function showTab(tab) {
   arpReset();
   // (stegsequencerns slingor fortsätter: man ska kunna spela till dem på en annan sida)
   document.body.dataset.tab = tab;
+  if (tab === 'notes' || tab === 'chords') useSoundSlot(tab); // var sitt ljud (js/sound.js)
   syncSoundSelect(); // trumseten finns i listan Ljud bara på sidan Toner
   if (tab === 'settings') setLocked(false);
   document.querySelectorAll('#tabs button[data-tab]').forEach((b) =>

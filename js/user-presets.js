@@ -17,6 +17,11 @@ function loadUserPresets() {
 
 const saveUserPresets = (list) => localStorage.setItem(USER_PRESETS_KEY, JSON.stringify(list));
 
+const snapSound = (slot) => {
+  const snd = soundState(slot);
+  return { preset: snd.preset, params: { ...snd.params }, lib: { ...snd.lib } };
+};
+
 // Ögonblicksbild av allt som går att ställa in
 function snapshot() {
   const settings = {};
@@ -25,7 +30,8 @@ function snapshot() {
     v: 1,
     settings,
     chords: chords.map((c) => ({ ...c })),
-    synth: { preset: synthPreset, params: { ...synthParams }, lib: { ...synthLib } },
+    synth: snapSound('notes'), // Toner
+    synthChords: snapSound('chords'), // Ackord (eget ljud)
     seq: seqData(), // stegsequencerns mönster
   };
 }
@@ -54,12 +60,12 @@ function applySnapshot(data) {
   }
 
   // Ljud
+  // Äldre presets har ett ljud för båda sidorna
   if (data.synth && data.synth.params) {
-    const preset = data.synth.preset in SYNTH_PRESETS ? data.synth.preset : CUSTOM;
-    synthLib = preset === CUSTOM && data.synth.lib ? { ...data.synth.lib } : { name: '', edited: false };
-    applySynth({ ...SYNTH_DEFAULTS, ...data.synth.params }, preset);
+    setSlotSound('notes', data.synth);
+    setSlotSound('chords', data.synthChords || data.synth);
   }
-  if (engine) engine.setVolume(Number(ui.volume.value));
+  Object.values(engines).forEach((e) => e && e.setVolume(Number(ui.volume.value)));
 
   // Rita om allt
   syncFormationButtons();

@@ -394,14 +394,14 @@ function drumBus(kitId) {
     last = s;
   }
   if (kit.lowpass) { const f = dFilt(ctx, 'lowpass', kit.lowpass, 0.9); last.connect(f); last = f; }
-  last.connect(engine.volume);
-  if (kit.echo) fxEcho(ctx, last, engine.volume, kit.echo); // dubeko (js/fx.js)
+  last.connect(engines.notes.volume); // trumseten finns bara på Toner
+  if (kit.echo) fxEcho(ctx, last, engines.notes.volume, kit.echo); // dubeko (js/fx.js)
   if (kit.room) {
     const send = ctx.createGain();
     send.gain.value = kit.room;
     const rev = ctx.createConvolver();
-    rev.buffer = engine.makeImpulse(kit.roomSize || 1);
-    last.connect(send).connect(rev).connect(engine.volume);
+    rev.buffer = engines.notes.makeImpulse(kit.roomSize || 1);
+    last.connect(send).connect(rev).connect(engines.notes.volume);
   }
   drumBuses.set(kitId, { ctx, input });
   return input;

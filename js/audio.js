@@ -2,7 +2,11 @@
 
 // ---------- Ljud (Web Audio + ljudmotorn i synth.js) ----------
 let audioCtx = null;
+// Toner och Ackord har var sin ljudmotor (eget ljud, egna effekter), så att en ackordrunda och en
+// melodi kan låta olika samtidigt. engine = motorn för sidan som visas eller vars ljud man ändrar.
 let engine = null;
+const engines = { notes: null, chords: null };
+const padEngine = (pad) => (pad && pad.chord ? engines.chords : engines.notes);
 
 function initAudio() {
   // iPhone: spela även när ljudlös-knappen är på (Safari 16.4+)
@@ -16,10 +20,14 @@ function initAudio() {
     silent.start(0);
     if (audioCtx.state !== 'running') audioCtx.resume();
   } catch {}
-  engine = new SynthEngine(audioCtx, synthParams);
-  // Läge på rutan: synten behöver veta om oscillator 2 styrs (då finns den med i varje ton)
-  Object.defineProperty(engine, 'posMode', { get: () => ui.posParam.value });
-  engine.setVolume(Number(ui.volume.value));
+  for (const slot of ['notes', 'chords']) {
+    const e = new SynthEngine(audioCtx, soundState(slot).params);
+    // Läge på rutan: synten behöver veta om oscillator 2 styrs (då finns den med i varje ton)
+    Object.defineProperty(e, 'posMode', { get: () => ui.posParam.value });
+    e.setVolume(Number(ui.volume.value));
+    engines[slot] = e;
+  }
+  engine = engines[soundSlot];
 }
 
 // Spelar en uppladdad ljudfil genom effekterna (spelar alltid klart).
@@ -31,17 +39,17 @@ function playSample(buffer, when = 0, rate = 1) {
   src.buffer = buffer;
   src.playbackRate.value = rate;
   const g = audioCtx.createGain();
-  src.connect(g).connect(engine.input);
+  src.connect(g).connect(engines.notes.input); // ljudfiler finns bara på Toner
   // Vibrato även på ljudfiler (detune finns inte i alla äldre webbläsare)
   let vib = null;
   if (src.detune) {
     vib = audioCtx.createGain();
     vib.gain.value = 0;
-    engine.vibLfo.connect(vib).connect(src.detune);
+    engines.notes.vibLfo.connect(vib).connect(src.detune);
   }
   const t0 = Math.max(audioCtx.currentTime, when);
   src.start(t0);
-  src.onended = () => { if (vib) try { engine.vibLfo.disconnect(vib); } catch {} };
+  src.onended = () => { if (vib) try { engines.notes.vibLfo.disconnect(vib); } catch {} };
   const stop = (at = 0) => {
     const t = Math.max(audioCtx.currentTime, at, t0 + 0.005);
     g.gain.cancelScheduledValues(t);
@@ -58,7 +66,7 @@ function playSample(buffer, when = 0, rate = 1) {
     if (!vib) return;
     const now = audioCtx.currentTime;
     vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
-    if (rate) engine.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
+    if (rate) engines.notes.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
   };
   return stop;
 }

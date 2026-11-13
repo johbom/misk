@@ -59,7 +59,7 @@ window.addEventListener('resize', () => {
   cancelAnimationFrame(resizeFrame);
   resizeFrame = requestAnimationFrame(layoutPads);
 });
-ui.volume.addEventListener('input', () => engine && engine.setVolume(Number(ui.volume.value)));
+ui.volume.addEventListener('input', () => Object.values(engines).forEach((e) => e && e.setVolume(Number(ui.volume.value))));
 ui.midiOut.addEventListener('change', () => { panic(); updateMidiStatus(); saveSettings(); });
 ui.outMidi.addEventListener('change', () => { if (!ui.outMidi.checked) panic(); });
 ui.midiCh.addEventListener('change', panic);
@@ -126,3 +126,22 @@ async function startApp(tab) {
   });
   $('start-presets').hidden = false;
 })();
+
+// Låser man telefonen (eller lägger appen i bakgrunden, byter flik i webbläsaren) tystnar allt:
+// sequencerns slingor stoppas, rutor, arpeggio och XY släpps, MIDI får All Notes Off och ljudet pausas.
+// Ljudet väcks igen när appen syns (och annars vid nästa tryck, se setupAccess).
+function stopAllSound() {
+  if (!audioCtx) return;
+  seqStopAll();
+  resetHover();
+  panic(); // släpper alla rutor och skickar All Notes Off
+  arpReset();
+  xyStopAll();
+  if (audioCtx.state === 'running') audioCtx.suspend();
+  log(t('Pausat – appen var dold eller skärmen låst.'));
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) stopAllSound();
+  else if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
+});
+window.addEventListener('pagehide', stopAllSound);

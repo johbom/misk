@@ -8,27 +8,82 @@ const synthInputs = {}; // key -> { row, input, output, def }
 // Ljud från presetbiblioteket laddas in i "Eget": namn + om man har skruvat efteråt
 let synthLib = { name: '', edited: false };
 
+// Toner och Ackord har var sitt ljud. synthParams/synthPreset/synthLib gäller sidan i soundSlot (den som
+// visas, eller den man valt under Inställningar → Ljud); den andra sidans ljud ligger i soundSlots.
+const SYNTH_KEYS = { notes: 'hoverPadsSynth', chords: 'hoverPadsSynthChords' };
+let soundSlot = 'notes';
+const soundSlots = { notes: null, chords: null };
+
+// Ett sparat ljud { preset, params, lib } i den form appen använder
+function normSound(saved) {
+  if (!saved || !saved.params) return null;
+  let preset = saved.preset in SYNTH_PRESETS || saved.preset === CUSTOM ? saved.preset : CUSTOM;
+  let lib = saved.lib && preset === CUSTOM ? { ...saved.lib } : { name: '', edited: false };
+  // Ett äldre snabbval som inte längre står i listan blir "Eget: namnet"
+  if (preset !== CUSTOM && !QUICK_NAMES.includes(preset)) {
+    lib = { name: preset, edited: false };
+    preset = CUSTOM;
+  }
+  return { preset, params: { ...SYNTH_DEFAULTS, ...saved.params }, lib };
+}
+
+function readSynth(slot) {
+  try { return normSound(JSON.parse(localStorage.getItem(SYNTH_KEYS[slot]))); } catch { return null; }
+}
+
 (function loadSynth() {
-  try {
-    const saved = JSON.parse(localStorage.getItem('hoverPadsSynth'));
-    if (saved && saved.params) {
-      synthPreset = saved.preset in SYNTH_PRESETS || saved.preset === CUSTOM ? saved.preset : CUSTOM;
-      synthParams = { ...SYNTH_DEFAULTS, ...saved.params };
-      if (saved.lib && synthPreset === CUSTOM) synthLib = saved.lib;
-      // Ett äldre snabbval som inte längre står i listan blir "Eget: namnet"
-      if (synthPreset !== CUSTOM && !QUICK_NAMES.includes(synthPreset)) {
-        synthLib = { name: synthPreset, edited: false };
-        synthPreset = CUSTOM;
-      }
-      return;
-    }
-  } catch {}
-  synthPreset = DEFAULT_PRESET;
-  synthParams = presetParams(DEFAULT_PRESET);
+  const notes = readSynth('notes') || { preset: DEFAULT_PRESET, params: presetParams(DEFAULT_PRESET), lib: { name: '', edited: false } };
+  // Ackord: eget sparat ljud, annars samma som Toner (som innan sidorna fick var sitt ljud)
+  const chords = readSynth('chords') || { preset: notes.preset, params: { ...notes.params }, lib: { ...notes.lib } };
+  synthPreset = notes.preset;
+  synthParams = notes.params;
+  synthLib = notes.lib;
+  soundSlots.chords = chords;
 })();
 
 const saveSynth = () =>
-  localStorage.setItem('hoverPadsSynth', JSON.stringify({ preset: synthPreset, params: synthParams, lib: synthLib }));
+  localStorage.setItem(SYNTH_KEYS[soundSlot], JSON.stringify({ preset: synthPreset, params: synthParams, lib: synthLib }));
+
+// Ljudet för en sida (den valda sidans ljud ligger i synthParams m.fl.)
+function soundState(slot) {
+  if (slot === soundSlot) return { preset: synthPreset, params: synthParams, lib: synthLib };
+  return soundSlots[slot];
+}
+
+// Byt vilken sidas ljud som visas i listan Ljud och i reglagen (anropas av showTab och av valet under Ljud)
+function useSoundSlot(slot) {
+  if (slot === soundSlot || !(slot in SYNTH_KEYS)) return;
+  soundSlots[soundSlot] = { preset: synthPreset, params: synthParams, lib: synthLib };
+  ({ preset: synthPreset, params: synthParams, lib: synthLib } = soundSlots[slot]);
+  soundSlots[slot] = null;
+  soundSlot = slot;
+  if (engines[slot]) engine = engines[slot];
+  updateCustomLabel();
+  syncSoundSelect();
+  syncSynthPanel();
+  syncSoundSlotUi();
+}
+
+// Sätt ljudet för en sida (t.ex. från ett preset), oavsett vilken sida som är vald
+function setSlotSound(slot, saved) {
+  const snd = normSound(saved);
+  if (!snd) return;
+  if (slot === soundSlot) {
+    synthLib = snd.lib;
+    applySynth(snd.params, snd.preset);
+    return;
+  }
+  soundSlots[slot] = snd;
+  engines[slot]?.setParams(snd.params);
+  localStorage.setItem(SYNTH_KEYS[slot], JSON.stringify(snd));
+}
+
+function syncSoundSlotUi() {
+  document.querySelectorAll('#sound-slot [data-slot]').forEach((b) => {
+    b.classList.toggle('on', b.dataset.slot === soundSlot);
+    b.setAttribute('aria-checked', b.dataset.slot === soundSlot);
+  });
+}
 
 // Logaritmiska reglage går 0..1000 och räknas om till t.ex. 40 Hz..18 kHz.
 const toSlider = (d, v) => (d.log ? Math.round(1000 * Math.log(v / d.min) / Math.log(d.max / d.min)) : v);
@@ -330,4 +385,10 @@ function setupSynthUi() {
     else { synthLib = { name: '', edited: false }; applySynth(presetParams(lastPreset), lastPreset); }
   });
   $('synth-random').addEventListener('click', randomSynth);
+  // Ljud för Toner eller Ackord (Inställningar → Ljud)
+  document.querySelectorAll('#sound-slot [data-slot]').forEach((b) => b.addEventListener('click', () => {
+    useSoundSlot(b.dataset.slot);
+    log(t(`Ljudet för ${b.dataset.slot === 'chords' ? 'Ackord' : 'Toner'}`));
+  }));
+  syncSoundSlotUi();
 }

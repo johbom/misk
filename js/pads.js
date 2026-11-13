@@ -173,7 +173,7 @@ function trigger(pad) {
     else if (pad.drum) stops.push(drumHit(pad.drum));
     else {
       const level = 1 / Math.sqrt(notes.length);
-      notes.forEach((n) => stops.push(engine.noteOn(n, level)));
+      notes.forEach((n) => stops.push(padEngine(pad).noteOn(n, level)));
     }
   }
   if (ui.outMidi.checked) {
@@ -198,7 +198,7 @@ function trigger(pad) {
 
   // One-shot och Bestämd längd: släpps av en timer, inte av pekaren
   const length = mode === 'fixed' ? ms(ui.noteLength) || ONESHOT_MS
-    : mode === 'shot' ? (useSample ? pad.sample.duration * 1000 : pad.drum ? DRUM_SHOT_MS : naturalLength()) : 0;
+    : mode === 'shot' ? (useSample ? pad.sample.duration * 1000 : pad.drum ? DRUM_SHOT_MS : naturalLength(pad)) : 0;
   if (length) {
     const r = pad.release;
     setTimeout(() => { if (pad.release === r) release(pad); }, length);
@@ -206,8 +206,8 @@ function trigger(pad) {
 }
 
 // One-shot för syntljud: anslag + avklingning enligt ljudets volymkurva (0,3–5 s)
-function naturalLength() {
-  const p = engine.p;
+function naturalLength(pad) {
+  const p = padEngine(pad).p;
   return Math.min(5000, Math.max(300, (p.attack + 2 * p.decay) * 1000));
 }
 

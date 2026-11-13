@@ -273,6 +273,9 @@ const EN = {
   // ---------- Inställningar: Ljud ----------
   'Valt ljud': 'Current sound',
   'Gäller Toner och Ackord – XY har egen klang.': 'Applies to Notes and Chords – XY has its own tone.',
+  'Toner och Ackord har var sitt ljud – välj ovan vilket du ändrar. Det följer med sidan du spelar på. XY har egen klang.': 'Notes and Chords each have their own sound – choose above which one you change. It follows the page you play on. XY has its own tone.',
+  'Ljudet för': 'Sound for',
+  'Pausat – appen var dold eller skärmen låst.': 'Paused – the app was hidden or the screen locked.',
   'Återställ': 'Reset',
   'Slumpa ljud': 'Random sound',
   'Färdiga ljud': 'Ready-made sounds',
@@ -876,6 +879,7 @@ const EN_HTML = {
 // Texter som byggs ihop med siffror och namn. Varje mönster gäller hela texten.
 const q = (s) => `"${s}"`;
 const EN_PATTERNS = [
+  [/^Ljudet för (Toner|Ackord)$/, (p) => `Sound for ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Antal (rutor|ackord): (\d+)$/, (w, n) => `Number of ${w === 'rutor' ? 'pads' : 'chords'}: ${n}`],
   [/^Stoppa slingan på (Toner|Ackord)$/, (p) => `Stop the loop on ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^([▶■]) Sequencer: (Toner|Ackord)$/, (s, p) => `${s} Sequencer: ${p === 'Toner' ? 'Notes' : 'Chords'}`],

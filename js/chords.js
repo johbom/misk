@@ -265,7 +265,7 @@ function pluck(pad, idx) {
   const note = pad.strumNotes()[idx];
   const stops = [];
   if (ui.outAudio.checked) {
-    const s = engine.noteOn(note, PLUCK_LEVEL);
+    const s = engines.chords.noteOn(note, PLUCK_LEVEL);
     posForVoice(pad, s); // läge på rutan: tvärs över strängen
     stops.push(s);
   }

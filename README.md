@@ -173,6 +173,7 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 - *Visa tangentsiffror på rutorna* – en liten siffra på varje ruta visar vilken tangent/kontakt som spelar den.
 - *Stegning med en kontakt*: rutorna markeras en i taget i vald takt (medan stegningen är på spelar pekare och finger inte rutorna, och harpan är avstängd). <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick/tryck på spelytan spelar den markerade, och stegningen står still medan kontakten hålls in.
 - *Två kontakter*: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar. F1 och F2 passar kontaktinterface som skickar funktionstangenter; webbläsarens hjälp (F1) öppnas inte medan stegningen är på.
+- *Stegsequencern med kontakt*: när sequencern är på kommer, efter rutorna, också sequencerns **▶ Start / ■ Stopp** i stegningen, och den gröna knappen som stoppar den andra sidans slinga när den syns. Man trycker dem med kontakten som en ruta, så att slingor kan startas och stoppas utan pekare.
 - *Lär (andra tangenter)*: när Stegning är på visas **Kontakter** med en rad för kontakt 1 och kontakt 2. Där syns vilka tangenter kontakten använder. Tryck på **Lär** och sedan på kontakten eller tangenten, så används den i stället för standardtangenterna. Det fungerar med vilket kontaktinterface som helst, oavsett vad det skickar. En tangent som redan används av den andra kontakten avvisas, <kbd>Esc</kbd> avbryter, och efter 15 sekunder utan tangent avbryts inlärningen. **Återställ till standard** ger tillbaka Mellanslag/F1 och Enter/F2. Inlärda tangenter sparas med inställningarna och följer med i Mina presets (`switch1Key`, `switch2Key` = `KeyboardEvent.code`).
 - <kbd>Tab</kbd> flyttar mellan rutor och knappar med tydlig fokusram; <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.
 
@@ -193,6 +194,8 @@ Har du sparat presets syns de också på **startsidan**, under de fyra valen: et
 Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som backup eller för att flytta dem till en annan dator/telefon); *Importera från fil* läser in dem igen.
 
 ## Ljudmotor
+
+**Toner och Ackord har var sitt ljud.** Varje sida har en egen ljudmotor med egna effekter, så att en ackordrunda med pad kan gå i stegsequencern medan man spelar melodi med elpiano på Toner. Listan *Ljud* i spelraden visar och byter ljudet för sidan man spelar på. Under *Inställningar → Ljud* väljer man överst vilket av de två (Toner eller Ackord) man ändrar. Det följer med sidan man senast spelade på. Båda ljuden sparas (`hoverPadsSynth` och `hoverPadsSynthChords`) och följer med i Mina presets. Äldre presets, med ett ljud, ger samma ljud på båda sidorna. XY har som förut sin egen klang. Ljudfiler och trumset hör till Toner.
 
 Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljud** och skruva själv:
 
@@ -249,6 +252,8 @@ Hover Pads är en installerbar webbapp som fungerar **offline** efter första be
 - Samma beskrivning finns i Om-rutan (*Om* uppe till höger), som också säger till om appen redan körs installerad.
 - När du är uppkopplad hämtas alltid senaste versionen; offline används den sparade.
 - Fastnar något kan felet visas direkt på skärmen (på startrutan eller längst ner) – skicka gärna texten om det händer.
+
+**Låser man telefonen** eller lägger appen i bakgrunden tystnar allt: sequencerns slingor stoppas, rutor, arpeggio och XY släpps, MIDI får All Notes Off och ljudet pausas. Det väcks igen när appen syns. Det gäller också när man byter flik i webbläsaren.
 
 På pekskärmar ryms hela sidan på skärmen och scrollar inte – rutorna krymper för att få plats i alla formationer, stående som liggande. Bara fliken *Inställningar* scrollar inuti sig själv. På en dator kan samma läge slås på med `?fast` i adressen.
 

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=121" />
+  <link rel="stylesheet" href="css/style.css?v=122" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=121"></script>
+  <script src="js/i18n.js?v=122"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -491,8 +491,12 @@
       <!-- Valt ljud överst, sedan färdiga ljud och sist alla reglage (byggs av js/sound.js) -->
       <fieldset id="sound-now">
         <legend>Valt ljud</legend>
+        <div id="sound-slot" class="seg" role="radiogroup" aria-label="Ljudet för">
+          <button type="button" role="radio" data-slot="notes">Toner</button>
+          <button type="button" role="radio" data-slot="chords">Ackord</button>
+        </div>
         <strong id="sound-now-name"></strong>
-        <p class="hint">Gäller Toner och Ackord – XY har egen klang.</p>
+        <p class="hint">Toner och Ackord har var sitt ljud – välj ovan vilket du ändrar. Det följer med sidan du spelar på. XY har egen klang.</p>
         <div id="synth-actions">
           <button id="synth-reset" type="button">Återställ</button>
           <button id="synth-random" type="button">Slumpa ljud</button>
@@ -761,36 +765,36 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=121"></script>
-  <script src="js/fm-library.js?v=121"></script>
-  <script src="js/pm-library.js?v=121"></script>
-  <script src="js/wt-library.js?v=121"></script>
-  <script src="js/vwg-library.js?v=121"></script>
-  <script src="js/lib-levels.js?v=121"></script>
-  <script src="js/sound-library.js?v=121"></script>
-  <script src="js/layout.js?v=121"></script>
-  <script src="js/core.js?v=121"></script>
-  <script src="js/audio.js?v=121"></script>
-  <script src="js/drums.js?v=121"></script>
-  <script src="js/fx.js?v=121"></script>
-  <script src="js/pads.js?v=121"></script>
-  <script src="js/osc.js?v=121"></script>
-  <script src="js/arp.js?v=121"></script>
-  <script src="js/seq.js?v=121"></script>
-  <script src="js/xy.js?v=121"></script>
-  <script src="js/vibrato.js?v=121"></script>
-  <script src="js/position.js?v=121"></script>
-  <script src="js/notes.js?v=121"></script>
-  <script src="js/chords.js?v=121"></script>
-  <script src="js/sound.js?v=121"></script>
-  <script src="js/view.js?v=121"></script>
-  <script src="js/controls.js?v=121"></script>
-  <script src="js/access.js?v=121"></script>
-  <script src="js/settings.js?v=121"></script>
-  <script src="js/user-presets.js?v=121"></script>
-  <script src="js/wizard.js?v=121"></script>
-  <script src="js/quick.js?v=121"></script>
-  <script src="js/pwa.js?v=121"></script>
-  <script src="js/main.js?v=121"></script>
+  <script src="js/synth.js?v=122"></script>
+  <script src="js/fm-library.js?v=122"></script>
+  <script src="js/pm-library.js?v=122"></script>
+  <script src="js/wt-library.js?v=122"></script>
+  <script src="js/vwg-library.js?v=122"></script>
+  <script src="js/lib-levels.js?v=122"></script>
+  <script src="js/sound-library.js?v=122"></script>
+  <script src="js/layout.js?v=122"></script>
+  <script src="js/core.js?v=122"></script>
+  <script src="js/audio.js?v=122"></script>
+  <script src="js/drums.js?v=122"></script>
+  <script src="js/fx.js?v=122"></script>
+  <script src="js/pads.js?v=122"></script>
+  <script src="js/osc.js?v=122"></script>
+  <script src="js/arp.js?v=122"></script>
+  <script src="js/seq.js?v=122"></script>
+  <script src="js/xy.js?v=122"></script>
+  <script src="js/vibrato.js?v=122"></script>
+  <script src="js/position.js?v=122"></script>
+  <script src="js/notes.js?v=122"></script>
+  <script src="js/chords.js?v=122"></script>
+  <script src="js/sound.js?v=122"></script>
+  <script src="js/view.js?v=122"></script>
+  <script src="js/controls.js?v=122"></script>
+  <script src="js/access.js?v=122"></script>
+  <script src="js/settings.js?v=122"></script>
+  <script src="js/user-presets.js?v=122"></script>
+  <script src="js/wizard.js?v=122"></script>
+  <script src="js/quick.js?v=122"></script>
+  <script src="js/pwa.js?v=122"></script>
+  <script src="js/main.js?v=122"></script>
 </body>
 </html>

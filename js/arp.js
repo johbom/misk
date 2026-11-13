@@ -152,7 +152,7 @@ function arpPlayNote(note, pad, time, off) {
     let stop;
     if (pad.sample) stop = playSample(pad.sample, time, Math.pow(2, (note - pad.note) / 12));
     else if (pad.drum) stop = drumHit(pad.drum, time, 0.9);
-    else stop = engine.noteOn(note, 0.8, time);
+    else stop = padEngine(pad).noteOn(note, 0.8, time);
     if (pad.arpVib && stop.vibrato) stop.vibrato(pad.arpVib);
     if (pad.arpPos != null && stop.pos) stop.pos(pad.arpPos, posParam(), true);
     stop(off);

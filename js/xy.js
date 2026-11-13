@@ -72,9 +72,9 @@ function xyBus() {
   xy.send = ctx.createGain();
   xy.send.gain.value = Number(ui.xyReverb.value);
   const rev = ctx.createConvolver();
-  rev.buffer = engine.makeImpulse(2.8);
-  xy.bus.connect(engine.volume);
-  xy.bus.connect(xy.send).connect(rev).connect(engine.volume);
+  rev.buffer = engines.notes.makeImpulse(2.8);
+  xy.bus.connect(engines.notes.volume);
+  xy.bus.connect(xy.send).connect(rev).connect(engines.notes.volume);
   return xy.bus;
 }
 
@@ -89,7 +89,7 @@ function xyMakeVoice(freq, ny, when = 0) {
   const cut = yVib ? XY_CUT_MAX : xyCut(ny, freq);
   const mix = ctx.createGain();
   const oscs = (snd.detunes || [0]).map((cents, i, all) => {
-    const o = engine.makeOsc(snd.wave || key, freq);
+    const o = engines.notes.makeOsc(snd.wave || key, freq);
     o.detune.value = cents;
     if (all.length > 1) {
       const pan = ctx.createStereoPanner();
@@ -117,7 +117,7 @@ function xyMakeVoice(freq, ny, when = 0) {
   // Vibrato (vickning)
   const vib = ctx.createGain();
   vib.gain.value = 0;
-  engine.vibLfo.connect(vib);
+  engines.notes.vibLfo.connect(vib);
   oscs.forEach((o) => vib.connect(o.detune));
   // Vibrato från Y (sinus): en egen LFO per röst, så att varje finger har sitt eget
   let yLfo = null;
@@ -166,12 +166,12 @@ function xyVoiceEnd(v, at = 0) {
   if (v.fmMod) v.fmMod.stop(end);
   v.osc.onended = () => {
     v.amp.disconnect();
-    try { engine.vibLfo.disconnect(v.vib); } catch {}
+    try { engines.notes.vibLfo.disconnect(v.vib); } catch {}
   };
 }
 
 function xyVoiceStart(id, nx, ny) {
-  if (!audioCtx || !engine || !ui.outAudio.checked) return;
+  if (!audioCtx || !engines.notes || !ui.outAudio.checked) return;
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
   if (arpOn()) { xyArpAdd(id, nx, ny); return; } // arpeggio: pekaren blir en ton i arpeggiot
   xy.voices.set(id, xyMakeVoice(xyFreq(nx), ny));
@@ -325,7 +325,7 @@ function xyArpStep(time) {
 // Vibrato för en XY-pekare (anropas av js/vibrato.js)
 function xyVibrato(id, cents, rate) {
   const now = audioCtx.currentTime;
-  if (rate) engine.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
+  if (rate) engines.notes.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
   const v = xy.voices.get(id);
   if (v) v.vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
   const p = xyArp.pts.get(id);

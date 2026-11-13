@@ -163,7 +163,7 @@ function seqPlayPad(pad, time, off, level, x, page) {
   if (ui.outAudio.checked) {
     if (pad.sample) stops.push(playSample(pad.sample, time));
     else if (pad.drum) stops.push(drumHit(pad.drum, time, 0.9));
-    else notes.forEach((n) => stops.push(engine.noteOn(n, level, time)));
+    else notes.forEach((n) => stops.push(padEngine(pad).noteOn(n, level, time)));
     // Läge på rutan: sätts direkt vid anslaget (ljudfiler och trumset påverkas inte)
     if (pos) stops.forEach((s) => s.pos?.(x, posParam(), true));
     stops.forEach((s) => s(off));
