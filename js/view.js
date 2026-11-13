@@ -7,6 +7,7 @@ function showTab(tab) {
   resetHover();
   allPads().forEach(release);
   arpReset();
+  seqStop();
   document.body.dataset.tab = tab;
   syncSoundSelect(); // trumseten finns i listan Ljud bara på sidan Toner
   if (tab === 'settings') setLocked(false);
@@ -17,6 +18,7 @@ function showTab(tab) {
   if (tab !== 'settings') localStorage.setItem('hoverPadsPlayTab', tab); // senaste spelsidan
   layoutPads();
   xyShow(tab === 'xy');
+  renderSeq(); // Toner och Ackord har var sitt mönster
 }
 
 // ---------- Om-rutan ----------

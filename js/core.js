@@ -61,6 +61,12 @@ const ui = {
   arpOctaves: $('arp-octaves'),
   arpGate: $('arp-gate'),
   arpRetrig: $('arp-retrig'),
+  seqOn: $('seq-on'),
+  seqSteps: $('seq-steps-count'),
+  seqRate: $('seq-rate'),
+  seqBpm: $('seq-bpm'), // samma tempo som arpeggiatorn (sparas inte för sig)
+  seqGate: $('seq-gate'),
+  seqAdvance: $('seq-advance'),
   xySound: $('xy-sound'),
   xyReverb: $('xy-reverb'),
   dwell: $('dwell'),

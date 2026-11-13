@@ -92,6 +92,34 @@ Inställningarna är uppdelade i underflikar:
 
   **Vibrato** – vickar man pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter blir det ett försiktigt pitchvibrato, även på ljudfiler. Takten följer hur fort man vickar (3–8 Hz), djupet växer med hur ihärdigt man vickar upp till valt *Djup* (0–60 cent, 20 från början, 0 = av), och vibratot tonar ut när man slutar. Ett vanligt svep eller små darrningar ger inget vibrato. Ögon- och kontaktprofilerna slår av det, så att blickens mikrorörelser inte ger vibrato.
 
+  **Stegsequencer**
+
+  Slå på den med **Seq**-knappen i spelraden på sidorna Toner och Ackord, eller under *Instrument*. Som med Arp öppnas inställningarna i en liten ruta: ett tryck stänger rutan, och nästa tryck slår av sequencern.
+
+  När sequencern är på visas en rad med **4, 8, 12 eller 16 steg** mellan spelraden och rutorna. Toner och Ackord har var sitt mönster. På Toner blir det en melodi eller, med trumset och ljudeffekter, ett komp; på Ackord en ackordföljd, där stegen får ackordens färger.
+
+  **Skriva in:** välj ett steg och spela en ruta. Det går med mus, blick, finger eller kontakt, med samma aktiveringstid och stegning som annars. Är mönstret tomt när man slår på sequencern är steg 1 redan valt.
+  - *Gå vidare efter varje ruta* (på från början): en ruta per steg, och markeringen flyttar till nästa steg, så man fyller i en melodi genom att spela den. Det som redan låg i steget skrivs över.
+  - Med *Gå vidare* av stannar markeringen, och flera rutor kan ligga i samma steg, till exempel bastrumma och hihat. Samma ruta igen tar bort den.
+  - **Paus** tömmer steget och går vidare. **Rensa** tömmer alla steg på sidan, efter en fråga.
+
+  **Uppspelning:** **▶ Start / ■ Stopp** spelar stegen om och om igen, och steget som hörs markeras. **● Spela in** startar sequencern, och det man spelar hamnar då på närmaste steg.
+
+  **Inställningar:**
+  - *Steg*.
+  - *Notvärde*: 1/1 (en takt per steg, bra för ackordföljder), 1/2, 1/4, 1/8 eller 1/16.
+  - *Tempo*: samma som arpeggiatorns, så de går i takt.
+  - *Tonlängd*: 10–100 % av steget.
+  - *Gå vidare*.
+
+  **Övrigt:**
+  - Noterna planeras i ljudklockan, precis som arpeggiatorns.
+  - MIDI (med tidsstämplar), OSC, ljudfiler och trumset följer med, och varje ruta blinkar till när den spelas.
+  - Man kan spela fritt på rutorna samtidigt som sequencern går.
+  - Byter man sida stannar sequencern.
+  - Låst läge visar bara rutorna, och sequencern fortsätter.
+  - Mönstren sparas i webbläsaren (`hoverPadsSeq`) och följer med i Mina presets.
+
   **Läge på rutan** (avancerat, *Av* från början) – var på rutan pekaren är styr ljudet medan rutan låter. *Styr* väljer vad: *Filter* (mörkt → ljust, upp till fyra oktaver), *Volym* (svagt → starkt), *Vibrato* (inget → 50 cent), *Tonhöjd* (böj upp till en helton) eller ett av **ljudmotorns egna** två val, som byter namn efter vald motor: *Oscillatorer* – oscillator 2 (nivå, eller FM-djup i FM-läge) och wah (ett resonansfilter som sveper 300 Hz → 10 kHz); *Sträng* – ljushet och dämpning (handen mot strängen → full klingtid); *Resonans* – ljushet (bara grundtonen → förstärkta höga deltoner) och dämpning; *FM* – modulationsdjup (rena sinustoner → dubbelt djup) och feedback; *Wavetable* – wavetable-position och detune (med flera röster); *Röst* – vokal (u → i) och luft; *Blås* – blåstryck och andning; *Granulär* – position i källan och täthet (2–120 korn/s). Mitt på rutan är oftast som ljudet själv är. Läget räknas så här: **Rutnät och Bikupa** från rutans nederkant och uppåt, **Cirkel, Ring och Båge** från innerkanten (sidan mot mitten) och utåt, **Strängar** på sidan Toner längs strängen (lodräta: nedifrån och upp, vågräta: vänster → höger), och på sidan Ackord tvärs över strängen (lodräta: vänster → höger, vågräta: nedifrån och upp) – så harpan kan dras längs strängen samtidigt som läget tvärs över ändrar klangen. Ändringen glider mjukt, gäller varje ton för sig (även arpeggiatorns och harpans) och sätts redan vid anslaget. Med MIDI skickas samma sak: CC74 (filter), CC11 (volym), CC1 (vibrato), CC2 och CC71 (ljudmotorns två egna) eller pitch bend (upp till en helton med vanlig böjning ±2; tillbaka till mitten när inget låter). Ljudfiler och trumset påverkas inte.
 
   Och **formation**: *Rutnät*, *Cirkel* (bollar i ring), *Ring* (en cirkel delad i sektorer med ett tomt hål i mitten där muspekaren kan vila), *Bikupa*, *Strängar* eller *Båge* (bollar i en eller flera halvcirklar ovanför en viloplats längst ned i mitten – alla bollar på samma båge ligger lika långt från viloplatsen; yttersta bågen först, från vänster till höger). Under formationen syns bara de reglage som gäller den: *Mellanrum* mellan rutorna i **procent av rutornas storlek** (0–300 %, 30 % från början; reglaget är **logaritmiskt**, så små mellanrum går att finjustera: mitten av reglaget är ca 17 %, 30 % ligger vid 60 % av reglaget och högsta läget är 300 %; 50 % = halva rutan, 100 % = lika stort som en ruta – formationen ser då likadan ut på mobil och stor skärm; bollar och strängar krymper inte under en minsta storlek, så på en liten yta kan mellanrummet bli mindre än valt; sparade mellanrum i px räknas om automatiskt), *Riktning* (*Lodrätt*: sida vid sida, lägsta tonen till vänster; *Vågrätt*: staplade, lägsta tonen längst ned, harpan dras från vänster till höger) och *Stränglängd* för strängarna, *Tonordning* för bikupan (bikupan väljer flest kolumner så länge bollarna blir minst 80 % av de största möjliga, så att den blir en riktig bikupa även på en smal skärm; knappar med pilar: *Vågrätt* = vänster→höger rad för rad, *Slingrande* = vänster→höger och sedan höger→vänster på nästa rad, *Lodrätt* = uppifrån och ned kolumn för kolumn), och för ringen *Mellanrum mellan sektorer* (0–75 % av sektorns bredd, hur tight de ligger – stort mellanrum ger smala kilar) och *Hålets storlek*.
@@ -285,6 +313,7 @@ python3 -m http.server 8080
 - `js/osc.js` – OSC-utgång: kodar OSC-paket och skickar dem till bryggan
 - `tools/osc-bridge.mjs` – OSC-bryggan (WebSocket → UDP), serverar också appen lokalt
 - `js/arp.js` – arpeggiatorn: tonpool, mönster och planering i ljudklockan
+- `js/seq.js` – stegsequencern: mönster per sida, inskrivning, inspelning och uppspelning i ljudklockan
 - `js/xy.js` – XY-plattan: en oscillator per pekare, glödande spår
 - `js/vibrato.js` – känner av vickning fram och tillbaka och gör om den till vibrato
 - `js/position.js` – Läge på rutan: pekarens läge på rutan (per formation) styr filter, volym, vibrato eller tonhöjd, och MIDI CC/pitch bend

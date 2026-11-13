@@ -114,6 +114,8 @@ function setupSegments() {
   segmentSelect(ui.stringDir, '', STRING_DIR_ICONS);
   segmentSelect(ui.arpOctaves, 'seg-count');
   segmentSelect(ui.arpRetrig, 'seg-count');
+  segmentSelect(ui.seqSteps, 'seg-count');
+  segmentSelect(ui.seqRate);
   segmentSelect(ui.xySound, 'seg-xy', WAVE_ICONS);
   segmentSelect(synthInputs.model.input);
 }

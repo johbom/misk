@@ -90,24 +90,27 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 #quick-pop { overflow: auto; overscroll-behavior: contain; }
 /* Arpens inställningar under Arp-knappen (på/av sköts av knappen själv) */
 /* Kompakt: rubrik, reglage och värde på en rad, små knappar, inga förklaringar */
-#quick-pop > #arp-set {
+#quick-pop > :is(#arp-set, #seq-set) {
   margin: 0; padding: 0; border: none; min-width: 0; width: min(440px, calc(100vw - 72px));
   grid-template-columns: 1fr; gap: 8px; font-size: 0.85rem;
 }
-#quick-pop > #arp-set > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 2px 40px 0 0; font-weight: 600; color: var(--text); }
-#quick-pop > #arp-set > label.check, #quick-pop > #arp-set .arp-note { display: none; }
-#quick-pop > #arp-set label.slider { grid-template-columns: 4.6em minmax(0, 1fr) auto; grid-template-areas: "lbl ctl val"; gap: 4px 8px; }
-#quick-pop > #arp-set label.slider.arp-wide { grid-template-areas: "lbl lbl val" "ctl ctl ctl"; }
-#quick-pop > #arp-set label.slider > .val { min-width: 0; font-size: 0.8rem; }
-#quick-pop > #arp-set input[type="range"] { height: 22px; margin: 0; }
-#quick-pop > #arp-set .seg { padding: 2px; border-radius: 8px; }
-#quick-pop > #arp-set .seg button { min-height: 28px; padding: 2px 8px; font-size: 0.8rem; border-radius: 6px; }
-#quick-pop > #arp-set .seg button.has-icon { gap: 4px; }
-#quick-pop > #arp-set .seg-icon { width: 16px; height: 16px; }
-#quick-pop > #arp-set .seg-count button { min-width: 32px; padding: 2px 6px; }
-#quick-pop > #arp-set .arp-tempo { gap: 8px; align-items: center; }
-#quick-pop > #arp-set .arp-tap { min-height: 30px; padding: 2px 12px; font-size: 0.85rem; }
-html.steppers #quick-pop > #arp-set .seg button { min-height: 40px; min-width: 40px; }
+#quick-pop > :is(#arp-set, #seq-set) > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 2px 40px 0 0; font-weight: 600; color: var(--text); }
+#quick-pop > :is(#arp-set, #seq-set) > label.check, #quick-pop > :is(#arp-set, #seq-set) .arp-note { display: none; }
+#quick-pop > :is(#arp-set, #seq-set) label.slider { grid-template-columns: 4.6em minmax(0, 1fr) auto; grid-template-areas: "lbl ctl val"; gap: 4px 8px; }
+#quick-pop > :is(#arp-set, #seq-set) label.slider.arp-wide { grid-template-areas: "lbl lbl val" "ctl ctl ctl"; }
+#quick-pop > :is(#arp-set, #seq-set) label.slider > .val { min-width: 0; font-size: 0.8rem; }
+#quick-pop > :is(#arp-set, #seq-set) input[type="range"] { height: 22px; margin: 0; }
+#quick-pop > :is(#arp-set, #seq-set) .seg { padding: 2px; border-radius: 8px; }
+#quick-pop > :is(#arp-set, #seq-set) .seg button { min-height: 28px; padding: 2px 8px; font-size: 0.8rem; border-radius: 6px; }
+#quick-pop > :is(#arp-set, #seq-set) .seg button.has-icon { gap: 4px; }
+#quick-pop > :is(#arp-set, #seq-set) .seg-icon { width: 16px; height: 16px; }
+#quick-pop > :is(#arp-set, #seq-set) .seg-count button { min-width: 32px; padding: 2px 6px; }
+#quick-pop > :is(#arp-set, #seq-set) .arp-tempo { gap: 8px; align-items: center; }
+#quick-pop > :is(#arp-set, #seq-set) .arp-tap { min-height: 30px; padding: 2px 12px; font-size: 0.85rem; }
+html.steppers #quick-pop > :is(#arp-set, #seq-set) .seg button { min-height: 40px; min-width: 40px; }
+/* Sequencern i snabbrutan: "Gå vidare" syns (utan förklaring), på/av sköts av Sekv-knappen */
+#quick-pop > #seq-set > label.check.seq-keep { display: flex; }
+#quick-pop > #seq-set > label.check.seq-keep small { display: none; }
 .quick-close {
   position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; padding: 0;
   border-radius: 50%; font-size: 1rem; line-height: 1; display: grid; place-items: center;
@@ -459,6 +462,7 @@ code { font: 0.85em ui-monospace, Menlo, monospace; }
 #play-mode-desc { margin: 8px 0 4px; }
 #play-mode-set .only-fixed { margin-top: 6px; }
 @media (max-width: 480px) { #play-mode-buttons { gap: 5px; } }
+@media (max-width: 480px) { html.fixed-screen #arp-toggle, html.fixed-screen #seq-toggle { padding-left: 10px; padding-right: 10px; } }
 @media (max-width: 480px) {
   #formation-buttons { gap: 5px; }
   .formation-btn { width: 60px; padding: 6px 2px 5px; font-size: 0.7rem; }
@@ -638,6 +642,15 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #tabs { min-width: 0; }
   html.fixed-screen #tabs button { padding-left: 10px; padding-right: 10px; }
   html.fixed-screen #midi-status { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 16vw; font-size: 0.75rem; }
+  html.fixed-screen #tabs button { font-size: 0.9rem; padding-left: 8px; padding-right: 8px; }
+  /* Spelraden på en rad: volymreglaget krymper i stället för att hamna på en egen rad */
+  html.fixed-screen #play-bar { flex-wrap: nowrap; gap: 10px; }
+  html.fixed-screen #play-bar > .preset-label { flex: 0 1 220px; min-width: 0; }
+  html.fixed-screen #play-bar > .preset-label select { width: 100%; }
+  html.fixed-screen #play-bar > .vol-label,
+  html.fixed-screen #play-bar > .xy-reverb-bar { flex: 1 1 120px; min-width: 0; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"],
+  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 70px; width: 100%; }
 }
 /* Mobil liggande (låg skärm): rubrik och spelrad på var sin smal rad, ingen statusrad – höjden går till rutorna */
 @media (orientation: landscape) and (max-height: 500px) {
@@ -657,7 +670,8 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #play-bar > .xy-reverb-bar { flex: 1 1 90px; min-width: 0; }
   html.fixed-screen #play-bar input[type="range"] { min-width: 0; width: 100%; }
   html.fixed-screen #play-bar .quick-btn,
-  html.fixed-screen #play-bar #arp-toggle { padding-top: 3px; padding-bottom: 3px; }
+  html.fixed-screen #play-bar #arp-toggle,
+  html.fixed-screen #play-bar #seq-toggle { padding-top: 3px; padding-bottom: 3px; }
   html.fixed-screen .pad-grid { padding: 6px 10px 6px; }
   html.fixed-screen #xy-pad { margin: 6px 10px 6px; }
   html.fixed-screen footer { display: none; }
@@ -687,7 +701,7 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar { order: 1; flex: 1 1 40%; min-width: 0; }
   #play-bar > .preset-label select { min-width: 0; width: 100%; max-width: none; }
   #play-bar > .vol-label input[type="range"], #play-bar > .xy-reverb-bar input[type="range"] { min-width: 0; width: 100%; }
-  #play-bar > .quick-btn, #play-bar > #arp-toggle { order: 2; }
+  #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle { order: 2; }
 }
 /* Smal och låg (t.ex. iPhone SE liggande): flikarna bara som ikoner, ingen MIDI-status, mindre ljudlista */
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
@@ -696,7 +710,7 @@ html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflo
   html.fixed-screen #midi-status { display: none; }
   html.fixed-screen #play-bar > .preset-label { flex-basis: 150px; }
   html.fixed-screen #play-bar { gap: 6px; flex-wrap: nowrap; }
-  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar, #play-bar > .quick-btn, #play-bar > #arp-toggle { order: 0; }
+  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle { order: 0; }
   /* XY: ordet "Klang" göms (knapparna har namnen i title och listan heter Klang för skärmläsare) */
   html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; }
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 5px; font-size: 0.9rem; }
@@ -1090,7 +1104,7 @@ body[data-tab="settings"] .only-play { display: none !important; }
 #unlock-btn.holding::before { animation: hold-fill var(--hold-ms, 2000ms) linear forwards; }
 @keyframes hold-fill { to { transform: scaleX(1); } }
 body.locked #unlock-btn { display: block; }
-body.locked header, body.locked #play-bar, body.locked footer { display: none !important; }
+body.locked header, body.locked #play-bar, body.locked #seq-bar, body.locked footer { display: none !important; }
 body.locked .pad-grid { padding-top: 56px; }
 
 /* Bekräftelseruta */
@@ -1577,6 +1591,59 @@ html.reduce-motion .arp-tap.tapped { animation-duration: 1ms; }
 html.steppers .arp-tap { min-height: 46px; min-width: 64px; }
 html.high-contrast .arp-tap { background: #000; border: 2px solid #fff; color: #fff; }
 @media (max-width: 520px) { #arp-set { grid-template-columns: 1fr; } }
+#seq-set { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
+#seq-set > .seq-wide { grid-column: 1 / -1; }
+@media (max-width: 520px) { #seq-set { grid-template-columns: 1fr; } }
+
+/* ===== Stegsequencer: Sekv-knappen och raden med steg ===== */
+#seq-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 14px; border-radius: 999px; }
+#seq-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+html.steppers #seq-toggle { min-height: 46px; padding: 6px 18px; }
+html.high-contrast #seq-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
+#seq-bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px 8px; padding: 6px 24px 0; }
+#seq-bar[hidden] { display: none; }
+.seq-ctl { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 4px 12px; white-space: nowrap; }
+.seq-ctl b { font-size: 0.9em; }
+#seq-play.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+#seq-rec b { color: #ff5d6c; }
+#seq-rec.on { background: #c4314a; border-color: #c4314a; color: #fff; }
+#seq-rec.on b { color: #fff; animation: rec-blink 1s steps(2) infinite; }
+@keyframes rec-blink { 50% { opacity: 0.3; } }
+html.reduce-motion #seq-rec.on b { animation: none; }
+.seq-ctl:disabled { opacity: 0.4; }
+#seq-settings .tab-icon { width: 18px; height: 18px; }
+#seq-steps { flex: 1 1 360px; display: grid; grid-template-columns: repeat(var(--seq-n, 8), minmax(0, 1fr)); gap: 4px; min-width: 0; }
+.seq-step {
+  position: relative; min-width: 0; min-height: 40px; padding: 2px 3px 3px; border-radius: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
+  font-size: 0.78rem; line-height: 1.1; overflow: hidden;
+}
+/* Var fjärde steg (ett taktslag i 1/16) får lite luft före sig */
+.seq-step:nth-child(4n+1):not(:first-child) { margin-left: 4px; }
+.seq-step small { position: absolute; top: 1px; left: 4px; font-size: 0.62rem; color: var(--muted); }
+.seq-step span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; padding-top: 6px; }
+.seq-step.filled { background: #2b3150; border-color: #4a5590; }
+.seq-step.colored { background: color-mix(in srgb, var(--c) 35%, #1a1d29); border-color: var(--c); }
+.seq-step.sel { outline: 3px solid var(--hit); outline-offset: 1px; }
+.seq-step.now { box-shadow: inset 0 -4px 0 var(--accent); filter: brightness(1.35); }
+html.high-contrast .seq-step.now { box-shadow: inset 0 -5px 0 #ffd400; }
+html.high-contrast .seq-step.sel { outline-color: #00e5ff; }
+.seq-hint { flex: 1 1 100%; margin: 0; font-size: 0.78rem; color: var(--muted); }
+html.fixed-screen #seq-bar { flex: none; padding: 6px 14px 0; }
+html.fixed-screen .seq-hint { display: none; }
+@media (max-width: 600px) {
+  #seq-steps { order: -1; flex-basis: 100%; }
+  .seq-ctl { min-height: 34px; padding: 2px 10px; font-size: 0.85rem; }
+  #seq-rec span, #seq-play span { display: none; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  html.fixed-screen #seq-bar { padding: 4px 10px 0; flex-wrap: nowrap; gap: 4px; }
+  html.fixed-screen .seq-ctl { min-height: 32px; padding: 2px 8px; font-size: 0.8rem; }
+  html.fixed-screen #seq-rec span, html.fixed-screen #seq-play span { display: none; }
+  html.fixed-screen .seq-step { min-height: 32px; font-size: 0.7rem; }
+  html.fixed-screen #seq-steps { flex: 1 1 auto; order: 0; }
+}
+
 /* Varje arpeggiotton blinkar till på sin ruta */
 .pad.arp-hit { animation: arp-hit 140ms ease-out; }
 @keyframes arp-hit { from { filter: brightness(1.7); } to { filter: none; } }

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=118" />
+  <link rel="stylesheet" href="css/style.css?v=119" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=118"></script>
+  <script src="js/i18n.js?v=119"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -104,6 +104,7 @@
       <input type="range" id="xy-reverb-bar" min="0" max="1" step="0.05" value="0.35" aria-label="Reverb för XY" />
     </label>
     <button type="button" id="arp-toggle" aria-pressed="false" title="Arpeggiator på/av (inställningar under Instrument)"><svg class="arp-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 18.5h4.5v-6h4.5v-6h5" opacity=".55"/><circle cx="5" cy="18.5" r="2.4" fill="currentColor" stroke="none"/><circle cx="12" cy="12.5" r="2.4" fill="currentColor" stroke="none"/><circle cx="19" cy="6.5" r="2.4" fill="currentColor" stroke="none"/></svg><span>Arp</span></button>
+    <button type="button" id="seq-toggle" class="not-xy" aria-pressed="false" title="Stegsequencer på/av (inställningar under Instrument)"><svg class="arp-icon" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="3" y="14" width="3.6" height="6" rx="1"/><rect x="8.1" y="9" width="3.6" height="11" rx="1" opacity=".55"/><rect x="13.2" y="12" width="3.6" height="8" rx="1"/><rect x="18.3" y="5" width="3.6" height="15" rx="1" opacity=".55"/></svg><span>Seq</span></button>
     <label class="vol-label">Volym
       <input type="range" id="volume" min="0" max="1" step="0.01" value="0.6" />
     </label>
@@ -290,6 +291,41 @@
           </select>
           <small class="arp-note">På: varje ny ruta börjar om från första tonen, direkt.</small>
         </label>
+      </fieldset>
+
+      <fieldset id="seq-set">
+        <legend>Stegsequencer</legend>
+        <label class="check seq-wide"><input type="checkbox" id="seq-on" /> <span>Stegsequencer<small>En rad med steg ovanför rutorna på Toner och Ackord. Välj ett steg och spela en ruta så hamnar den där – sedan spelas stegen om och om igen.</small></span></label>
+        <label class="slider">
+          <span class="lbl">Steg</span>
+          <select id="seq-steps-count">
+            <option value="4">4</option>
+            <option value="8" selected>8</option>
+            <option value="12">12</option>
+            <option value="16">16</option>
+          </select>
+        </label>
+        <label class="slider" title="Hur långt varje steg är">
+          <span class="lbl">Notvärde</span>
+          <select id="seq-rate">
+            <option value="1">1/1 (en takt)</option>
+            <option value="2">1/2</option>
+            <option value="4">1/4</option>
+            <option value="8" selected>1/8</option>
+            <option value="16">1/16</option>
+          </select>
+        </label>
+        <label class="slider" title="Samma tempo som arpeggiatorn">
+          <span class="lbl">Tempo</span>
+          <input type="range" id="seq-bpm" min="40" max="240" step="1" value="120" />
+          <output id="seq-bpm-value" class="val">120 BPM</output>
+        </label>
+        <label class="slider" title="Hur stor del av varje steg tonen låter – kort = staccato">
+          <span class="lbl">Tonlängd</span>
+          <input type="range" id="seq-gate" min="10" max="100" step="5" value="80" />
+          <output id="seq-gate-value" class="val">80 %</output>
+        </label>
+        <label class="check seq-wide seq-keep"><input type="checkbox" id="seq-advance" checked /> <span>Gå vidare efter varje ruta<small>På: en ruta per steg, och markeringen flyttar till nästa steg. Av: markeringen stannar, och flera rutor kan ligga i samma steg (t.ex. bastrumma och hihat) – samma ruta igen tar bort den.</small></span></label>
       </fieldset>
 
       <fieldset id="vibrato-set">
@@ -680,6 +716,17 @@
     <p class="about-version">Version <span id="about-version"></span></p>
   </dialog>
 
+  <!-- ===== Stegsequencer (sidorna Toner och Ackord, js/seq.js) ===== -->
+  <section id="seq-bar" class="only-play not-xy" aria-label="Stegsequencer" hidden>
+    <button type="button" id="seq-play" class="seq-ctl" aria-pressed="false"><b aria-hidden="true">▶</b><span>Start</span></button>
+    <button type="button" id="seq-rec" class="seq-ctl" aria-pressed="false" title="Spela in medan sequencern går: det du spelar hamnar på närmaste steg"><b aria-hidden="true">●</b><span>Spela in</span></button>
+    <div id="seq-steps" role="group" aria-label="Steg"></div>
+    <button type="button" id="seq-rest" class="seq-ctl" title="Tomt steg (paus) och vidare till nästa">Paus</button>
+    <button type="button" id="seq-clear" class="seq-ctl" title="Töm alla steg på den här sidan">Rensa</button>
+    <button type="button" id="seq-settings" class="seq-ctl" aria-label="Sequencerns inställningar" title="Inställningar"><svg class="tab-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg></button>
+    <p id="seq-hint" class="seq-hint" aria-live="polite"></p>
+  </section>
+
   <!-- ===== Spelflikarna ===== -->
   <main id="pads" class="pad-grid only-notes"></main>
   <main id="chord-pads" class="pad-grid only-chords"></main>
@@ -713,35 +760,36 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=118"></script>
-  <script src="js/fm-library.js?v=118"></script>
-  <script src="js/pm-library.js?v=118"></script>
-  <script src="js/wt-library.js?v=118"></script>
-  <script src="js/vwg-library.js?v=118"></script>
-  <script src="js/lib-levels.js?v=118"></script>
-  <script src="js/sound-library.js?v=118"></script>
-  <script src="js/layout.js?v=118"></script>
-  <script src="js/core.js?v=118"></script>
-  <script src="js/audio.js?v=118"></script>
-  <script src="js/drums.js?v=118"></script>
-  <script src="js/fx.js?v=118"></script>
-  <script src="js/pads.js?v=118"></script>
-  <script src="js/osc.js?v=118"></script>
-  <script src="js/arp.js?v=118"></script>
-  <script src="js/xy.js?v=118"></script>
-  <script src="js/vibrato.js?v=118"></script>
-  <script src="js/position.js?v=118"></script>
-  <script src="js/notes.js?v=118"></script>
-  <script src="js/chords.js?v=118"></script>
-  <script src="js/sound.js?v=118"></script>
-  <script src="js/view.js?v=118"></script>
-  <script src="js/controls.js?v=118"></script>
-  <script src="js/access.js?v=118"></script>
-  <script src="js/settings.js?v=118"></script>
-  <script src="js/user-presets.js?v=118"></script>
-  <script src="js/wizard.js?v=118"></script>
-  <script src="js/quick.js?v=118"></script>
-  <script src="js/pwa.js?v=118"></script>
-  <script src="js/main.js?v=118"></script>
+  <script src="js/synth.js?v=119"></script>
+  <script src="js/fm-library.js?v=119"></script>
+  <script src="js/pm-library.js?v=119"></script>
+  <script src="js/wt-library.js?v=119"></script>
+  <script src="js/vwg-library.js?v=119"></script>
+  <script src="js/lib-levels.js?v=119"></script>
+  <script src="js/sound-library.js?v=119"></script>
+  <script src="js/layout.js?v=119"></script>
+  <script src="js/core.js?v=119"></script>
+  <script src="js/audio.js?v=119"></script>
+  <script src="js/drums.js?v=119"></script>
+  <script src="js/fx.js?v=119"></script>
+  <script src="js/pads.js?v=119"></script>
+  <script src="js/osc.js?v=119"></script>
+  <script src="js/arp.js?v=119"></script>
+  <script src="js/seq.js?v=119"></script>
+  <script src="js/xy.js?v=119"></script>
+  <script src="js/vibrato.js?v=119"></script>
+  <script src="js/position.js?v=119"></script>
+  <script src="js/notes.js?v=119"></script>
+  <script src="js/chords.js?v=119"></script>
+  <script src="js/sound.js?v=119"></script>
+  <script src="js/view.js?v=119"></script>
+  <script src="js/controls.js?v=119"></script>
+  <script src="js/access.js?v=119"></script>
+  <script src="js/settings.js?v=119"></script>
+  <script src="js/user-presets.js?v=119"></script>
+  <script src="js/wizard.js?v=119"></script>
+  <script src="js/quick.js?v=119"></script>
+  <script src="js/pwa.js?v=119"></script>
+  <script src="js/main.js?v=119"></script>
 </body>
 </html>

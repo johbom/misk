@@ -100,7 +100,7 @@ const fingers = new Map(); // pointerId -> ruta under fingret (eller null i ett 
 
 // Spelytan = allt utom reglage, flikar, inställningar och menyer – även bakgrunden runt rutorna,
 // så att man kan börja dra var som helst och glida in på rutorna.
-const CONTROLS = 'header, #play-bar, #settings, #chord-picker, #start-overlay, dialog, input, select, label, a, button:not(.pad)';
+const CONTROLS = 'header, #play-bar, #seq-bar, #settings, #chord-picker, #start-overlay, dialog, input, select, label, a, button:not(.pad)';
 const inPlayArea = (target) => target instanceof Element && !target.closest(CONTROLS);
 
 function padAt(x, y) {
@@ -147,6 +147,7 @@ function setupTouch() {
 function trigger(pad) {
   if (!audioCtx) return; // inte startat än
   if (picker.open) return; // tyst medan högerklicksmenyn är öppen
+  seqInput(pad); // stegsequencern: skriv in rutan i markerat steg (js/seq.js)
   const mode = ui.playMode.value;
   if (mode === 'latch') {
     // Ligg kvar: samma ruta igen stänger av, en annan ruta tar över

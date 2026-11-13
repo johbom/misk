@@ -26,6 +26,7 @@ function snapshot() {
     settings,
     chords: chords.map((c) => ({ ...c })),
     synth: { preset: synthPreset, params: { ...synthParams }, lib: { ...synthLib } },
+    seq: seqData(), // stegsequencerns mönster
   };
 }
 
@@ -42,6 +43,9 @@ function applySnapshot(data) {
   migrateNotesKind(data.settings || {});
   migrateSpace(data.settings || {});
   saveSettings();
+
+  // Stegsequencerns mönster (äldre presets saknar det: då behålls det som finns)
+  if (data.seq) { seqStop(); applySeqData(data.seq); saveSeq(); }
 
   // Ackord
   if (Array.isArray(data.chords) && data.chords.length === MAX_CHORDS) {
