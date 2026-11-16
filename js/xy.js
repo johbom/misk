@@ -94,7 +94,7 @@ function xyBus() {
   const rev = ctx.createConvolver();
   rev.buffer = engines.notes.makeImpulse(2.8);
   xy.bus.connect(engines.notes.volume);
-  xy.bus.connect(xy.send).connect(rev).connect(engines.notes.volume);
+  if (!AUDIO_DIAG.has('norev')) xy.bus.connect(xy.send).connect(rev).connect(engines.notes.volume);
   return xy.bus;
 }
 

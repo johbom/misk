@@ -20,8 +20,10 @@ function initAudio() {
     silent.start(0);
     if (audioCtx.state !== 'running') audioCtx.resume();
   } catch {}
-  const master = makeMasterBus(audioCtx);
+  const master = AUDIO_DIAG.has('nomaster') ? audioCtx.destination : makeMasterBus(audioCtx);
+  if (AUDIO_DIAG.size) log(`Felsökning av ljudet: ${[...AUDIO_DIAG].join(', ')}`);
   for (const slot of ['notes', 'chords']) {
+    if (slot === 'chords' && AUDIO_DIAG.has('one')) { engines.chords = engines.notes; continue; } // en motor, som förr
     const e = new SynthEngine(audioCtx, soundState(slot).params, master);
     // Läge på rutan: synten behöver veta om oscillator 2 styrs (då finns den med i varje ton)
     Object.defineProperty(e, 'posMode', { get: () => ui.posParam.value });

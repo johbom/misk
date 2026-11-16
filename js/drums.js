@@ -396,7 +396,7 @@ function drumBus(kitId) {
   if (kit.lowpass) { const f = dFilt(ctx, 'lowpass', kit.lowpass, 0.9); last.connect(f); last = f; }
   last.connect(engines.notes.volume); // trumseten finns bara på Toner
   if (kit.echo) fxEcho(ctx, last, engines.notes.volume, kit.echo); // dubeko (js/fx.js)
-  if (kit.room) {
+  if (kit.room && !AUDIO_DIAG.has('norev')) {
     const send = ctx.createGain();
     send.gain.value = kit.room;
     const rev = ctx.createConvolver();

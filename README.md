@@ -218,6 +218,19 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 - **Smala röster:** varje ton byggs med så få ljudnoder som möjligt. Safari hackar när många noder skapas och kopplas på en gång, som när ett ackord, sequencern eller arpeggiot startar flera toner. Noderna för Läge på rutan skapas bara för den parameter som är vald, vibratonoden bara när vibrato är på, tremolosteget bara med tremolo, och oscillatorn själv håller reda på när tonen är slut. Orgel gick från 14 till 8 noder per ton, Elpiano från 17 till 12 och Piano från 19 till 14.
 - **Viloläge:** en motor som varit helt tyst i 2 sekunder, med inga röster och en svans under −100 dB, kopplas bort från slutmixen. Då räknas inte dess reverb, chorus, delay och kompressorer alls. Nästa ton väcker den direkt, och det gör även trumset, ljudfiler och XY. XY-fingrar och ljudfiler som hålls håller motorn vaken.
 
+**Felsökning av knaster:** med `?diag=` i adressen slår man av delar av ljudkedjan, så att man kan ringa in vad som hackar i en viss webbläsare. Flera delar avgränsas med kommatecken, t.ex. `?diag=norev,nocomp`, och statusraden visar vad som är avslaget.
+
+| Del | Vad som slås av |
+|---|---|
+| `one` | Andra ljudmotorn: en motor för Toner och Ackord, som förr |
+| `norev` | Alla reverbar |
+| `nocomp` | Motorernas kompressor och limiter |
+| `nomaster` | Slutmixen |
+| `nochorus` | Chorus |
+| `nodelay` | Delay |
+
+Safari följer inte önskemål om längre ljudbuffert (`latencyHint`). Bufferten är alltid 128 sampel (2,7 ms), så varje block måste bli klart inom den tiden.
+
 Uppmätt i WebKit (offline-rendering, melodi i 1/8 och fyrklang varje sekund, två motorer): Elpiano + Varm pad gick från 2,9–3,1 s till 1,6 s per 10 s ljud (−47 %), Supersaw-lead + Stråkar från 2,6–3,0 s till 1,6 s, och Piano + Orgel från 1,46 s till 1,13 s.
 
 **Toner och Ackord har var sitt ljud.** Varje sida har en egen ljudmotor med egna effekter, så att en ackordrunda med pad kan gå i stegsequencern medan man spelar melodi med elpiano på Toner. Listan *Ljud* i spelraden visar och byter ljudet för sidan man spelar på. Under *Inställningar → Ljud* väljer man överst vilket av de två (Toner eller Ackord) man ändrar. Det följer med sidan man senast spelade på. Båda ljuden sparas (`hoverPadsSynth` och `hoverPadsSynthChords`) och följer med i Mina presets. Äldre presets, med ett ljud, ger samma ljud på båda sidorna. XY har som förut sin egen klang. Ljudfiler och trumset hör till Toner.

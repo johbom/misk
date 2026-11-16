@@ -420,6 +420,10 @@ const nodeCtls = (node) => [node.parameters.get('ctl'), node.parameters.get('ctl
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
+// Felsökning av knaster: ?diag=one,norev,nocomp,nomaster,nochorus,nodelay i adressen slår av delar av
+// ljudkedjan (one = en ljudmotor för Toner och Ackord, som förr). Bara för att ringa in vad som hackar.
+const AUDIO_DIAG = new Set((new URLSearchParams(location.search).get('diag') || '').split(',').map((s) => s.trim()).filter(Boolean));
+
 // Ett AudioParam som bara behöver uppdateras en gång per block (128 sampel): mycket billigare,
 // särskilt för filter (som annars räknar om sina koefficienter för varje sampel) och i Safari.
 function kRate(param) {
@@ -468,7 +472,8 @@ class SynthEngine {
       lfo.start();
       const p = ctx.createStereoPanner();
       p.pan.value = pan;
-      this.driveOut.connect(d).connect(p).connect(this.chorusMix);
+      if (!AUDIO_DIAG.has('nochorus')) this.driveOut.connect(d);
+      d.connect(p).connect(this.chorusMix);
       this.chorusDepth.push(depth);
     }
     this.chorusMix.connect(this.bus);
@@ -479,15 +484,17 @@ class SynthEngine {
     const fbTone = ctx.createBiquadFilter();
     fbTone.frequency.value = 3500;
     this.delayMix = ctx.createGain();
-    this.bus.connect(this.delay);
+    if (!AUDIO_DIAG.has('nodelay')) this.bus.connect(this.delay);
     this.delay.connect(fbTone).connect(this.delayFb).connect(this.delay);
     this.delay.connect(this.delayMix);
 
     // Reverb (konvolution med en genererad reverb)
     this.convolver = ctx.createConvolver();
     this.reverbMix = ctx.createGain();
-    this.bus.connect(this.convolver);
-    this.delayMix.connect(this.convolver); // ekon får också reverb
+    if (!AUDIO_DIAG.has('norev')) {
+      this.bus.connect(this.convolver);
+      this.delayMix.connect(this.convolver); // ekon får också reverb
+    }
     this.convolver.connect(this.reverbMix);
 
     // Ut: volym -> kompressor (håller nere toppar när många toner spelas)
@@ -511,7 +518,8 @@ class SynthEngine {
     // Kompressorn höjer automatiskt nivån (ca +1,7 dB vid de här värdena) – ta bort det igen
     const makeup = ctx.createGain();
     makeup.gain.value = 0.82;
-    this.volume.connect(comp).connect(limiter).connect(makeup).connect(out);
+    if (AUDIO_DIAG.has('nocomp')) this.volume.connect(makeup).connect(out);
+    else this.volume.connect(comp).connect(limiter).connect(makeup).connect(out);
     Object.assign(this, { comp, limiter, makeup }); // (för mätning och felsökning)
 
     // Viloläge: tyst motor kopplas bort från slutmixen (se ENGINE_SLEEP_AFTER). En analysator lyssnar
