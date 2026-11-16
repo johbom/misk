@@ -122,6 +122,10 @@ html.steppers .quick-close { width: 46px; height: 46px; }
 .quick-octaves { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .quick-octaves > span { margin-right: 4px; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
 .quick-octaves button { min-width: 38px; }
+.quick-gap { display: grid; grid-template-columns: auto minmax(0, 1fr) 3.5em; align-items: center; gap: 8px; margin-top: 10px; }
+.quick-gap > span { color: var(--muted); font-weight: 600; font-size: 0.9rem; }
+.quick-gap .val { text-align: right; font-weight: 600; font-size: 0.9rem; }
+.quick-gap .stepper { min-width: 0; }
 .quick-roots button, .quick-scales button, .quick-octaves button { min-height: 38px; padding: 4px 10px; font-weight: 600; }
 .quick-roots button.on, .quick-scales button.on, .quick-octaves button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 html.steppers .quick-roots button, html.steppers .quick-scales button, html.steppers .quick-octaves button { min-height: 50px; }

@@ -110,7 +110,8 @@ function renderQuick() {
     pop.innerHTML = `<div class="quick-forms" role="radiogroup" aria-label="Formation">${
       Object.entries(FORMATIONS).map(([v, name]) => `<button type="button" class="formation-btn${
         ui.formation.value === v ? ' on' : ''}" role="radio" aria-checked="${ui.formation.value === v}" data-formation="${v}">${
-        FORMATION_ICONS[v]}<span>${name}</span></button>`).join('')}</div>${countRow()}`;
+        FORMATION_ICONS[v]}<span>${name}</span></button>`).join('')}</div>${countRow()}${gapRow()}`;
+    setupGapRow(pop);
     pop.querySelectorAll('[data-count]').forEach((b) => b.addEventListener('click', () => {
       const el = quickCountInput();
       if (!el || el.value === b.dataset.count) return;
@@ -173,6 +174,31 @@ function countRow() {
   return `<div class="quick-octaves quick-count" role="radiogroup" aria-label="${what}"><span>${what}</span>${
     counts.map((n) => `<button type="button" role="radio" aria-checked="${n === cur}" class="${
       n === cur ? 'on' : ''}" data-count="${n}">${n}</button>`).join('')}</div>`;
+}
+
+// Mellanrum mellan rutorna: samma reglage som under Inställningar → Instrument → Formation
+// (ringen har sitt eget, mellan sektorerna)
+const quickGapSrc = () => (ui.formation.value === 'ring' ? ui.ringSpace : $('pad-space-slider'));
+const quickGapText = () => `${ui.formation.value === 'ring' ? ui.ringSpace.value : ui.padSpace.value} %`;
+function gapRow() {
+  const src = quickGapSrc();
+  return `<label class="quick-gap"><span>${t('Mellanrum')}</span><input type="range" min="${src.min}" max="${src.max}" step="${
+    src.step || 1}" value="${src.value}" aria-label="${t('Mellanrum')}" /><b class="val">${quickGapText()}</b></label>`;
+}
+function setupGapRow(pop) {
+  const el = pop.querySelector('.quick-gap input');
+  if (!el) return;
+  const pass = (type) => {
+    const src = quickGapSrc();
+    src.value = el.value;
+    src.dispatchEvent(new Event(type, { bubbles: true })); // input: rita om, change: spara
+    pop.querySelector('.quick-gap .val').textContent = quickGapText();
+    el.setAttribute('aria-valuetext', quickGapText());
+  };
+  el.setAttribute('aria-valuetext', quickGapText());
+  el.addEventListener('input', () => pass('input'));
+  el.addEventListener('change', () => pass('change'));
+  if (typeof enhanceControl === 'function') enhanceControl(el); // − / + i läget med stora knappar
 }
 
 // Oktaven hör till sidan: Toner har sin egen, Ackord sin (XY har ett omfång i stället, ingen oktav)
