@@ -420,6 +420,20 @@ const nodeCtls = (node) => [node.parameters.get('ctl'), node.parameters.get('ctl
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
+// Ett AudioParam som bara behöver uppdateras en gång per block (128 sampel): mycket billigare,
+// särskilt för filter (som annars räknar om sina koefficienter för varje sampel) och i Safari.
+function kRate(param) {
+  try { param.automationRate = 'k-rate'; } catch { /* äldre webbläsare: som förut */ }
+}
+
+// Högst så här många röster per motor. Fler: de äldsta som redan släppts (och bara klingar ut) tonas
+// bort på 10 ms. Toner som hålls rörs aldrig. Håller processorn på jorden med långa svansar och
+// sequencer/arpeggio som spelar många toner.
+const MAX_VOICES = 32;
+// En motor som varit helt tyst så här länge (s) kopplas bort från slutmixen och räknas inte alls
+// (reverb, chorus, delay …), tills nästa ton väcker den.
+const ENGINE_SLEEP_AFTER = 2;
+
 class SynthEngine {
   // out: dit motorn spelar (slutmixen med gemensam limiter, js/audio.js); annars direkt till högtalarna
   constructor(ctx, params, out = ctx.destination) {
@@ -434,7 +448,8 @@ class SynthEngine {
     this.shaper = ctx.createWaveShaper();
     this.shaper.oversample = '4x';
     this.driveOut = ctx.createGain();
-    this.input.connect(this.shaper).connect(this.driveOut);
+    this.shaper.connect(this.driveOut);
+    this.driveOn = null; // ingången kopplas i updateEffects: via shapern bara när drive används
 
     // Bus = torr signal + chorus
     this.bus = ctx.createGain();
@@ -499,6 +514,21 @@ class SynthEngine {
     this.volume.connect(comp).connect(limiter).connect(makeup).connect(out);
     Object.assign(this, { comp, limiter, makeup }); // (för mätning och felsökning)
 
+    // Viloläge: tyst motor kopplas bort från slutmixen (se ENGINE_SLEEP_AFTER). En analysator lyssnar
+    // efter tystnad medan motorn är vaken. (Inte vid offline-rendering, t.ex. nivåmätning.)
+    this.out = out;
+    this.voices = new Set();
+    this.awake = true;
+    this.lastWake = 0;
+    this.quiet = 0;
+    this.meter = ctx.createAnalyser();
+    this.meter.fftSize = 512;
+    this.meterBuf = new Float32Array(this.meter.fftSize);
+    makeup.connect(this.meter);
+    if (typeof OfflineAudioContext === 'undefined' || !(ctx instanceof OfflineAudioContext)) {
+      this.sleepTimer = setInterval(() => this.checkSleep(), 1000);
+    }
+
     // Brus (en sekund som loopas)
     this.noiseBuffer = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
     const nd = this.noiseBuffer.getChannelData(0);
@@ -528,6 +558,39 @@ class SynthEngine {
     this.volume.gain.setTargetAtTime(v, this.ctx.currentTime, 0.02);
   }
 
+  // Väck motorn (anropas av varje ton, och av trumset, ljudfiler och XY som spelar genom den)
+  wake() {
+    this.lastWake = this.ctx.currentTime;
+    this.quiet = 0;
+    if (this.awake) return;
+    this.makeup.connect(this.out);
+    this.makeup.connect(this.meter);
+    this.awake = true;
+  }
+
+  // Somna om inga röster finns, inget spelats på ett tag och det är helt tyst (även reverbens svans)
+  checkSleep() {
+    if (!this.awake || this.ctx.state !== 'running') return;
+    if (this.voices.size || this.ctx.currentTime - this.lastWake < ENGINE_SLEEP_AFTER) { this.quiet = 0; return; }
+    this.meter.getFloatTimeDomainData(this.meterBuf);
+    let peak = 0;
+    for (const v of this.meterBuf) peak = Math.max(peak, Math.abs(v));
+    this.quiet = peak < 1e-5 ? this.quiet + 1 : 0;
+    if (this.quiet < 2) return;
+    this.makeup.disconnect();
+    this.awake = false;
+  }
+
+  // Tak på antalet röster: tona bort de äldsta släppta
+  limitVoices() {
+    if (this.voices.size < MAX_VOICES) return;
+    const released = [...this.voices].filter((v) => v.released).sort((a, b) => a.released - b.released);
+    for (const v of released) {
+      if (this.voices.size < MAX_VOICES) break;
+      v.kill();
+    }
+  }
+
   setParams(params) {
     this.p = { ...params };
     this.updateEffects();
@@ -549,6 +612,12 @@ class SynthEngine {
     // Drive: tanh-kurva. Kurvan förstärker svaga signaler ungefär k gånger,
     // så nivån sänks efteråt för att drive ska ge mer distorsion, inte bara mer volym.
     const k = 1 + p.drive * 30;
+    // Drive av: förbi shapern (den räknar med 4× översampling även när kurvan är tom)
+    if (this.driveOn !== p.drive > 0) {
+      this.driveOn = p.drive > 0;
+      try { this.input.disconnect(); } catch {}
+      this.input.connect(this.driveOn ? this.shaper : this.driveOut);
+    }
     if (p.drive > 0) {
       if (this.shaperDrive !== p.drive) {
         const curve = new Float32Array(1024);
@@ -603,6 +672,10 @@ class SynthEngine {
 
   makeOsc(wave, freq) {
     const o = this.ctx.createOscillator();
+    // Vibrato, böjning och Läge på rutan räcker att uppdatera en gång per block (128 sampel, ca 3 ms).
+    // Per sampel kostar det en potensberäkning per oscillator och sampel – tungt i Safari.
+    // (FM går till frequency, som fortfarande räknas per sampel.)
+    kRate(o.detune);
     if (BUILTIN_WAVES.has(wave)) o.type = wave;
     else {
       if (!this.waveCache[wave]) {
@@ -941,6 +1014,7 @@ class SynthEngine {
 
     // Filter med egen envelope (styr filtrets "detune" i cent ovanför cutoff)
     const filter = ctx.createBiquadFilter();
+    [filter.frequency, filter.detune, filter.Q].forEach(kRate); // (se kRate)
     filter.type = p.filterType;
     filter.frequency.value = p.cutoff;
     filter.Q.value = p.q;
@@ -1022,6 +1096,21 @@ class SynthEngine {
 
     sources.forEach((s) => s.start(t));
 
+    // Röstregister (tak på antalet röster): en röst kan tonas bort snabbt om den redan är släppt
+    const voice = {
+      released: 0,
+      kill: () => {
+        const now = ctx.currentTime;
+        amp.gain.cancelScheduledValues(now);
+        amp.gain.setTargetAtTime(0, now, 0.01);
+        sources.forEach((s) => { try { s.stop(now + 0.08); } catch {} });
+        this.voices.delete(voice);
+      },
+    };
+    this.limitVoices();
+    this.voices.add(voice);
+    this.wake();
+
     // at (valfritt): ljudklockans tid då tonen ska släppas
     const stop = (at = 0) => {
       // Släpp mjukt från exakt där kurvan är just nu (även mitt i anslaget)
@@ -1037,10 +1126,13 @@ class SynthEngine {
         else amp.gain.setValueAtTime(envAt(r), r);
       }
       amp.gain.setTargetAtTime(0, r, Math.max(0.005, p.release / 4));
-      const end = r + Math.max(0.005, p.release / 4) * 9 + 0.05; // nästan helt tyst innan stopp
+      // Stopp när svansen är nere i ca −61 dB (7 tidskonstanter) – ohörbart, men kortare tid som räknas
+      const end = r + Math.max(0.005, p.release / 4) * 7 + 0.05;
+      voice.released = r;
       sources.forEach((s) => s.stop(end));
       onRelease.forEach((f) => f(r, end));
       sources[0].onended = () => {
+        this.voices.delete(voice);
         amp.disconnect();
         onEnd.forEach((f) => f());
         try { this.vibLfo.disconnect(vib); } catch {}
@@ -1050,6 +1142,7 @@ class SynthEngine {
     // Avbryt en ton som är planerad men inte har börjat än (arpeggiatorns retrigg). Tyst, utan klick.
     stop.cancel = () => {
       if (ctx.currentTime >= t) return false;
+      this.voices.delete(voice);
       try { amp.disconnect(); } catch {}
       sources.forEach((s) => { try { s.stop(); } catch {} });
       return true;

@@ -102,6 +102,7 @@ function xyBus() {
 // when = ljudklockans starttid (arpeggiatorn planerar i förväg).
 function xyMakeVoice(freq, ny, when = 0) {
   const ctx = audioCtx;
+  engines.notes.wake(); // XY spelar genom Toner-motorns volym och slutmix
   const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
   const key = xySoundKey();
   const snd = XY_SOUNDS[key];
@@ -122,10 +123,12 @@ function xyMakeVoice(freq, ny, when = 0) {
   // Highcut i två steg (24 dB/oktav) med lite resonans: tydlig skillnad mellan dovt och öppet,
   // och ett hörbart svep när fingret rör sig upp och ned
   const hp = ctx.createBiquadFilter();
+  kRate(hp.frequency); // (filtret följer pekaren: räcker en gång per block, mycket billigare)
   hp.type = 'lowpass';
   hp.Q.value = 2;
   hp.frequency.value = cut;
   const hp2 = ctx.createBiquadFilter();
+  kRate(hp2.frequency);
   hp2.type = 'lowpass';
   hp2.Q.value = 0.7;
   hp2.frequency.value = cut;
@@ -194,7 +197,10 @@ function xyVoiceStart(id, nx, ny) {
   if (!audioCtx || !engines.notes || !ui.outAudio.checked) return;
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
   if (arpOn()) { xyArpAdd(id, nx, ny); return; } // arpeggio: pekaren blir en ton i arpeggiot
-  xy.voices.set(id, xyMakeVoice(xyFreq(nx), ny));
+  const v = xyMakeVoice(xyFreq(nx), ny);
+  v.holder = { released: 0, kill() {} }; // motorn somnar inte medan fingret ligger kvar
+  engines.notes.voices.add(v.holder);
+  xy.voices.set(id, v);
 }
 
 function xyVoiceMove(id, nx, ny) {
@@ -221,6 +227,7 @@ function xyVoiceStop(id) {
   const v = xy.voices.get(id);
   if (!v) return;
   xy.voices.delete(id);
+  if (v.holder) engines.notes.voices.delete(v.holder);
   xyVoiceEnd(v);
   oscSend('xy', xyOscId(id), { f: 0 }, { f: 0 }, 0);
 }

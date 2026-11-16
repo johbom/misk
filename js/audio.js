@@ -81,6 +81,10 @@ function playSample(buffer, when = 0, rate = 1) {
   src.playbackRate.value = rate;
   const g = audioCtx.createGain();
   src.connect(g).connect(engines.notes.input); // ljudfiler finns bara på Toner
+  // Motorn somnar inte medan ljudfilen spelar (se SynthEngine.wake)
+  const holder = { released: 0, kill() {} };
+  engines.notes.voices.add(holder);
+  engines.notes.wake();
   // Vibrato även på ljudfiler (detune finns inte i alla äldre webbläsare)
   let vib = null;
   if (src.detune) {
@@ -90,7 +94,7 @@ function playSample(buffer, when = 0, rate = 1) {
   }
   const t0 = Math.max(audioCtx.currentTime, when);
   src.start(t0);
-  src.onended = () => { if (vib) try { engines.notes.vibLfo.disconnect(vib); } catch {} };
+  src.onended = () => { engines.notes.voices.delete(holder); if (vib) try { engines.notes.vibLfo.disconnect(vib); } catch {} };
   const stop = (at = 0) => {
     const t = Math.max(audioCtx.currentTime, at, t0 + 0.005);
     g.gain.cancelScheduledValues(t);

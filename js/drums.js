@@ -426,6 +426,7 @@ function drumHit(piece, when = 0, level = 1) {
   const ctx = audioCtx;
   const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
   const out = ctx.createGain();
+  engines.notes.wake(); // trumseten spelar genom Toner-motorns volym och slutmix
   out.connect(drumBus(piece.kit));
   const end = DRUM_VOICES[piece.voice](ctx, out, t, DRUM_LEVEL * level * piece.lvl, piece.p);
   setTimeout(() => { try { out.disconnect(); } catch {} }, (end - ctx.currentTime + 0.4) * 1000);

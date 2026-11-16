@@ -203,6 +203,16 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 - Vid vanliga nivåer är slutmixen helt neutral: limiterns automatiska nivåhöjning är bortkompenserad, så 0,25 in ger 0,25 ut.
 - Normalt spel ligger kring −8 till −12 dBFS.
 
+**Processorlast (viktigt i Safari):** Safaris ljudmotor räknar tyngre än Chromes, och med två ljudmotorer, sequencer och arpeggio kan det bli många toner samtidigt. Därför:
+- **Filtret** i varje röst, och XY:s filter, uppdateras en gång per block om 128 sampel (*k-rate*) i stället för varje sampel. Annars räknas filtrets koefficienter om för varje sampel när filterkurva, LFO eller Läge på rutan styr det.
+- **Oscillatorernas** detune (vibrato, böjning, Läge på rutan) uppdateras på samma sätt. FM går till frekvensen och räknas fortfarande per sampel.
+- **Drive** kopplas förbi när det är av, så att den 4× översamplade waveshapern inte räknas i onödan.
+- **Svansen** på en släppt ton stoppas vid cirka −61 dB (7 tidskonstanter i stället för 9).
+- **Högst 32 röster per motor.** Blir det fler tonas de äldsta som redan släppts bort på 10 ms. Toner som hålls rörs aldrig.
+- **Viloläge:** en motor som varit helt tyst i 2 sekunder, med inga röster och en svans under −100 dB, kopplas bort från slutmixen. Då räknas inte dess reverb, chorus, delay och kompressorer alls. Nästa ton väcker den direkt, och det gör även trumset, ljudfiler och XY. XY-fingrar och ljudfiler som hålls håller motorn vaken.
+
+Uppmätt i WebKit (offline-rendering, melodi i 1/8 och fyrklang varje sekund, två motorer): Elpiano + Varm pad gick från 2,9–3,1 s till 1,9 s per 10 s ljud (−37 %), och Supersaw-lead + Stråkar från 2,6–3,0 s till 1,9 s.
+
 **Toner och Ackord har var sitt ljud.** Varje sida har en egen ljudmotor med egna effekter, så att en ackordrunda med pad kan gå i stegsequencern medan man spelar melodi med elpiano på Toner. Listan *Ljud* i spelraden visar och byter ljudet för sidan man spelar på. Under *Inställningar → Ljud* väljer man överst vilket av de två (Toner eller Ackord) man ändrar. Det följer med sidan man senast spelade på. Båda ljuden sparas (`hoverPadsSynth` och `hoverPadsSynthChords`) och följer med i Mina presets. Äldre presets, med ett ljud, ger samma ljud på båda sidorna. XY har som förut sin egen klang. Ljudfiler och trumset hör till Toner.
 
 Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljud** och skruva själv:
