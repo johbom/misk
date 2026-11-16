@@ -548,18 +548,29 @@ class SynthEngine {
     this.vibLfo.frequency.value = 5.5;
     this.vibLfo.start();
 
-    // Fysisk modell: strängen räknas i ljudtråden. Tills den laddats spelas en resonanskropp i stället.
+    // Fysisk modell, FM, Wavetable m.fl. räknas i ljudtråden (pm-worklet.js). Tills den laddats spelas
+    // en reserv med inbyggda noder. Modulen laddas först när ett ljud behöver den: Safari renderar då
+    // allt ljud i en egen tråd, och vanliga oscillatorljud (Elpiano, Orgel …) klarar sig utan.
     this.pmReady = false;
-    this.ready = ctx.audioWorklet
-      ? ctx.audioWorklet.addModule(PM_WORKLET_URL).then(() => {
-        this.pmReady = true;
-        if (this.p.model === 'wt') this.warmWavetable(this.p.wtTable);
-        if (this.p.model === 'grain') this.warmGrain(this.p.grainSource);
-      }).catch(() => {})
-      : Promise.resolve();
+    this.ready = Promise.resolve();
+    this.loadWorklet();
 
     this.reverbBuiltSize = null;
     this.updateEffects();
+  }
+
+  // Laddar ljudtrådens motorer om ljudet behöver dem (en gång per ljudklocka, delas av motorerna)
+  loadWorklet() {
+    const { ctx } = this;
+    if (this.pmLoading || !ctx.audioWorklet || !notOsc(this.p)) return this.ready;
+    this.pmLoading = true;
+    if (!ctx.pmModule) ctx.pmModule = ctx.audioWorklet.addModule(PM_WORKLET_URL);
+    this.ready = ctx.pmModule.then(() => {
+      this.pmReady = true;
+      if (this.p.model === 'wt') this.warmWavetable(this.p.wtTable);
+      if (this.p.model === 'grain') this.warmGrain(this.p.grainSource);
+    }).catch(() => {});
+    return this.ready;
   }
 
   setVolume(v) {
@@ -612,6 +623,7 @@ class SynthEngine {
   // Effekterna ändras direkt, även medan toner spelar.
   updateEffects() {
     const { ctx, p } = this;
+    this.loadWorklet();
     if (p.model === 'wt') this.warmWavetable(p.wtTable);
     if (p.model === 'grain') this.warmGrain(p.grainSource);
     const t = ctx.currentTime;

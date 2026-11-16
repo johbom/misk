@@ -33,6 +33,22 @@ function initAudio() {
     engines[slot] = e;
   }
   engine = engines[soundSlot];
+  if (AUDIO_DIAG.has('meter')) startAudioMeter();
+}
+
+// ?diag=meter: räknar ljudavbrott. Ljudklockan går bara fram när ljudtråden hunnit räkna fram ljudet;
+// halkar den efter klockan på väggen har ljudet hackat (det man hör som knaster).
+function startAudioMeter() {
+  let base = null; let lost = 0; let hacks = 0; let shown = '';
+  setInterval(() => {
+    if (audioCtx.state !== 'running') { base = null; return; }
+    const behind = performance.now() - audioCtx.currentTime * 1000; // ms
+    if (base === null || behind < base) { base = behind; return; }
+    const late = behind - base - lost;
+    if (late > 4) { hacks++; lost += late; }
+    const msg = t(`Ljudmätare: ${hacks} avbrott (${Math.round(lost)} ms tappat ljud)`);
+    if (msg !== shown) { log(msg); shown = msg; }
+  }, 250);
 }
 
 // Slutmixen: allt ljud (båda ljudmotorerna, och via dem trumset, ljudfiler och XY) samlas här innan det

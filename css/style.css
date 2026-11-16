@@ -1701,7 +1701,7 @@ html.reduce-motion #seq-rec.on b { animation: none; }
   content: ''; position: absolute; left: 0; bottom: 0; width: 4px; height: calc(var(--pos, 0) * 100%);
   background: var(--hit); border-radius: 0 2px 2px 0; opacity: 0.85;
 }
-.seq-step.now { box-shadow: inset 0 -4px 0 var(--accent); filter: brightness(1.35); }
+.seq-step.now { box-shadow: inset 0 -4px 0 var(--accent); background-image: linear-gradient(rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)); }
 html.high-contrast .seq-step.now { box-shadow: inset 0 -5px 0 #ffd400; }
 html.high-contrast .seq-step.sel { outline-color: #00e5ff; }
 .seq-hint { flex: 1 1 100%; margin: 0; font-size: 0.78rem; color: var(--muted); }
@@ -1720,10 +1720,7 @@ html.fixed-screen .seq-hint { display: none; }
   html.fixed-screen #seq-steps { flex: 1 1 auto; order: 0; }
 }
 
-/* Varje arpeggiotton blinkar till på sin ruta */
-.pad.arp-hit { animation: arp-hit 140ms ease-out; }
-@keyframes arp-hit { from { filter: brightness(1.7); } to { filter: none; } }
-html.reduce-motion .pad.arp-hit { animation-duration: 60ms; }
+/* Varje arpeggio- och sequencerton blinkar till på sin ruta: flashPad() i js/arp.js (Web Animations) */
 
 /* ===================================================================
    Startguiden (js/wizard.js)

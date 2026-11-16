@@ -106,6 +106,8 @@ Inställningarna är uppdelade i underflikar:
 
   **Skriva in:** välj ett steg och spela en ruta. Det går med mus, blick, finger eller kontakt, med samma aktiveringstid och stegning som annars. Är mönstret tomt när man slår på sequencern är steg 1 redan valt.
   - *Gå vidare efter varje ruta* (på från början): en ruta per steg, och markeringen flyttar till nästa steg, så man fyller i en melodi genom att spela den. Det som redan låg i steget skrivs över.
+  - Klickar man på ett steg som redan är ifyllt ändras bara det steget: rutan man spelar byter ut det som låg där, och markeringen stannar kvar (man kan prova flera toner). Ett tomt steg man klickar på fylls i som vanligt, och markeringen går vidare.
+  - Rutor som spelas samtidigt (flera fingrar, inom 60 ms) hamnar i samma steg, liksom ett svep över strängarna på Toner (*Rutnät → Strängar*, rutor inom 0,3 s efter varandra): de blir ett ackord och låter samtidigt när slingan spelar.
   - Med *Gå vidare* av stannar markeringen, och flera rutor kan ligga i samma steg, till exempel bastrumma och hihat. Samma ruta igen tar bort den.
   - **Paus** tömmer steget och går vidare. **Rensa** tömmer alla steg på sidan, efter en fråga.
 
@@ -216,6 +218,8 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 - **Svansen** på en släppt ton stoppas vid cirka −61 dB (7 tidskonstanter i stället för 9).
 - **Högst 32 röster per motor.** Blir det fler tonas de äldsta som redan släppts bort på 10 ms. Toner som hålls rörs aldrig.
 - **Smala röster:** varje ton byggs med så få ljudnoder som möjligt. Safari hackar när många noder skapas och kopplas på en gång, som när ett ackord, sequencern eller arpeggiot startar flera toner. Noderna för Läge på rutan skapas bara för den parameter som är vald, vibratonoden bara när vibrato är på, tremolosteget bara med tremolo, och oscillatorn själv håller reda på när tonen är slut. Orgel gick från 14 till 8 noder per ton, Elpiano från 17 till 12 och Piano från 19 till 14.
+- **Ljudtrådens motorer laddas vid behov.** Sträng, Resonans, FM, Wavetable, Röst, Blås och Granulär räknas i en AudioWorklet. Modulen laddas först när ett sådant ljud väljs, så vanliga oscillatorljud (Elpiano, Orgel, pads …) spelas utan den. Safari renderar allt ljud i en egen tråd så fort en AudioWorklet finns.
+- **Ljusblinket** på rutor som sequencern och arpeggiot spelar görs med Web Animations, och stegmarkeringen ändrar bara det förra och det nya steget. Tidigare tvingade varje ton fram en omräkning av sidans layout.
 - **Viloläge:** en motor som varit helt tyst i 2 sekunder, med inga röster och en svans under −100 dB, kopplas bort från slutmixen. Då räknas inte dess reverb, chorus, delay och kompressorer alls. Nästa ton väcker den direkt, och det gör även trumset, ljudfiler och XY. XY-fingrar och ljudfiler som hålls håller motorn vaken.
 
 **Felsökning av knaster:** med `?diag=` i adressen slår man av delar av ljudkedjan, så att man kan ringa in vad som hackar i en viss webbläsare. Flera delar avgränsas med kommatecken, t.ex. `?diag=norev,nocomp`, och statusraden visar vad som är avslaget.
@@ -228,6 +232,7 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 | `nomaster` | Slutmixen |
 | `nochorus` | Chorus |
 | `nodelay` | Delay |
+| `meter` | Inget slås av: statusraden räknar ljudavbrott (när ljudklockan halkar efter klockan på väggen, det man hör som knaster) |
 
 Safari följer inte önskemål om längre ljudbuffert (`latencyHint`). Bufferten är alltid 128 sampel (2,7 ms), så varje block måste bli klart inom den tiden.
 

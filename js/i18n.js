@@ -883,12 +883,14 @@ const EN_HTML = {
 // Texter som byggs ihop med siffror och namn. Varje mönster gäller hela texten.
 const q = (s) => `"${s}"`;
 const EN_PATTERNS = [
+  [/^Ljudmätare: (\d+) avbrott \((\d+) ms tappat ljud\)$/, (n, ms) => `Audio meter: ${n} dropouts (${ms} ms of audio lost)`],
   [/^Håll tonerna i skalan \((.+)\) – av: steglös tonhöjd$/, (k) => `Keep the notes in the scale (${k}) – off: gliding pitch`],
   [/^Ljudet för (Toner|Ackord)$/, (p) => `Sound for ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Antal (rutor|ackord): (\d+)$/, (w, n) => `Number of ${w === 'rutor' ? 'pads' : 'chords'}: ${n}`],
   [/^Stoppa slingan på (Toner|Ackord)$/, (p) => `Stop the loop on ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^([▶■]) Sequencer: (Toner|Ackord)$/, (s, p) => `${s} Sequencer: ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Spela en ruta så hamnar den i steg (\d+)\.$/, (n) => `Play a pad to put it in step ${n}.`],
+  [/^Spela en ruta så byts steg (\d+) ut\.$/, (n) => `Play a pad to replace step ${n}.`],
   [/^Steg (\d+): (.+)$/, (n, x) => `Step ${n}: ${x === 'tomt' ? 'empty' : x}`],
   [/^Kontakt (\d) är nu (.+)\.$/, (n, k) => `Switch ${n} is now ${k}.`],
   [/^Kontakt (\d): (.+)$/, (n, k) => `Switch ${n}: ${k}`],

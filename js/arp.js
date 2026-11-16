@@ -173,9 +173,7 @@ function arpPlayNote(note, pad, time, off) {
   // OSC och ljusblink på rutan, så nära tonen som möjligt
   timers.push(setTimeout(() => {
     oscSend('note', note, Number(ui.velocity.value) || 100);
-    pad.el.classList.remove('arp-hit');
-    void pad.el.offsetWidth;
-    pad.el.classList.add('arp-hit');
+    flashPad(pad.el);
     timers.push(setTimeout(() => oscSend('note', note, 0), dur * 1000));
   }, wait));
 
@@ -233,6 +231,15 @@ function setupArp() {
 // två sekunder börjar om. Ett tryck spelar in, två eller fler ställer tempot.
 const TAP_RESET_MS = 2000;
 const TAP_KEEP = 5;
+// Ljusblink på en ruta som spelas av arpeggiatorn eller sequencern. Web Animations i stället för att
+// byta klass: ingen omräkning av sidans layout för varje ton (det kunde ge knaster i Safari).
+const FLASH_KEYS = [{ filter: 'brightness(1.7)' }, { filter: 'brightness(1)' }];
+function flashPad(el) {
+  if (!el.animate) return;
+  el.flash?.cancel();
+  el.flash = el.animate(FLASH_KEYS, { duration: ui.reduceMotion.checked ? 60 : 140, easing: 'ease-out' });
+}
+
 let taps = [];
 
 function tapTempo() {
