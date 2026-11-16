@@ -942,11 +942,19 @@ class SynthEngine {
     const ctls = []; // [klang 1, klang 2] per ljudtrådsnod – motorns egna kontroller för Läge på rutan
     let osc2Ctl = null; // Oscillatorer: oscillator 2:s nivå eller FM-djup (klang 2)
 
-    // Håller reda på när rösten är slut (även när den inte har några oscillatorer)
-    const life = ctx.createConstantSource();
-    life.offset.value = 0;
-    life.connect(mixer);
-    sources.push(life);
+    // Rösten byggs med så få noder som möjligt: Safari hackar när många noder skapas och kopplas på en
+    // gång (ackord, sequencer, arpeggio). Det som Läge på rutan och vibratot behöver skapas bara när
+    // de används (inställningarna läses när tonen börjar).
+    const posMode = this.posMode || 'off';
+    const useVib = this.vibOn !== false;
+
+    // Håller reda på när rösten är slut – behövs bara för ljudtrådsmotorerna (de andra har oscillatorer)
+    if (WORKLET_MODELS.has(p.model)) {
+      const life = ctx.createConstantSource();
+      life.offset.value = 0;
+      life.connect(mixer);
+      sources.push(life);
+    }
 
     if (WORKLET_MODELS.has(p.model)) {
       this.addModelVoice(p, freq, t, mixer, detunes, onRelease, onEnd, level, ctls);
@@ -1026,8 +1034,9 @@ class SynthEngine {
       filter.detune.setTargetAtTime(top * p.fSustain, t + p.fAttack, p.fDecay / 3);
     }
 
-    // Tremolo-steg (används bara när LFO styr volymen)
-    const trem = ctx.createGain();
+    // Tremolo-steg (bara när LFO styr volymen)
+    const lfoOn = p.lfoTarget !== 'off' && p.lfoDepth > 0;
+    const trem = lfoOn && p.lfoTarget !== 'pitch' && p.lfoTarget !== 'filter' ? ctx.createGain() : null;
 
     // Volymkurva (ADSR). Minst 3 ms attack, annars knäpper det i anslaget.
     const amp = ctx.createGain();
@@ -1049,16 +1058,22 @@ class SynthEngine {
     };
 
     // Läge på rutan (js/position.js): filter, volym, tonhöjd och vibrato som pekarens läge styr
-    const expr = ctx.createGain();
-    const posFilt = ctx.createConstantSource(); // cent på filtret (0 = som ljudet är)
-    posFilt.offset.value = 0;
-    posFilt.connect(filter.detune);
-    sources.push(posFilt);
+    const expr = posMode === 'volume' ? ctx.createGain() : null;
+    let posFilt = null; // cent på filtret (0 = som ljudet är)
+    if (posMode === 'filter') {
+      posFilt = ctx.createConstantSource();
+      posFilt.offset.value = 0;
+      posFilt.connect(filter.detune);
+      sources.push(posFilt);
+    }
 
-    mixer.connect(filter).connect(trem).connect(expr).connect(amp).connect(this.input);
+    let chain = mixer.connect(filter);
+    if (trem) chain = chain.connect(trem);
+    if (expr) chain = chain.connect(expr);
+    chain.connect(amp).connect(this.input);
 
     // LFO
-    if (p.lfoTarget !== 'off' && p.lfoDepth > 0) {
+    if (lfoOn) {
       const lfo = ctx.createOscillator();
       lfo.frequency.value = p.lfoRate;
       const depth = ctx.createGain();
@@ -1079,20 +1094,31 @@ class SynthEngine {
     }
 
     // Vibrato: delad LFO -> rösten egen djupkontroll (cent) -> tonhöjden
-    const vib = ctx.createGain();
-    vib.gain.value = 0;
-    this.vibLfo.connect(vib);
-    [...carriers, ...pitched].forEach((o) => vib.connect(o.detune));
-    detunes.forEach((d) => vib.connect(d));
+    let vib = null;
+    if (useVib) {
+      vib = ctx.createGain();
+      vib.gain.value = 0;
+      this.vibLfo.connect(vib);
+      [...carriers, ...pitched].forEach((o) => vib.connect(o.detune));
+      detunes.forEach((d) => vib.connect(d));
+    }
     // Läge på rutan: böjning (cent) och eget vibratodjup
-    const posBend = ctx.createConstantSource();
-    posBend.offset.value = 0;
-    sources.push(posBend);
-    const posVib = ctx.createGain();
-    posVib.gain.value = 0;
-    this.vibLfo.connect(posVib);
-    [...carriers, ...pitched].forEach((o) => { posBend.connect(o.detune); posVib.connect(o.detune); });
-    detunes.forEach((d) => { posBend.connect(d); posVib.connect(d); });
+    let posBend = null;
+    let posVib = null;
+    if (posMode === 'bend') {
+      posBend = ctx.createConstantSource();
+      posBend.offset.value = 0;
+      sources.push(posBend);
+    } else if (posMode === 'vibrato') {
+      posVib = ctx.createGain();
+      posVib.gain.value = 0;
+      this.vibLfo.connect(posVib);
+    }
+    const posPitch = posBend || posVib;
+    if (posPitch) {
+      [...carriers, ...pitched].forEach((o) => posPitch.connect(o.detune));
+      detunes.forEach((d) => posPitch.connect(d));
+    }
 
     sources.forEach((s) => s.start(t));
 
@@ -1135,8 +1161,8 @@ class SynthEngine {
         this.voices.delete(voice);
         amp.disconnect();
         onEnd.forEach((f) => f());
-        try { this.vibLfo.disconnect(vib); } catch {}
-        try { this.vibLfo.disconnect(posVib); } catch {}
+        if (vib) try { this.vibLfo.disconnect(vib); } catch {}
+        if (posVib) try { this.vibLfo.disconnect(posVib); } catch {}
       };
     };
     // Avbryt en ton som är planerad men inte har börjat än (arpeggiatorns retrigg). Tyst, utan klick.
@@ -1156,7 +1182,7 @@ class SynthEngine {
         if (first) prm.setValueAtTime(v, now);
         else prm.setTargetAtTime(v, now, 0.03);
       };
-      set(posFilt.offset, param === 'filter' ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
+      if (posFilt) set(posFilt.offset, param === 'filter' ? (x - 1) * 4800 : 0); // upp till fyra oktaver mörkare
       // Motorns egna kontroller (klang 1 och 2): −1 = som ljudet är. Till/från sätts direkt.
       const ctl = (c, on) => {
         if (!on) { if (c.value >= 0 || first) c.setValueAtTime(-1, now); }
@@ -1172,14 +1198,15 @@ class SynthEngine {
         set(filter.frequency, wah ? Math.min(p.cutoff, 300 * Math.pow(2, 5 * x)) : p.cutoff);
         set(filter.Q, wah ? Math.max(p.q, 5) : p.q);
       }
-      set(expr.gain, param === 'volume' ? 0.08 + 0.92 * x * x : 1);
-      set(posBend.offset, param === 'bend' ? x * 200 : 0); // upp till en helton
-      set(posVib.gain, param === 'vibrato' ? x * 50 : 0); // upp till 50 cent
+      // (noderna finns bara för den parameter som var vald när tonen började)
+      if (expr) set(expr.gain, param === 'volume' ? 0.08 + 0.92 * x * x : 1);
+      if (posBend) set(posBend.offset, param === 'bend' ? x * 200 : 0); // upp till en helton
+      if (posVib) set(posVib.gain, param === 'vibrato' ? x * 50 : 0); // upp till 50 cent
     };
     // Djup i cent (mjukt in/ut) och takt i Hz
     stop.vibrato = (cents, rate) => {
       const now = ctx.currentTime;
-      vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
+      if (vib) vib.gain.setTargetAtTime(cents, now, cents > 0 ? 0.12 : 0.25);
       if (rate) this.vibLfo.frequency.setTargetAtTime(rate, now, 0.25);
     };
     return stop;

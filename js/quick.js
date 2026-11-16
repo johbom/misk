@@ -193,24 +193,11 @@ function octaveRow() {
       o === cur ? 'on' : ''}" data-octave="${o}">${o}</button>`).join('')}</div>`;
 }
 
-// Ny grundton. Alla ackord flyttas lika många halvtoner.
+// Ny grundton (ackorden flyttas med: followKey i js/chords.js)
 function setKeyRoot(r) {
   const old = Number(ui.root.value);
   if (r === old) return;
-  transposeChords(r - old);
   ui.root.value = r;
   ui.root.dispatchEvent(new Event('change'));
   log(`Tonart: ${NOTE_NAMES[r]} ${scaleName()}`);
-}
-
-function transposeChords(d) {
-  const t = (v) => (((Number(v) + d) % 12) + 12) % 12;
-  chordPads.forEach(release);
-  chords.forEach((c) => {
-    c.root = t(c.root);
-    if (c.bass >= 0) c.bass = t(c.bass);
-  });
-  saveChords();
-  updateChordLabels();
-  buildChordEditor();
 }

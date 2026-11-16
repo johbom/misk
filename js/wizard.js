@@ -417,6 +417,8 @@ function finishWizard() {
     if (d.drumKit) data.settings.drumKit = d.drumKit;
   }
   if (d.tab !== 'xy') data.settings.formation = d.formation;
+  // Ny tonart för Toner: ackorden på Ackord följer med (som när tonarten byts på andra sätt)
+  if (d.tab === 'notes') data.chords = rekeyChords(chords, keyState.root, keyState.scale, Number(d.root), d.scale);
   if (d.tab === 'chords' && d.prog === KEEP_CHORDS) {
     data.settings.chordCount = String(d.customCount);
     data.chords = chords.map((old, i) => {

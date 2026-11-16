@@ -77,6 +77,7 @@ function applySnapshot(data) {
   buildChordPads();
   ui.xyReverb.dispatchEvent(new Event('input')); // XY:s reverb: ljud, värdetext och spelraden
   syncQuick(); // snabbknapparna formation och tonart
+  syncKeyState(); // presetets ackord hör redan till dess tonart
 }
 
 function describe(data) {

@@ -468,3 +468,90 @@ function pickChord(patch) {
   renderChordPicker();
   buildChordEditor(); // håll listan under Inställningar i synk
 }
+
+// ---------- Ackorden följer tonarten ----------
+// Byter man grundton eller skala – i tonartsrutan, under Instrument eller i guiden – följer ackorden med.
+// Ett ackord på ett skalsteg byggs om på samma steg i den nya skalan (I V vi IV i C dur → i v VI iv i
+// C moll: Cm Gm A♭ Fm), med samma sorts ackord (treklang, sjuackord, sexackord …). Ackord utanför skalan
+// (t.ex. E7 eller B♭ i C dur) och sus-ackord behåller sin typ och flyttas bara med grundtonen. Pentatonisk räknas som dur och
+// blues som moll; kromatisk ändrar inga ackordtyper.
+const KEY_PARENT = { major: 'major', pentatonic: 'major', minor: 'minor', blues: 'minor' };
+const PARENT_STEPS = { major: [0, 2, 4, 5, 7, 9, 11], minor: [0, 2, 3, 5, 7, 8, 10] };
+const TRIAD_TYPE = { '4,7': '', '3,7': 'm', '3,6': 'dim', '4,8': 'aug' };
+const SEVENTH_TYPE = { '4,7,11': 'maj7', '4,7,10': '7', '3,7,10': 'm7', '3,6,10': 'm7b5', '3,6,9': 'dim7', '3,7,11': 'm7' };
+const DIM_TYPES = new Set(['dim', 'dim7', 'm7b5']);
+const CHORD_FAMILY = {
+  '': 'triad', m: 'triad', dim: 'triad', aug: 'triad',
+  7: 'seventh', maj7: 'seventh', m7: 'seventh', m7b5: 'seventh', dim7: 'seventh',
+  6: 'six', m6: 'six', 9: 'ninth', add9: 'add9',
+};
+
+// Ackordtypen på skalsteg d i skalan steps, i samma familj som type
+function diatonicType(steps, d, type) {
+  const iv = (k) => (steps[(d + k) % 7] - steps[d] + 12) % 12;
+  const triad = TRIAD_TYPE[`${iv(2)},${iv(4)}`] ?? '';
+  const minor = triad === 'm';
+  const dim = triad === 'dim';
+  switch (CHORD_FAMILY[type]) {
+    case 'triad': return triad;
+    case 'seventh': return SEVENTH_TYPE[`${iv(2)},${iv(4)},${iv(6)}`] ?? type;
+    case 'six': return dim ? 'dim' : minor ? 'm6' : '6';
+    case 'ninth': return dim ? 'm7b5' : minor ? 'm7' : '9';
+    case 'add9': return dim ? 'dim' : minor ? 'm' : 'add9';
+    default: return type; // sus2, sus4: bara grundtonen flyttas
+  }
+}
+
+function rekeyChords(list, fromRoot, fromScale, toRoot, toScale) {
+  const from = PARENT_STEPS[KEY_PARENT[fromScale]];
+  const to = PARENT_STEPS[KEY_PARENT[toScale]];
+  const sameMode = !from || !to || from === to;
+  const move = (r) => {
+    const i = ((r - fromRoot) % 12 + 12) % 12;
+    const d = sameMode ? -1 : from.indexOf(i);
+    return { root: (toRoot + (d >= 0 ? to[d] : i)) % 12, d };
+  };
+  return list.map((c) => {
+    const { root, d } = move(Number(c.root));
+    // Bara ackord som hör till skalan byter typ. Ett annat ackord på ett skalsteg (t.ex. E7 i C dur,
+    // dominanten till Am) flyttas med steget men behåller sin typ: E7 → E♭7 i C moll (dominanten till A♭).
+    const diatonic = d >= 0 && diatonicType(from, d, c.type) === c.type;
+    let type = diatonic ? diatonicType(to, d, c.type) : c.type;
+    // Inget ackord görs om till förminskat (vii° i dur, ii° i moll används sällan): det står kvar som det
+    // var. Då blir t.ex. B♭ (♭VII) kvar i både C moll och C dur, och fram och tillbaka blir som innan.
+    if (DIM_TYPES.has(type) && !DIM_TYPES.has(c.type)) {
+      const i = ((Number(c.root) - fromRoot) % 12 + 12) % 12;
+      return { ...c, root: (toRoot + i) % 12, ...(c.bass >= 0 ? { bass: ((Number(c.bass) - fromRoot + toRoot) % 12 + 12) % 12 } : {}) };
+    }
+    const out = { ...c, root, type };
+    if (c.bass >= 0) out.bass = move(Number(c.bass)).root;
+    if (!voicingAllowed(out.voicing, out)) out.voicing = 'root';
+    return out;
+  });
+}
+
+// Tonarten som ackorden senast följde (uppdateras också när ett preset laddas, utan att ackorden ändras)
+const keyState = { root: 0, scale: 'major' };
+function syncKeyState() {
+  keyState.root = Number(ui.root.value);
+  keyState.scale = ui.scale.value;
+}
+
+function followKey() {
+  const root = Number(ui.root.value);
+  const scale = ui.scale.value;
+  if (root === keyState.root && scale === keyState.scale) return;
+  chordPads.forEach(release);
+  // På plats: rutorna (och sequencern) håller samma ackordobjekt
+  rekeyChords(chords, keyState.root, keyState.scale, root, scale).forEach((c, i) => Object.assign(chords[i], c));
+  syncKeyState();
+  saveChords();
+  updateChordLabels();
+  chordPads.forEach((p) => { if (p.chord) paintChordPad(p); });
+  buildChordEditor();
+}
+
+function setupKeyFollow() {
+  syncKeyState();
+  [ui.root, ui.scale].forEach((el) => el.addEventListener('change', followKey));
+}

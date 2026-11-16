@@ -25,6 +25,8 @@ function initAudio() {
     const e = new SynthEngine(audioCtx, soundState(slot).params, master);
     // Läge på rutan: synten behöver veta om oscillator 2 styrs (då finns den med i varje ton)
     Object.defineProperty(e, 'posMode', { get: () => ui.posParam.value });
+    // Vibrato genom att vicka (Instrument → Vibrato): av = rösterna behöver ingen vibratonod
+    Object.defineProperty(e, 'vibOn', { get: () => Number(ui.vibrato.value) > 0 });
     e.setVolume(Number(ui.volume.value));
     engines[slot] = e;
   }
