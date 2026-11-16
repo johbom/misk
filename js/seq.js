@@ -219,12 +219,7 @@ function seqInput(pad) {
     if (seq.sel < 0 || seq.sel >= seqSteps()) return;
     i = seq.sel;
     const at = steps[i].findIndex((e) => e.p === k);
-    const join = seqJoin(page);
-    if (join) {
-      // Spelad i samma svep (strängarna) eller samtidigt (flera fingrar): samma steg som förra rutan
-      i = join.i;
-      if (!steps[i].some((e) => e.p === k)) steps[i].push(entry);
-    } else if (ui.seqAdvance.checked && seq.fix === i) {
+    if (ui.seqAdvance.checked && seq.fix === i) {
       steps[i] = [entry]; // ändra ett enstaka steg: skriv över, och stanna kvar
     } else if (ui.seqAdvance.checked) {
       steps[i] = [entry]; // en ruta per steg: skriv över
@@ -234,22 +229,8 @@ function seqInput(pad) {
     else steps[i].push(entry);
   }
   seq.edit = { pad, entry }; // läget följer pekaren medan rutan låter (seqPosMove)
-  seq.last = { page, i, at: performance.now() };
   saveSeq();
   renderSeq();
-}
-
-// Med Gå vidare hamnar varje ruta i ett eget steg. Men rutor som spelas i ett och samma svep över
-// strängarna (Rutnät → Strängar), eller samtidigt med flera fingrar, är ett ackord: de hamnar i samma
-// steg och låter samtidigt. Gäller bara steget som just skrevs in, strax efteråt.
-const SEQ_JOIN_MS = 60;
-const SEQ_JOIN_STRUM_MS = 300;
-function seqJoin(page) {
-  const last = seq.last;
-  if (!ui.seqAdvance.checked || !last || last.page !== page) return null;
-  const strings = ui.formation?.value === 'strings' && page === 'notes';
-  const ms = performance.now() - last.at;
-  return ms < (strings ? SEQ_JOIN_STRUM_MS : SEQ_JOIN_MS) ? last : null;
 }
 
 // Läget på rutan just nu: från pekaren som ligger över den (null om ingen gör det, t.ex. kontakt)

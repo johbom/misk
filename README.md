@@ -107,7 +107,6 @@ Inställningarna är uppdelade i underflikar:
   **Skriva in:** välj ett steg och spela en ruta. Det går med mus, blick, finger eller kontakt, med samma aktiveringstid och stegning som annars. Är mönstret tomt när man slår på sequencern är steg 1 redan valt.
   - *Gå vidare efter varje ruta* (på från början): en ruta per steg, och markeringen flyttar till nästa steg, så man fyller i en melodi genom att spela den. Det som redan låg i steget skrivs över.
   - Klickar man på ett steg som redan är ifyllt ändras bara det steget: rutan man spelar byter ut det som låg där, och markeringen stannar kvar (man kan prova flera toner). Ett tomt steg man klickar på fylls i som vanligt, och markeringen går vidare.
-  - Rutor som spelas samtidigt (flera fingrar, inom 60 ms) hamnar i samma steg, liksom ett svep över strängarna på Toner (*Rutnät → Strängar*, rutor inom 0,3 s efter varandra): de blir ett ackord och låter samtidigt när slingan spelar.
   - Med *Gå vidare* av stannar markeringen, och flera rutor kan ligga i samma steg, till exempel bastrumma och hihat. Samma ruta igen tar bort den.
   - **Paus** tömmer steget och går vidare. **Rensa** tömmer alla steg på sidan, efter en fråga.
 
