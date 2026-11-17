@@ -49,7 +49,7 @@ function refreshAccess() {
   renderSeq(); // (även efter ett laddat preset)
   root.dataset.pointer = ui.showPointer.value;
   renderSwitchKeys(); // (även efter ett laddat preset)
-  renderChordKeys();
+  renderPadKeys();
   syncPlayModeButtons();
   document.body.dataset.playMode = ui.playMode.value;
   document.body.dataset.scan = ui.scanMode.value;
@@ -66,23 +66,23 @@ function refreshAccess() {
 // ---------- Snabbval (profiler) ----------
 const ACCESS_PROFILES = [
   {
-    name: 'Standard', desc: 'Mus och pekskärm. Spelar direkt.',
+    name: 'Standard', icon: 'pointer', desc: 'Mus och pekskärm. Spelar direkt.',
     set: { dwell: 0, releaseDelay: 0, lockout: 0, showPointer: 'off', dwellClick: 0, uiSize: '1', steppers: false, scanMode: 'off', playMode: 'hold', vibrato: 20 },
   },
   {
-    name: 'Ögon – utforska', desc: 'Första stegen, orsak och verkan. Låter direkt där blicken landar, tål darr och har stor pekare.',
+    name: 'Ögon – utforska', icon: 'eye', desc: 'Första stegen, orsak och verkan. Låter direkt där blicken landar, tål darr och har stor pekare.',
     set: { dwell: 0, releaseDelay: 400, lockout: 600, showPointer: 'xlarge', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', padSpace: 65, vibrato: 0 },
   },
   {
-    name: 'Ögon – spela', desc: 'Van användare. Kort vilotid så man hinner sikta. Ögonstyrningen sköter klicken.',
+    name: 'Ögon – spela', icon: 'eye', desc: 'Van användare. Kort vilotid så man hinner sikta. Ögonstyrningen sköter klicken.',
     set: { dwell: 250, releaseDelay: 200, lockout: 250, showPointer: 'small', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'off', playMode: 'hold', vibrato: 0 },
   },
   {
-    name: 'Ögon – bara titta', desc: 'Utan klick: knappar trycks genom att titta, tonen ligger kvar tills nästa ruta.',
+    name: 'Ögon – bara titta', icon: 'eye', desc: 'Utan klick: knappar trycks genom att titta, tonen ligger kvar tills nästa ruta.',
     set: { dwell: 600, releaseDelay: 250, lockout: 400, showPointer: 'large', dwellClick: 1200, uiSize: '1.5', steppers: true, scanMode: 'off', playMode: 'latch', vibrato: 0 },
   },
   {
-    name: 'Kontakt', desc: 'En kontakt (eller mellanslag) med automatisk stegning. Håll in för lång ton.',
+    name: 'Kontakt', icon: 'switch', desc: 'En kontakt (eller mellanslag) med automatisk stegning. Håll in för lång ton.',
     set: { dwell: 0, releaseDelay: 0, lockout: 0, showPointer: 'off', dwellClick: 0, uiSize: '1.25', steppers: true, scanMode: 'auto', scanSpeed: 1500, playMode: 'hold', vibrato: 0 },
   },
 ];
@@ -94,8 +94,8 @@ function buildProfiles() {
     b.type = 'button';
     b.className = 'profile';
     b.dataset.i = i;
-    b.innerHTML = '<strong></strong><small></small>';
-    b.querySelector('strong').textContent = p.name;
+    b.innerHTML = `<strong>${settingsIcon(p.icon)}<span></span></strong><small></small>`;
+    b.querySelector('strong span').textContent = p.name;
     b.querySelector('small').textContent = p.desc;
     b.addEventListener('click', () => applyProfile(p));
     box.append(b);
@@ -341,13 +341,13 @@ function setupLock() {
 const scan = { idx: 0, timer: 0, held: null };
 const scanning = () => ui.scanMode.value !== 'off' && isPlayTab();
 
-// Siffran som spelar rutan, visas på rutorna om "Visa tangentsiffror" är på
+// Tangenten som spelar rutan, visas på rutorna om "Visa tangenterna på rutorna" är på
 function markKeys() {
   allPads().forEach((p) => p.el.removeAttribute('data-key'));
-  if (document.body.dataset.tab === 'chords') {
-    const list = chordKeyList();
-    chordPads.forEach((p, i) => { const k = chordKeyLabel(i, list); if (k) p.el.setAttribute('data-key', k); });
-  } else visiblePads().slice(0, 10).forEach((p, i) => p.el.setAttribute('data-key', (i + 1) % 10));
+  const page = document.body.dataset.tab;
+  if (!KEY_PAGES[page]) return;
+  const list = padKeyList(page);
+  KEY_PAGES[page].pads().forEach((p, i) => { const k = padKeyLabel(page, i, list); if (k) p.el.setAttribute('data-key', k); });
 }
 
 // Det som stegningen går igenom: rutorna, och sist stegsequencerns Start/Stopp (och knappen som stoppar
@@ -452,27 +452,27 @@ function renderSwitchKeys() {
   $('switch-reset').disabled = !ui.switch1Key.value && !ui.switch2Key.value;
 }
 
-// Inlärning (Lär): för kontakt 1/2 eller för en ackordruta. Bara en i taget.
-let learning = null; // { kind: 'switch' | 'chord', n, btn, timer, msg }
+// Inlärning (Lär): för kontakt 1/2 eller för en ruta på Toner/Ackord. Bara en i taget.
+let learning = null; // { kind: 'switch' | 'pad', n, btn, page, timer, msg }
 
 function stopLearning(msg) {
   if (!learning) return;
   document.removeEventListener('keydown', learnKey, true);
   clearTimeout(learning.timer);
   learning.btn.classList.remove('learning');
-  learning.btn.textContent = t('Lär');
+  (learning.btn.querySelector('.kc-learn') || learning.btn).textContent = t('Lär');
   const box = $(learning.msg);
   learning = null;
   if (msg) box.textContent = msg;
 }
 
-function startLearning(kind, n, btn, msgId, prompt) {
-  const again = learning?.kind === kind && learning.n === n;
+function startLearning(kind, n, btn, msgId, prompt, page = '') {
+  const again = learning?.kind === kind && learning.n === n && learning.page === page;
   stopLearning();
   if (again) { $(msgId).textContent = t('Avbrutet. Inget är ändrat.'); return; }
-  learning = { kind, n, btn, msg: msgId, timer: setTimeout(() => stopLearning(t('Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.')), 15000) };
+  learning = { kind, n, btn, page, msg: msgId, timer: setTimeout(() => stopLearning(t('Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.')), 15000) };
   btn.classList.add('learning');
-  btn.textContent = t('Väntar …');
+  (btn.querySelector('.kc-learn') || btn).textContent = t('Väntar …');
   $(msgId).textContent = prompt;
   // Vänta tills tangenten som eventuellt klickade på knappen (mellanslag/Enter) har släppts
   setTimeout(() => { if (learning?.btn === btn) document.addEventListener('keydown', learnKey, true); }, 0);
@@ -484,7 +484,7 @@ function learnKey(e) {
   e.stopImmediatePropagation();
   if (e.repeat) return;
   if (e.code === 'Escape') { stopLearning(t('Avbrutet. Inget är ändrat.')); return; }
-  if (learning.kind === 'chord') { learnChordKey(e.code); return; }
+  if (learning.kind === 'pad') { learnPadKey(e.code); return; }
   const { n } = learning;
   const other = n === 1 ? 2 : 1;
   if (switchCodes(other).includes(e.code)) {
@@ -515,75 +515,93 @@ function setupSwitchLearn() {
   renderSwitchKeys();
 }
 
-// ---------- Tangenter för ackordrutorna: siffrorna 1–8 eller inlärda ----------
-// ui.chordKeys: JSON-lista med en tangent (KeyboardEvent.code) per ackordruta; tom plats = rutans siffra.
-// En inlärd tangent ersätter siffran. Lär sig en ruta en annan rutas siffra spelar siffran den nya rutan,
-// och den andra rutan har ingen tangent förrän den lärs in eller allt återställs.
-// (Tangenter för rutor som inte syns just nu, när antalet ackord minskats, finns kvar till nästa gång.)
-function allChordKeys() {
+// ---------- Tangenter för rutorna: siffrorna eller inlärda (Hjälpmedel → Tangentbord) ----------
+// Toner och Ackord har var sin lista (ui.noteKeys / ui.chordKeys): JSON med en tangent (KeyboardEvent.code)
+// per ruta; tom plats = rutans siffra (ruta 1–10 = 1–9, 0). En inlärd tangent ersätter siffran. Lär sig en
+// ruta en annan rutas siffra spelar siffran den nya rutan, och den andra rutan har ingen tangent förrän den
+// lärs in eller allt återställs. Tangenter för rutor som inte syns (färre rutor än förut) finns kvar.
+const KEY_PAGES = {
+  notes: { pads: () => notePads, input: () => ui.noteKeys, word: 'Ruta' },
+  chords: { pads: () => chordPads, input: () => ui.chordKeys, word: 'Ackord' },
+};
+const keyPage = () => (ui.keyPage.value in KEY_PAGES ? ui.keyPage.value : 'notes');
+// "Ruta 3" / "ackord 3" (inne i en mening)
+const padWord = (page, i, lower = false) => {
+  const w = KEY_PAGES[page].word;
+  return `${lower ? w.toLowerCase() : w} ${i + 1}`;
+};
+
+function allPadKeys(page) {
   try {
-    const a = JSON.parse(ui.chordKeys.value || '[]');
+    const a = JSON.parse(KEY_PAGES[page].input().value || '[]');
     return Array.isArray(a) ? a.map((c) => (typeof c === 'string' ? c : '')) : [];
   } catch { return []; }
 }
-const chordKeyList = () => allChordKeys().slice(0, chordPads.length);
+const padKeyList = (page) => allPadKeys(page).slice(0, KEY_PAGES[page].pads().length);
 // En siffra är samma tangent på sifferraden och det numeriska tangentbordet
 const digitCodes = (d) => [`Digit${d}`, `Numpad${d}`];
-function chordKeyCodes(i, list = chordKeyList()) {
+function padKeyCodes(page, i, list = padKeyList(page)) {
   if (list[i]) return keyDigit(list[i]) !== null ? digitCodes(keyDigit(list[i])) : [list[i]];
   if (i > 9) return [];
   const d = (i + 1) % 10;
   return list.some((c) => keyDigit(c) === d) ? [] : digitCodes(d);
 }
-const chordPadOfKey = (code) => {
-  const list = chordKeyList();
-  return chordPads.find((_, i) => chordKeyCodes(i, list).includes(code)) || null;
-};
+function padOfKey(page, code) {
+  if (!KEY_PAGES[page]) return null;
+  const list = padKeyList(page);
+  return KEY_PAGES[page].pads().find((_, i) => padKeyCodes(page, i, list).includes(code)) || null;
+}
+const codeName = (code) => (keyDigit(code) !== null ? String(keyDigit(code)) : keyName(code));
 // Det som står på rutan och i listan: den inlärda tangenten, annars siffran (tomt = ingen tangent)
-function chordKeyLabel(i, list = chordKeyList()) {
-  if (list[i]) return keyDigit(list[i]) !== null ? String(keyDigit(list[i])) : keyName(list[i]);
-  const codes = chordKeyCodes(i, list);
-  return codes.length ? String((i + 1) % 10) : '';
+function padKeyLabel(page, i, list = padKeyList(page)) {
+  if (list[i]) return codeName(list[i]);
+  return padKeyCodes(page, i, list).length ? String((i + 1) % 10) : '';
 }
 
-function renderChordKeys() {
-  const box = $('chord-key-rows');
+let keyCellsFor = ''; // sida och antal rutor som listan byggdes för
+function renderPadKeys() {
+  const box = $('key-cells');
   if (!box) return;
-  if (box.children.length !== chordPads.length) {
-    if (learning?.kind === 'chord') stopLearning();
-    box.innerHTML = chordPads.map((_, i) => `<div class="switch-row"><span>${t(`Ackord ${i + 1}`)}<small></small></span>`
-      + `<kbd></kbd><button type="button" data-chord-learn="${i}" aria-describedby="chord-learn-msg">${t('Lär')}</button></div>`).join('');
-    box.querySelectorAll('[data-chord-learn]').forEach((btn) => btn.addEventListener('click', () => {
-      const i = Number(btn.dataset.chordLearn);
-      startLearning('chord', i, btn, 'chord-learn-msg', t(`Tryck nu på kontakten eller tangenten som ska spela ackord ${i + 1}. Esc avbryter.`));
+  const page = keyPage();
+  const pads = KEY_PAGES[page].pads();
+  if (keyCellsFor !== `${page}:${pads.length}`) {
+    if (learning?.kind === 'pad') stopLearning();
+    keyCellsFor = `${page}:${pads.length}`;
+    box.innerHTML = pads.map((_, i) => `<button type="button" class="key-cell" data-pad-learn="${i}" aria-describedby="key-learn-msg">`
+      + `<span class="kc-num">${i + 1}</span><span class="kc-pad"></span><kbd></kbd><span class="kc-learn">${t('Lär')}</span></button>`).join('');
+    box.querySelectorAll('[data-pad-learn]').forEach((btn) => btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.padLearn);
+      startLearning('pad', i, btn, 'key-learn-msg',
+        t(`Tryck nu på kontakten eller tangenten som ska spela ${padWord(page, i, true)}. Esc avbryter.`), page);
     }));
   }
-  const list = chordKeyList();
-  chordPads.forEach((pad, i) => {
-    const row = box.children[i];
-    row.querySelector('small').textContent = pad.label();
-    const k = chordKeyLabel(i, list);
-    row.querySelector('kbd').textContent = k || '–';
-    row.querySelector('kbd').title = k ? '' : t('Ingen tangent');
+  const list = padKeyList(page);
+  pads.forEach((pad, i) => {
+    const cell = box.children[i];
+    const k = padKeyLabel(page, i, list);
+    cell.querySelector('.kc-pad').textContent = pad.label();
+    cell.querySelector('kbd').textContent = k || '–';
+    cell.querySelector('kbd').classList.toggle('none', !k);
+    cell.setAttribute('aria-label', `${t('Lär')}: ${t(padWord(page, i))} (${pad.label()}), ${k || t('Ingen tangent')}`);
   });
-  $('chord-key-reset').disabled = !list.some(Boolean);
+  $('key-reset').disabled = !allPadKeys(page).some(Boolean);
 }
 
-function setChordKeys(list) {
+function setPadKeys(page, list) {
   while (list.length && !list[list.length - 1]) list.pop();
-  ui.chordKeys.value = list.length ? JSON.stringify(list) : '';
+  KEY_PAGES[page].input().value = list.length ? JSON.stringify(list) : '';
   saveSettings();
-  renderChordKeys();
+  renderPadKeys();
   markKeys();
 }
 
 const MODIFIER_KEY = /^(Shift|Control|Alt|Meta|OS|CapsLock|Tab|Fn)/;
 
-function learnChordKey(code) {
-  const i = learning.n;
-  const msg = $('chord-learn-msg');
+function learnPadKey(code) {
+  const { n: i, page } = learning;
+  const msg = $('key-learn-msg');
   const digit = keyDigit(code);
-  const name = digit !== null ? String(digit) : keyName(code);
+  const name = codeName(code);
   if (MODIFIER_KEY.test(code)) {
     msg.textContent = t(`${name} går inte att använda. Tryck på en annan kontakt eller tangent.`);
     return;
@@ -592,34 +610,38 @@ function learnChordKey(code) {
     msg.textContent = t(`${name} används redan av kontakt ${switchOf(code)}. Tryck på en annan kontakt eller tangent.`);
     return;
   }
-  const list = chordKeyList();
   if (digit !== null) code = `Digit${digit}`; // (sparas som sifferradens tangent)
+  const count = KEY_PAGES[page].pads().length;
+  const list = padKeyList(page);
   const taken = list.findIndex((c, j) => c === code && j !== i);
   if (taken >= 0) {
-    msg.textContent = t(`${name} används redan av ackord ${taken + 1}. Tryck på en annan kontakt eller tangent.`);
+    msg.textContent = t(`${name} används redan av ${padWord(page, taken, true)}. Tryck på en annan kontakt eller tangent.`);
     return;
   }
   // Rutans egen siffra = som förut (ingen inlärd tangent)
   const own = i <= 9 && digit === (i + 1) % 10;
   // Vilken ruta tappar sin siffra?
-  const loser = own ? -1 : chordPads.findIndex((_, j) => j !== i && !list[j] && chordKeyCodes(j, list).includes(code));
-  const all = allChordKeys().map((c, j) => (j >= chordPads.length && c === code ? '' : c)); // (en dold ruta släpper den)
+  const loser = own ? -1 : KEY_PAGES[page].pads().findIndex((_, j) => j !== i && !list[j] && padKeyCodes(page, j, list).includes(code));
+  const all = allPadKeys(page).map((c, j) => (j >= count && c === code ? '' : c)); // (en dold ruta släpper den)
   all[i] = own ? '' : code;
-  setChordKeys(Array.from(all, (c) => c || ''));
-  let text = t(`Ackord ${i + 1} spelas nu med ${name}.`);
-  if (loser >= 0) text += ` ${t(`Ackord ${loser + 1} har ingen tangent längre.`)}`;
+  setPadKeys(page, Array.from(all, (c) => c || ''));
+  let text = t(`${padWord(page, i)} spelas nu med ${name}.`);
+  if (loser >= 0) text += ` ${t(`${padWord(page, loser)} har ingen tangent längre.`)}`;
   stopLearning(text);
-  log(t(`Ackord ${i + 1}: ${name}`));
+  log(t(`${padWord(page, i)}: ${name}`));
 }
 
-function setupChordKeys() {
-  $('chord-key-reset').addEventListener('click', () => {
-    if (learning?.kind === 'chord') stopLearning();
-    setChordKeys([]);
-    $('chord-learn-msg').textContent = t('Ackordrutorna spelas med siffrorna igen.');
-    log(t('Ackordtangenter: siffror'));
+function setupPadKeys() {
+  const intro = $('key-learn-msg').innerHTML; // (förklaringen visas igen när man byter sida)
+  ui.keyPage.addEventListener('change', () => { stopLearning(); renderPadKeys(); $('key-learn-msg').innerHTML = intro; });
+  $('key-reset').addEventListener('click', () => {
+    const page = keyPage();
+    stopLearning();
+    setPadKeys(page, []);
+    $('key-learn-msg').textContent = t(page === 'notes' ? 'Tonrutorna spelas med siffrorna igen.' : 'Ackordrutorna spelas med siffrorna igen.');
+    log(t(page === 'notes' ? 'Tangenter för Toner: siffror' : 'Tangenter för Ackord: siffror'));
   });
-  renderChordKeys();
+  renderPadKeys();
 }
 
 function setupKeys() {
@@ -638,17 +660,15 @@ function setupKeys() {
       else scanPress();
       return;
     }
-    // På sidan Ackord: rutans siffra eller inlärda tangent (Hjälpmedel → Tangenter för ackordrutorna)
-    const chordPad = document.body.dataset.tab === 'chords' ? chordPadOfKey(e.code) : null;
-    if (e.repeat) { if (isSwitch || chordPad) e.preventDefault(); return; }
+    // Rutans siffra eller inlärda tangent (Hjälpmedel → Tangentbord), på sidan som visas
+    const keyPad = padOfKey(document.body.dataset.tab, e.code);
+    if (e.repeat) { if (isSwitch || keyPad) e.preventDefault(); return; }
     let pad = null;
-    const d = keyDigit(e.code);
-    if (chordPad) {
+    if (keyPad) {
       e.preventDefault();
-      pad = chordPad;
-    } else if (d !== null) {
+      pad = keyPad;
+    } else if (keyDigit(e.code) !== null) {
       e.preventDefault(); // t.ex. en fokuserad lista ska inte byta värde
-      if (document.body.dataset.tab === 'notes') pad = notePads[d === 0 ? 9 : d - 1];
     } else if (isSwitch && e.target.classList?.contains('pad')) {
       e.preventDefault();
       pad = allPads().find((p) => p.el === e.target);
@@ -715,7 +735,7 @@ function setupAccess() {
   setupLock();
   setupKeys();
   setupSwitchLearn();
-  setupChordKeys();
+  setupPadKeys();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
     'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb', 'arpBpm', 'arpGate', 'seqGate']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));

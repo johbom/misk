@@ -82,7 +82,9 @@ const ui = {
   scanMode: $('scan-mode'),
   switch1Key: $('switch1-key'), // inlärd tangent för kontakt 1 (tom = standard)
   switch2Key: $('switch2-key'),
-  chordKeys: $('chord-keys'), // inlärda tangenter för ackordrutorna (JSON-lista, tom plats = siffran)
+  noteKeys: $('note-keys'), // inlärda tangenter för tonrutorna (JSON-lista, tom plats = siffran)
+  chordKeys: $('chord-keys'), // … och för ackordrutorna
+  keyPage: $('key-page'), // vilken sidas tangenter som visas under Hjälpmedel → Tangentbord
   scanSpeed: $('scan-speed'),
   showKeys: $('show-keys'),
   padSpace: $('pad-space'),

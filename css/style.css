@@ -974,8 +974,22 @@ body[data-scan="off"] .only-scan { display: none !important; }
 @keyframes learn-pulse { 50% { background: rgba(255, 255, 255, 0.08); } }
 .reduce-motion .switch-row button.learning { animation: none; }
 .switch-reset { align-self: flex-start; }
-/* Tangenter för ackordrutorna: ackordnamnet under "Ackord N" */
-.chord-learn .switch-row > span small { display: block; font-size: 0.8em; opacity: 0.75; }
+/* Tangenter för rutorna (Hjälpmedel → Tangentbord): en knapp per ruta – nummer, ton/ackord, tangent, Lär */
+.key-learn { display: block; }
+.key-learn > * + * { margin-top: 10px; }
+.key-learn > .seg { width: fit-content; max-width: 100%; }
+.key-learn > .lbl, .key-learn > .switch-reset { display: block; }
+.key-learn > .lbl { font-weight: 600; font-size: 0.9rem; }
+.key-cells { display: grid; grid-template-columns: repeat(auto-fill, minmax(5.6em, 1fr)); gap: 6px; }
+.key-cell { position: relative; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 4px 5px; min-width: 0; }
+.key-cell .kc-num { position: absolute; top: 3px; left: 6px; font-size: 0.7em; opacity: 0.6; }
+.key-cell .kc-pad { font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.key-cell kbd { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 2px 6px; font-size: 0.85em; }
+.key-cell kbd.none { opacity: 0.45; }
+.key-cell .kc-learn { font-size: 0.75em; opacity: 0.7; }
+.key-cell.learning { border-color: var(--hit); color: var(--hit); animation: learn-pulse 1s ease-in-out infinite; }
+.key-cell.learning .kc-learn { opacity: 1; }
+.reduce-motion .key-cell.learning { animation: none; }
 
 /* Aktiveringstid: rutan fylls inifrån tills den spelar */
 .pad { isolation: isolate; }
@@ -1095,6 +1109,10 @@ html.steppers #play-bar label { min-width: 0; }
 /* Panelen Tillgänglighet */
 #settings .panel[data-panel="access"] > fieldset { flex: 1 1 360px; }
 #settings .panel[data-panel="access"] > #access-quick { flex-basis: 100%; display: block; }
+/* Tangentbord: hela bredden, och block i stället för kolumnflex – flexen mäter rutnätet (en knapp per ruta)
+   vid fel bredd och lämnar ett tomrum under det */
+#settings .panel[data-panel="access"] > #keys-set { flex-basis: 100%; display: block; }
+#keys-set > :not(legend) + * { margin-top: 18px; }
 #access-profiles {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));
@@ -1887,3 +1905,13 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 #start-overlay > .lang-switch { margin-top: 4px; }
 #about .lang-switch { margin: 4px 0 8px; }
 .about-disclaimer { font-size: 0.85rem; color: var(--muted); }
+
+/* Symbolstöd under Inställningar (js/controls.js: setupSettingsIcons) */
+.set-icon { width: 1.25em; height: 1.25em; flex: none; vertical-align: -0.25em; }
+.set-icon.wide { width: 1.65em; }
+#settings-nav button { display: inline-flex; align-items: center; gap: 7px; }
+#settings-nav .set-icon { width: 18px; height: 18px; }
+#settings legend .set-icon { width: 17px; height: 17px; margin-right: 7px; vertical-align: -3px; }
+#settings legend .set-icon.wide { width: 23px; }
+.profile strong { display: flex; align-items: center; gap: 8px; }
+.profile .set-icon { width: 22px; height: 22px; }

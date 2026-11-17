@@ -58,6 +58,7 @@ function updateNotes() {
     notePads[i].drum = kit ? drumPiece(kit, i) : null;
     renderNotePad(notePads[i]);
   });
+  renderPadKeys(); // tonnamnen i listan över tangenter (Hjälpmedel → Tangentbord)
 }
 
 function renderNotePad(pad) {

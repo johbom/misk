@@ -34,6 +34,7 @@ setupWizard();
 setupQuick();
 setupKeyFollow();
 setupSegments();
+setupSettingsIcons();
 setupAccess();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 

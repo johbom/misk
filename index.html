@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=132" />
+  <link rel="stylesheet" href="css/style.css?v=138" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=132"></script>
+  <script src="js/i18n.js?v=138"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -115,17 +115,17 @@
   <!-- ===== Fliken Inställningar (underflikar) ===== -->
   <section id="settings" class="only-settings">
     <nav id="settings-nav">
-      <button type="button" data-panel="play">Instrument</button>
-      <button type="button" data-panel="sound">Ljud</button>
-      <button type="button" data-panel="access">Tillgänglighet</button>
-      <button type="button" data-panel="io">Ut, MIDI &amp; OSC</button>
-      <button type="button" data-panel="mine">Mina presets</button>
+      <button type="button" data-panel="play" data-icon="instrument">Instrument</button>
+      <button type="button" data-panel="sound" data-icon="sound">Ljud</button>
+      <button type="button" data-panel="access" data-icon="access">Tillgänglighet</button>
+      <button type="button" data-panel="io" data-icon="midi">Ut, MIDI &amp; OSC</button>
+      <button type="button" data-panel="mine" data-icon="mine">Mina presets</button>
     </nav>
 
     <!-- Instrument: formation, spelsätt och sidorna Toner, Ackord och XY -->
     <div class="panel" data-panel="play">
       <fieldset id="formation-set">
-        <legend>Formation</legend>
+        <legend data-icon="formation">Formation</legend>
         <p class="hint">Hur rutorna på Toner och Ackord ligger.</p>
         <input type="hidden" id="formation" value="grid" />
         <div id="formation-buttons" role="radiogroup" aria-label="Formation"></div>
@@ -165,7 +165,7 @@
       </fieldset>
 
       <fieldset id="play-mode-set">
-        <legend>Spelsätt</legend>
+        <legend data-icon="playmode">Spelsätt</legend>
         <!-- Värdet ligger i den dolda listan; knapparna med symboler byggs av js/view.js -->
         <select id="play-mode" aria-label="Spelsätt" data-no-stepper hidden>
           <option value="hold">Håll</option>
@@ -182,7 +182,7 @@
       </fieldset>
 
       <fieldset id="notes-set">
-        <legend>Toner</legend>
+        <legend data-icon="notes">Toner</legend>
         <label class="notes-kind" title="Toner, eller ett trumset där varje ruta är en trumma eller en ljudeffekt">Rutorna spelar
           <select id="notes-kind">
             <option value="tones">Toner</option>
@@ -213,7 +213,7 @@
       </fieldset>
 
       <fieldset id="chord-settings">
-        <legend>Ackord</legend>
+        <legend data-icon="chords">Ackord</legend>
         <div class="row">
           <label>Antal
             <select id="chord-count">
@@ -240,7 +240,7 @@
       </fieldset>
 
       <fieldset id="arp-set">
-        <legend>Arpeggiator</legend>
+        <legend data-icon="arp">Arpeggiator</legend>
         <label class="check arp-wide"><input type="checkbox" id="arp-on" /> <span>Arpeggiator<small>Tonerna spelas en i taget, i takt – med alla spelsätt.</small></span></label>
         <label class="slider arp-wide">
           <span class="lbl">Mönster</span>
@@ -296,7 +296,7 @@
       </fieldset>
 
       <fieldset id="seq-set">
-        <legend>Stegsequencer</legend>
+        <legend data-icon="seq">Stegsequencer</legend>
         <label class="check seq-wide"><input type="checkbox" id="seq-on" /> <span>Stegsequencer<small>En rad med steg ovanför rutorna på Toner och Ackord. Välj ett steg och spela en ruta så hamnar den där – sedan spelas stegen om och om igen.</small></span></label>
         <label class="slider">
           <span class="lbl">Steg</span>
@@ -331,7 +331,7 @@
       </fieldset>
 
       <fieldset id="vibrato-set">
-        <legend>Vibrato</legend>
+        <legend data-icon="vibrato">Vibrato</legend>
         <label title="Vicka pekaren eller fingret fram och tillbaka (eller upp och ned) på en ruta som låter">Djup
           <input type="range" id="vibrato" min="0" max="60" step="5" value="20" />
           <output id="vibrato-value" class="val">20 cent</output>
@@ -341,7 +341,7 @@
 
       <!-- Läge på rutan (js/position.js) -->
       <fieldset id="pos-set">
-        <legend>Läge på rutan <span class="adv-tag">avancerat</span></legend>
+        <legend data-icon="pos">Läge på rutan <span class="adv-tag">avancerat</span></legend>
         <label title="Var på rutan pekaren är styr ljudet medan rutan låter">Styr
           <select id="pos-param">
             <option value="off" selected>Av</option>
@@ -366,7 +366,7 @@
       </fieldset>
 
       <fieldset id="xy-set">
-        <legend>XY-platta</legend>
+        <legend data-icon="xy">XY-platta</legend>
         <label class="slider" title="Tonhöjden glider steglöst från vänster till höger och slutar på C7 – omfånget räknas nedåt därifrån (5 oktaver = C2–C7)">
           <span class="lbl">Omfång</span>
           <select id="xy-octaves">
@@ -390,13 +390,13 @@
     <!-- Tillgänglighet: ögonstyrning, kontakt, tangentbord, storlek och kontrast (js/access.js) -->
     <div class="panel" data-panel="access">
       <fieldset id="access-quick">
-        <legend>Snabbval</legend>
+        <legend data-icon="quick">Snabbval</legend>
         <p class="hint" data-i18n="access-hint">Välj en profil och finjustera nedan. Allt följer med i <em>Mina presets</em>.</p>
         <div id="access-profiles"></div>
       </fieldset>
 
       <fieldset class="access-set">
-        <legend>Aktivering – blick och svävande mus</legend>
+        <legend data-icon="eye">Aktivering – blick och svävande mus</legend>
         <p class="hint">Gäller svävande pekare. Trycker eller drar man spelar det direkt.</p>
         <label class="slider">
           <span class="lbl">Aktiveringstid</span>
@@ -425,7 +425,7 @@
       </fieldset>
 
       <fieldset class="access-set">
-        <legend>Visning och reglage</legend>
+        <legend data-icon="view">Visning och reglage</legend>
         <label class="slider">
           <span class="lbl">Storlek</span>
           <select id="ui-size">
@@ -452,7 +452,7 @@
       </fieldset>
 
       <fieldset class="access-set">
-        <legend>Kontakt och tangentbord</legend>
+        <legend data-icon="switch">Kontakt</legend>
         <label class="slider">
           <span class="lbl">Stegning</span>
           <select id="scan-mode">
@@ -476,22 +476,30 @@
           <small class="desc" id="switch-learn-msg" aria-live="polite" data-i18n="switch-learn-msg">Tryck på <strong>Lär</strong> och sedan på kontakten eller tangenten som ska användas.</small>
           <input type="hidden" id="switch1-key" /><input type="hidden" id="switch2-key" />
         </div>
-        <div class="switch-learn chord-learn">
-          <span class="lbl">Tangenter för ackordrutorna</span>
-          <div id="chord-key-rows" class="switch-learn"></div>
-          <button type="button" id="chord-key-reset" class="switch-reset">Återställ till siffror</button>
-          <small class="desc" id="chord-learn-msg" aria-live="polite" data-i18n="chord-learn-msg">På sidan Ackord spelas varje ruta med sin siffra. Tryck på <strong>Lär</strong> och sedan på kontakten eller tangenten som ska spela ackordet i stället.</small>
-          <input type="hidden" id="chord-keys" />
+      </fieldset>
+
+      <fieldset class="access-set" id="keys-set">
+        <legend data-icon="keyboard">Tangentbord</legend>
+        <div class="key-learn">
+          <span class="lbl">Tangenter för rutorna</span>
+          <select id="key-page" aria-label="Sida">
+            <option value="notes">Toner</option>
+            <option value="chords">Ackord</option>
+          </select>
+          <div id="key-cells" class="key-cells"></div>
+          <small class="desc" id="key-learn-msg" aria-live="polite" data-i18n="key-learn-msg">Rutorna 1–10 spelas med <kbd>1</kbd>–<kbd>9</kbd> och <kbd>0</kbd>. Tryck på en ruta här (<strong>Lär</strong>) och sedan på kontakten eller tangenten som ska spela den i stället.</small>
+          <button type="button" id="key-reset" class="switch-reset">Återställ till siffror</button>
+          <input type="hidden" id="note-keys" /><input type="hidden" id="chord-keys" />
         </div>
-        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
+        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangenterna på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
         <details class="help">
           <summary>Vilka tangenter gör vad?</summary>
           <ul class="hint keys" data-i18n="keys">
             <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
+            <li>Andra tangenter för rutorna: välj Toner eller Ackord under <em>Tangenter för rutorna</em>, tryck på rutan och sedan på kontakten eller tangenten.</li>
             <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
             <li>Två kontakter: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar.</li>
             <li>Andra tangenter för kontakterna: tryck på <strong>Lär</strong> vid Kontakt 1 eller 2 (syns när Stegning är på) och sedan på kontakten.</li>
-            <li>Andra tangenter för ackordrutorna: tryck på <strong>Lär</strong> vid ackordet under <em>Tangenter för ackordrutorna</em> och sedan på kontakten eller tangenten.</li>
             <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
           </ul>
         </details>
@@ -501,7 +509,7 @@
     <div class="panel" data-panel="sound">
       <!-- Valt ljud överst, sedan färdiga ljud och sist alla reglage (byggs av js/sound.js) -->
       <fieldset id="sound-now">
-        <legend>Valt ljud</legend>
+        <legend data-icon="sound">Valt ljud</legend>
         <div id="sound-slot" class="seg" role="radiogroup" aria-label="Ljudet för">
           <button type="button" role="radio" data-slot="notes">Toner</button>
           <button type="button" role="radio" data-slot="chords">Ackord</button>
@@ -514,7 +522,7 @@
         </div>
       </fieldset>
       <fieldset id="library">
-        <legend>Färdiga ljud</legend>
+        <legend data-icon="library">Färdiga ljud</legend>
         <p class="hint"><span id="lib-count"></span> ljud – klicka för att ladda och provlyssna. Skruva sedan vidare nedan om du vill.</p>
         <div class="lib-top">
           <div id="lib-groups" role="group" aria-label="Motor"></div>
@@ -525,21 +533,21 @@
         <p id="lib-empty" class="hint" hidden>Inga ljud matchar sökningen.</p>
       </fieldset>
       <fieldset id="synth">
-        <legend>Skruva själv</legend>
+        <legend data-icon="tweak">Skruva själv</legend>
         <div id="synth-groups"></div>
       </fieldset>
     </div>
 
     <div class="panel" data-panel="io">
       <fieldset>
-        <legend>Utgång</legend>
+        <legend data-icon="output">Utgång</legend>
         <label><input type="checkbox" id="out-audio" checked /> Ljud</label>
         <label><input type="checkbox" id="out-midi" /> MIDI</label>
         <label><input type="checkbox" id="out-osc" /> OSC</label>
       </fieldset>
 
       <fieldset id="osc-set">
-        <legend>OSC</legend>
+        <legend data-icon="osc">OSC</legend>
         <p class="hint" data-i18n="osc-hint">Kräver bryggan på datorn: <code>node tools/osc-bridge.mjs</code> (skickar till port 9000). I Safari: öppna appen på <code>http://localhost:8765</code>.</p>
         <label>Brygga
           <input type="text" id="osc-url" value="ws://localhost:8765" spellcheck="false" autocomplete="off" />
@@ -561,7 +569,7 @@
       </fieldset>
 
       <fieldset>
-        <legend>MIDI</legend>
+        <legend data-icon="midi">MIDI</legend>
         <label>Enhet
           <select id="midi-out"><option value="">– ingen –</option></select>
         </label>
@@ -578,7 +586,7 @@
     <!-- Användarens egna presets: sparar ALLT (ljud, ackord, färger, formation, inställningar) -->
     <div class="panel" data-panel="mine">
       <fieldset id="user-presets">
-        <legend>Mina presets</legend>
+        <legend data-icon="mine">Mina presets</legend>
         <p class="hint">Sparar allt – ljud, ackord, färger, formation och inställningar – under ett namn.</p>
         <form id="up-save" class="row">
           <input type="text" id="up-name" placeholder="Namn, t.ex. Kvällsjam" maxlength="40" autocomplete="off" />
@@ -776,36 +784,36 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=132"></script>
-  <script src="js/fm-library.js?v=132"></script>
-  <script src="js/pm-library.js?v=132"></script>
-  <script src="js/wt-library.js?v=132"></script>
-  <script src="js/vwg-library.js?v=132"></script>
-  <script src="js/lib-levels.js?v=132"></script>
-  <script src="js/sound-library.js?v=132"></script>
-  <script src="js/layout.js?v=132"></script>
-  <script src="js/core.js?v=132"></script>
-  <script src="js/audio.js?v=132"></script>
-  <script src="js/drums.js?v=132"></script>
-  <script src="js/fx.js?v=132"></script>
-  <script src="js/pads.js?v=132"></script>
-  <script src="js/osc.js?v=132"></script>
-  <script src="js/arp.js?v=132"></script>
-  <script src="js/seq.js?v=132"></script>
-  <script src="js/xy.js?v=132"></script>
-  <script src="js/vibrato.js?v=132"></script>
-  <script src="js/position.js?v=132"></script>
-  <script src="js/notes.js?v=132"></script>
-  <script src="js/chords.js?v=132"></script>
-  <script src="js/sound.js?v=132"></script>
-  <script src="js/view.js?v=132"></script>
-  <script src="js/controls.js?v=132"></script>
-  <script src="js/access.js?v=132"></script>
-  <script src="js/settings.js?v=132"></script>
-  <script src="js/user-presets.js?v=132"></script>
-  <script src="js/wizard.js?v=132"></script>
-  <script src="js/quick.js?v=132"></script>
-  <script src="js/pwa.js?v=132"></script>
-  <script src="js/main.js?v=132"></script>
+  <script src="js/synth.js?v=138"></script>
+  <script src="js/fm-library.js?v=138"></script>
+  <script src="js/pm-library.js?v=138"></script>
+  <script src="js/wt-library.js?v=138"></script>
+  <script src="js/vwg-library.js?v=138"></script>
+  <script src="js/lib-levels.js?v=138"></script>
+  <script src="js/sound-library.js?v=138"></script>
+  <script src="js/layout.js?v=138"></script>
+  <script src="js/core.js?v=138"></script>
+  <script src="js/audio.js?v=138"></script>
+  <script src="js/drums.js?v=138"></script>
+  <script src="js/fx.js?v=138"></script>
+  <script src="js/pads.js?v=138"></script>
+  <script src="js/osc.js?v=138"></script>
+  <script src="js/arp.js?v=138"></script>
+  <script src="js/seq.js?v=138"></script>
+  <script src="js/xy.js?v=138"></script>
+  <script src="js/vibrato.js?v=138"></script>
+  <script src="js/position.js?v=138"></script>
+  <script src="js/notes.js?v=138"></script>
+  <script src="js/chords.js?v=138"></script>
+  <script src="js/sound.js?v=138"></script>
+  <script src="js/view.js?v=138"></script>
+  <script src="js/controls.js?v=138"></script>
+  <script src="js/access.js?v=138"></script>
+  <script src="js/settings.js?v=138"></script>
+  <script src="js/user-presets.js?v=138"></script>
+  <script src="js/wizard.js?v=138"></script>
+  <script src="js/quick.js?v=138"></script>
+  <script src="js/pwa.js?v=138"></script>
+  <script src="js/main.js?v=138"></script>
 </body>
 </html>
