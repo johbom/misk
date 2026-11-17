@@ -176,15 +176,20 @@ PRESET_CATEGORIES.forEach((c) => { c.group = 'Oscillatorer'; });
 ].forEach(([group, cats]) => cats.forEach((c) => PRESET_CATEGORIES.push({ ...c, group })));
 
 // Platt lista: { group, cat, name, params } – params är kompletta (defaults + kategori + ljud)
+// Basljuden klingar en oktav under rutornas toner (som en basgitarr), så de inte hamnar i mellanregistret
+const BASS_CATEGORIES = new Set(['Bas', 'Strängbas', 'FM-bas', 'Vågbas']);
 const PRESET_LIBRARY = PRESET_CATEGORIES.flatMap(({ name: cat, group, base, presets }) =>
-  Object.entries(presets).map(([name, p]) => ({ group, cat, name, params: { ...SYNTH_DEFAULTS, ...base, ...p } }))
+  Object.entries(presets).map(([name, p]) => ({
+    group, cat, name,
+    params: { ...SYNTH_DEFAULTS, ...(BASS_CATEGORIES.has(cat) ? { octave: -1 } : {}), ...base, ...p },
+  }))
 );
 const PRESET_GROUPS = [...new Set(PRESET_CATEGORIES.map((c) => c.group))];
 
 // ---------- Snabbvalet (listan Ljud i spelraden) ----------
 // Fem ljud från varje motor, i grupper. Biblioteksljud som står här blir egna snabbval.
 const QUICK_SOUNDS = [
-  ['Oscillatorer', ['Elpiano', 'Varm pad', 'Supersaw-lead', 'Bas', 'Orgel', 'Pluck', 'Stråkar', 'Dragspel', 'Kör', 'Klocka']],
+  ['Oscillatorer', ['Elpiano', 'Varm pad', 'Supersaw-lead', 'Bas', 'Orgel', 'Pluck', 'Stråkar', 'Mässing', 'Kör', 'Marimba']],
   ['Sträng', ['Gitarr', 'Piano', 'Elgitarr', 'Kontrabas', 'Sitar']],
   ['Resonans', ['Marimbaträ', 'Vibrafonstav', 'Tumkalimba', 'Trinidadpan', 'Klangskål']],
   ['FM', ['Klassiskt FM-piano', 'FM-klocka', 'Slapbas FM', 'FM-brass', 'Jazz-FM']],

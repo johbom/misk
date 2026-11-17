@@ -250,7 +250,9 @@ Uppmätt i WebKit (offline-rendering, melodi i 1/8 och fyrklang varje sekund, tv
 
 **Toner och Ackord har var sitt ljud.** Varje sida har en egen ljudmotor med egna effekter, så att en ackordrunda med pad kan gå i stegsequencern medan man spelar melodi med elpiano på Toner. Listan *Ljud* i spelraden visar och byter ljudet för sidan man spelar på. Under *Inställningar → Ljud* väljer man överst vilket av de två (Toner eller Ackord) man ändrar. Det följer med sidan man senast spelade på. Båda ljuden sparas (`hoverPadsSynth` och `hoverPadsSynthChords`) och följer med i Mina presets. Äldre presets, med ett ljud, ger samma ljud på båda sidorna. XY har som förut sin egen klang. Ljudfiler och trumset hör till Toner.
 
-Välj ett färdigt **preset** – Elpiano, Varm pad, Supersaw-lead, Pluck, Bas, Klocka, Orgel, Rymd, Chip, Piano, Gitarr, Elgitarr, Kontrabas, Stråkar, Blås, Panflöjt, Dragspel, Kör, Sitar eller Enkel – eller gå till **Inställningar → Ljud** och skruva själv:
+Välj ett färdigt **preset** i listan *Ljud* – tio oscillatorljud (Elpiano, Varm pad, Supersaw-lead, Bas, Orgel, Pluck, Stråkar, Mässing, Kör och Marimba) och fem ljud från varje annan motor. Överst i listan står **Eget**, som öppnar *Inställningar → Ljud* för sidan man spelar på; där väljer man bland alla färdiga ljud eller skruvar själv. **Basljuden** (Bas, Kontrabas och kategorierna Bas, Strängbas, FM-bas och Vågbas i biblioteket, bl.a. Slapbas FM och Reesebas) klingar en oktav under rutornas toner – reglaget **Oktav** under *Motor* (−2 till +2) flyttar vilket ljud som helst, utan att rutornas tonnamn eller MIDI ändras.
+
+Under **Inställningar → Ljud** kan man skruva själv:
 
 - **Motor:** *Oscillatorer* (klassisk subtraktiv syntes och enkel FM, allt nedan), **Sträng** och **Resonans** (fysisk modell), **FM**, **Wavetable**, **Röst** (formantsyntes), **Blås** (flöjt och klarinett) eller **Granulär** (korn ur kör, stråkar, glas och naturljud), se nedan.
 - **Oscillator 1:** åtta vågformer (sinus, triangel, fyrkant, sågtand, puls, varm, orgel, röst), unison upp till 7 röster med detune och stereobredd.

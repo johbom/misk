@@ -123,6 +123,8 @@ const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
 
 const SYNTH_PARAMS = [
   { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Wavetable'], ['voice', 'Röst'], ['wind', 'Blås'], ['grain', 'Granulär']] },
+  // Ljudets eget oktavläge (basljuden ligger en oktav ned). Rutornas toner och MIDI ändras inte.
+  { key: 'octave', label: 'Oktav', min: -2, max: 2, step: 1, fmt: (v) => (v ? `${v > 0 ? '+' : '−'}${Math.abs(v)} okt` : 'Som rutan') },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
   { key: 'pmBody', label: 'Kropp', options: Object.entries(PM_BODIES).map(([k, b]) => [k, b.name]) },
   { key: 'pmDecay', label: 'Klingtid', min: 0.05, max: 12, log: true, fmt: sec },
@@ -265,7 +267,7 @@ const SYNTH_DISABLED_WHEN = {
 
 // ---------- Presets ----------
 const SYNTH_DEFAULTS = {
-  model: 'osc', pmExciter: 'pluck', pmBody: 'marimba', pmDecay: 3, pmBright: 0.6, pmPos: 0.2,
+  model: 'osc', octave: 0, pmExciter: 'pluck', pmBody: 'marimba', pmDecay: 3, pmBright: 0.6, pmPos: 0.2,
   osc1Wave: 'triangle', osc1Level: 1, unison: 1, spread: 0,
   osc2Mode: 'mix', osc2Wave: 'sine', osc2Level: 0, fmAmount: 0, osc2Semi: 0, osc2Fine: 0, noise: 0,
   // FM-motorn (ett enkelt elpiano som utgångsläge)
@@ -317,6 +319,7 @@ const SYNTH_PRESETS = {
     delayMix: 0.3, delayTime: 0.28, delayFeedback: 0.45, reverbMix: 0.25, reverbSize: 2.2,
   },
   'Bas': {
+    octave: -1, // basljuden klingar en oktav under rutornas toner
     osc1Wave: 'square', osc2Wave: 'sine', osc2Level: 0.9, osc2Semi: -12,
     cutoff: 500, q: 4, fEnv: 2.2, fAttack: 0.002, fDecay: 0.18, fSustain: 0.15,
     attack: 0.004, decay: 0.3, sustain: 0.8, release: 0.12,
@@ -363,6 +366,7 @@ const SYNTH_PRESETS = {
     drive: 0.6, chorus: 0.2, delayMix: 0.2, delayTime: 0.33, delayFeedback: 0.3, reverbMix: 0.2,
   },
   'Kontrabas': {
+    octave: -1,
     model: 'string', pmExciter: 'pluck', pmDecay: 2, pmBright: 0.25, pmPos: 0.25,
     release: 0.25, reverbMix: 0.1,
   },
@@ -963,7 +967,7 @@ class SynthEngine {
     // på iPhone/iPad); hamnar starten i det förflutna kan webbläsaren hoppa över de korta förloppen
     // i början (FM-djup, filterkurva) och tonen låter "tom".
     const t = Math.max(ctx.currentTime + NOTE_LOOKAHEAD, when);
-    const freq = 440 * Math.pow(2, (note - 69) / 12);
+    const freq = 440 * Math.pow(2, (note + 12 * (p.octave || 0) - 69) / 12); // ljudets oktavläge
     const sources = [];
     const mixer = ctx.createGain();
     const carriers = [];

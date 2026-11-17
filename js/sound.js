@@ -211,11 +211,20 @@ function randomSynth() {
   log('Slumpade ett nytt ljud');
 }
 
+// "Eget" i listan Ljud öppnar Inställningar → Ljud för sidan man spelar på (färdiga ljud och reglagen)
+function openSoundSettings() {
+  showTab('settings');
+  showSettingsPanel('sound');
+  window.scrollTo(0, 0);
+  log(t(`Ljudet för ${soundSlot === 'chords' ? 'Ackord' : 'Toner'}`));
+}
+
 // "Eget" i presetmenyn visar vilket biblioteksljud som är inladdat
 function updateCustomLabel() {
   const opt = [...ui.preset.options].find((o) => o.value === CUSTOM);
   if (opt) {
-    opt.textContent = !synthLib.name ? 'Eget (ändrat)'
+    opt.textContent = synthPreset !== CUSTOM ? 'Eget ljud …' // öppnar Inställningar → Ljud
+      : !synthLib.name ? 'Eget (ändrat)'
       : `Eget: ${synthLib.name}${synthLib.edited ? ' (ändrat)' : ''}`;
   }
   const now = $('sound-now-name');
@@ -324,7 +333,7 @@ function syncSoundSelect() {
     group.className = 'drum-group';
     group.label = 'Trumset och ljudeffekter';
     Object.entries(DRUM_KITS).forEach(([id, k]) => group.append(new Option(`${k.fx ? 'Ljudeffekter' : 'Trumset'}: ${k.name}`, DRUM_OPT + id)));
-    ui.preset.insertBefore(group, custom);
+    ui.preset.append(group); // sist, efter motorernas ljud
   } else if (!onNotes && group) group.remove();
   ui.preset.value = onNotes && drumKitOn() ? DRUM_OPT + ui.drumKit.value : synthPreset;
 }
@@ -340,14 +349,14 @@ function setNotesKind(kit) {
 }
 
 function setupSynthUi() {
-  // Fem ljud från varje motor, i grupper
+  // "Eget" står överst och öppnar Inställningar → Ljud; därefter fem ljud från varje motor, i grupper
+  ui.preset.append(new Option('Eget (ändrat)', CUSTOM));
   QUICK_SOUNDS.forEach(([engineName, names]) => {
     const group = document.createElement('optgroup');
     group.label = engineName;
     names.forEach((name) => group.append(new Option(name, name)));
     ui.preset.append(group);
   });
-  ui.preset.append(new Option('Eget (ändrat)', CUSTOM));
   buildSynthPanel();
   buildPresetLibrary();
   updateCustomLabel();
@@ -363,7 +372,7 @@ function setupSynthUi() {
       return;
     }
     if (document.body.dataset.tab === 'notes' && drumKitOn()) setNotesKind(''); // tillbaka till toner
-    if (v === CUSTOM) { syncSoundSelect(); return; }
+    if (v === CUSTOM) { syncSoundSelect(); openSoundSettings(); return; }
     synthLib = { name: '', edited: false };
     applySynth(presetParams(v), v);
     log(`Preset: ${v}`);
