@@ -88,6 +88,10 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 }
 #quick-pop .hint { margin: 8px 2px 0; }
 #quick-pop { overflow: auto; overscroll-behavior: contain; }
+/* Effekterna under Effekter-knappen: samma reglage som under Ljud → Skruva själv */
+#quick-pop > #synth-fx { margin: 0; padding: 0; border: none; min-width: 0; width: min(380px, calc(100vw - 72px)); background: none; }
+#quick-pop > #synth-fx > legend { float: left; padding: 0; margin: 2px 40px 4px 0; font-weight: 600; color: var(--text); }
+#quick-pop > #synth-fx > .knob:first-of-type { clear: both; }
 /* Arpens inställningar under Arp-knappen (på/av sköts av knappen själv) */
 /* Kompakt: rubrik, reglage och värde på en rad, små knappar, inga förklaringar */
 #quick-pop > :is(#arp-set, #seq-set) {
@@ -1930,7 +1934,7 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 #app-level-row > .desc { flex: 1 1 220px; color: var(--muted); }
 /* Enkel: ingen stegsequencer, ingen MIDI-status, ingen Ut/MIDI/OSC-flik, inget Skruva själv, inget Läge på rutan
    och inte de finaste reglagen (voicing, arpens Tonlängd och Retrigg) */
-body[data-level="simple"] :is(#seq-toggle, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
+body[data-level="simple"] :is(#seq-toggle, #fx-toggle, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
   #settings-nav [data-panel="io"], #settings .panel[data-panel="io"]) { display: none !important; }
 body[data-level="simple"] label:has(#chord-advanced),
 body[data-level="simple"] label:has(#arp-gate),

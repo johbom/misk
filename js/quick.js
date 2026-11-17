@@ -11,6 +11,7 @@ const quick = { open: '' };
 function setupQuick() {
   $('quick-formation').addEventListener('click', () => toggleQuick('formation'));
   $('quick-key').addEventListener('click', () => toggleQuick('key'));
+  $('fx-toggle').addEventListener('click', () => toggleQuick('fx')); // ljudets effekter (bara i den avancerade versionen)
   // Klick utanför eller Esc stänger
   document.addEventListener('pointerdown', (e) => {
     if (quick.open && !e.target.closest('#quick-pop, .quick-btn, #arp-toggle, #seq-toggle, #seq-settings')) closeQuick();
@@ -39,6 +40,7 @@ function syncQuick() {
 const QUICK_SETS = {
   arp: { btn: 'arp-toggle', set: 'arp-set', name: 'Arpeggiator', close: 'Stäng arpens inställningar', title: 'Stäng (arpen fortsätter)' },
   seq: { btn: 'seq-toggle', set: 'seq-set', name: 'Stegsequencer', close: 'Stäng sequencerns inställningar', title: 'Stäng (sequencern fortsätter)' },
+  fx: { btn: 'fx-toggle', set: 'synth-fx', name: 'Effekter', close: 'Stäng effekterna', title: 'Stäng' },
 };
 const quickBtn = (kind) => $(QUICK_SETS[kind]?.btn || `quick-${kind}`);
 const quickBtns = () => document.querySelectorAll('.quick-btn, #arp-toggle, #seq-toggle');

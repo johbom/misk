@@ -92,6 +92,8 @@ I spelläge (**Toner** och **Ackord**) syns bara rutorna, ljudval och volym. All
 - Byter man fram och tillbaka blir det som innan.
 - Ett laddat preset behåller sina egna ackord. Klick utanför rutan eller Esc stänger den. På sidan Toner med trumset syns ingen tonartsknapp. På XY syns den bara när *Skala* (kvantisera) är på. Ljudlistan i spelraden har ingen rubrik (skärmläsare säger ”Ljud”). På smal skärm (mobil på höjden) delar ljudlistan och *Volym* (på XY: *Reverb* och *Volym*) den första raden, och snabbknapparna och *Arp* ligger på raden under.
 
+**Effekter** (bara i den avancerade versionen, sidorna Toner och Ackord) öppnar samma effektreglage som *Inställningar → Ljud → Skruva själv → Effekter* – Drive, Chorus, Delay, Delaytid, Feedback, Reverb och Rumsstorlek – för ljudet på sidan man spelar på. Ändrar man något blir ljudet *Eget: … (ändrat)*, precis som under Ljud.
+
 ## Inställningar (fliken)
 
 Inställningarna är uppdelade i underflikar:
@@ -398,6 +400,6 @@ python3 -m http.server 8080
 - `js/drums.js` – Trumseten: syntetiserade trumljud och fem set
 - `js/fx.js` – Ljudeffekterna: Disco, Reggae & dub och Tecknat & lek (syntetiserade, med dubeko)
 - `js/wizard.js` – Startguiden och ackordmallarna (funktionsanalys utifrån tonarten)
-- `js/quick.js` – snabbknapparna Formation och Tonart i spelraden
+- `js/quick.js` – snabbknapparna Formation, Tonart och Effekter i spelraden
 - `js/pwa.js` – service worker och Installera-knapp
 - `js/main.js` – uppstart

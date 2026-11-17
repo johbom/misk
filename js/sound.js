@@ -101,6 +101,7 @@ function buildSynthPanel() {
       box = document.createElement('fieldset');
       box.innerHTML = `<legend>${d.group}</legend>`;
       if (d.op) box.dataset.op = d.op;
+      if (d.group === 'Effekter') box.id = 'synth-fx'; // flyttas till snabbrutan av Effekter-knappen (js/quick.js)
       root.append(box);
     }
     const row = document.createElement('label');

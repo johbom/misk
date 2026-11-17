@@ -329,6 +329,7 @@ function applyAppLevel() {
     if (quick.open === 'seq') closeQuick();
   }
   if (!simple) return;
+  if (quick.open === 'fx') closeQuick(); // Effekter-knappen finns bara i den avancerade versionen
   // Voicing-läget för ackorden visas inte i den enkla versionen
   if (ui.chordAdvanced.checked) {
     ui.chordAdvanced.checked = false;
