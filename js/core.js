@@ -82,6 +82,7 @@ const ui = {
   scanMode: $('scan-mode'),
   switch1Key: $('switch1-key'), // inlärd tangent för kontakt 1 (tom = standard)
   switch2Key: $('switch2-key'),
+  chordKeys: $('chord-keys'), // inlärda tangenter för ackordrutorna (JSON-lista, tom plats = siffran)
   scanSpeed: $('scan-speed'),
   showKeys: $('show-keys'),
   padSpace: $('pad-space'),

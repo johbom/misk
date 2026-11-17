@@ -110,6 +110,7 @@ function buildChordPads() {
   }
   buildChordEditor();
   layoutPads();
+  renderChordKeys();
 }
 
 // Ackordvalen under fliken Inställningar: ett kort per ruta.
@@ -198,6 +199,7 @@ function renderChordPad(pad) {
   const n = pad.strumNotes().length;
   pad.el.querySelector('.strum').innerHTML = Array.from({ length: n }, (_, k) =>
     `<i style="--k:${(k + 0.5) / n}"></i>`).join(''); // läget sätts i CSS (lodrätt eller vågrätt)
+  renderChordKeys(); // ackordnamnet bredvid Lär (Hjälpmedel → Kontakt och tangentbord)
 }
 
 // Ackordets egen färg (tom = ingen färg). Sätts som CSS-variabler som style.css använder.

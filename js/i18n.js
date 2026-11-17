@@ -246,7 +246,12 @@ const EN = {
   'Lär': 'Learn',
   'Väntar …': 'Waiting …',
   'Återställ till standard': 'Reset to default',
-  'Avbrutet. Kontakten är oförändrad.': 'Cancelled. The switch is unchanged.',
+  'Avbrutet. Inget är ändrat.': 'Cancelled. Nothing was changed.',
+  'Tangenter för ackordrutorna': 'Keys for the chord pads',
+  'Återställ till siffror': 'Reset to numbers',
+  'Ingen tangent': 'No key',
+  'Ackordrutorna spelas med siffrorna igen.': 'The chord pads are played with the numbers again.',
+  'Ackordtangenter: siffror': 'Chord keys: numbers',
   'Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.': 'No key arrived. Press Learn again to try once more.',
   'Kontakterna använder standardtangenterna igen.': 'The switches use the default keys again.',
   'Kontakter: standard': 'Switches: default',
@@ -825,10 +830,12 @@ const EN_HTML = {
   'access-hint': 'Choose a profile and fine-tune below. Everything is saved in <em>My presets</em>.',
   'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds.',
   'switch-learn-msg': 'Press <strong>Learn</strong> and then the switch or key to use.',
+  'chord-learn-msg': 'On the Chords page each pad is played with its number. Press <strong>Learn</strong> and then the switch or key that should play the chord instead.',
   'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–8. Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>
     <li>One switch: <kbd>Space</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> or a click on the play area plays the highlighted pad.</li>
     <li>Two switches: switch 1 (<kbd>Space</kbd> or <kbd>F1</kbd>) moves on, switch 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> or a click) plays.</li>
     <li>Other keys for the switches: press <strong>Learn</strong> next to Switch 1 or 2 (shown when Scanning is on) and then the switch.</li>
+    <li>Other keys for the chord pads: press <strong>Learn</strong> next to the chord under <em>Keys for the chord pads</em> and then the switch or key.</li>
     <li><kbd>Tab</kbd> moves between pads and buttons, <kbd>Space</kbd>/<kbd>Enter</kbd> plays the pad that has focus.</li>`,
   'osc-hint': 'Needs the bridge on the computer: <code>node tools/osc-bridge.mjs</code> (sends to port 9000). In Safari: open the app at <code>http://localhost:8765</code>.',
   'about-credits': `Created by John Säbom, <a href="mailto:john.s@tfhuk.com">john.s@tfhuk.com</a>, building on the experience
@@ -892,6 +899,12 @@ const EN_PATTERNS = [
   [/^Spela en ruta så hamnar den i steg (\d+)\.$/, (n) => `Play a pad to put it in step ${n}.`],
   [/^Spela en ruta så byts steg (\d+) ut\.$/, (n) => `Play a pad to replace step ${n}.`],
   [/^Steg (\d+): (.+)$/, (n, x) => `Step ${n}: ${x === 'tomt' ? 'empty' : x}`],
+  [/^Ackord (\d+) spelas nu med (.+)\.$/, (n, k) => `Chord ${n} is now played with ${k}.`],
+  [/^Ackord (\d+) har ingen tangent längre\.$/, (n) => `Chord ${n} no longer has a key.`],
+  [/^(.+) används redan av ackord (\d+)\. Tryck på en annan kontakt eller tangent\.$/, (k, n) => `${k} is already used by chord ${n}. Press another switch or key.`],
+  [/^(.+) går inte att använda\. Tryck på en annan kontakt eller tangent\.$/, (k) => `${k} can’t be used. Press another switch or key.`],
+  [/^Tryck nu på kontakten eller tangenten som ska spela ackord (\d+)\. Esc avbryter\.$/, (n) => `Now press the switch or key that should play chord ${n}. Esc cancels.`],
+  [/^Ackord (\d+): (.+)$/, (n, k) => `Chord ${n}: ${k}`],
   [/^Kontakt (\d) är nu (.+)\.$/, (n, k) => `Switch ${n} is now ${k}.`],
   [/^Kontakt (\d): (.+)$/, (n, k) => `Switch ${n}: ${k}`],
   [/^(.+) används redan av kontakt (\d)\. Tryck på en annan kontakt eller tangent\.$/, (k, n) => `${k} is already used by switch ${n}. Press another switch or key.`],

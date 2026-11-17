@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=131" />
+  <link rel="stylesheet" href="css/style.css?v=132" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     window.addEventListener('error', (e) => {
@@ -24,7 +24,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=131"></script>
+  <script src="js/i18n.js?v=132"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -476,6 +476,13 @@
           <small class="desc" id="switch-learn-msg" aria-live="polite" data-i18n="switch-learn-msg">Tryck på <strong>Lär</strong> och sedan på kontakten eller tangenten som ska användas.</small>
           <input type="hidden" id="switch1-key" /><input type="hidden" id="switch2-key" />
         </div>
+        <div class="switch-learn chord-learn">
+          <span class="lbl">Tangenter för ackordrutorna</span>
+          <div id="chord-key-rows" class="switch-learn"></div>
+          <button type="button" id="chord-key-reset" class="switch-reset">Återställ till siffror</button>
+          <small class="desc" id="chord-learn-msg" aria-live="polite" data-i18n="chord-learn-msg">På sidan Ackord spelas varje ruta med sin siffra. Tryck på <strong>Lär</strong> och sedan på kontakten eller tangenten som ska spela ackordet i stället.</small>
+          <input type="hidden" id="chord-keys" />
+        </div>
         <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangentsiffror på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
         <details class="help">
           <summary>Vilka tangenter gör vad?</summary>
@@ -484,6 +491,7 @@
             <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
             <li>Två kontakter: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar.</li>
             <li>Andra tangenter för kontakterna: tryck på <strong>Lär</strong> vid Kontakt 1 eller 2 (syns när Stegning är på) och sedan på kontakten.</li>
+            <li>Andra tangenter för ackordrutorna: tryck på <strong>Lär</strong> vid ackordet under <em>Tangenter för ackordrutorna</em> och sedan på kontakten eller tangenten.</li>
             <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
           </ul>
         </details>
@@ -768,36 +776,36 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=131"></script>
-  <script src="js/fm-library.js?v=131"></script>
-  <script src="js/pm-library.js?v=131"></script>
-  <script src="js/wt-library.js?v=131"></script>
-  <script src="js/vwg-library.js?v=131"></script>
-  <script src="js/lib-levels.js?v=131"></script>
-  <script src="js/sound-library.js?v=131"></script>
-  <script src="js/layout.js?v=131"></script>
-  <script src="js/core.js?v=131"></script>
-  <script src="js/audio.js?v=131"></script>
-  <script src="js/drums.js?v=131"></script>
-  <script src="js/fx.js?v=131"></script>
-  <script src="js/pads.js?v=131"></script>
-  <script src="js/osc.js?v=131"></script>
-  <script src="js/arp.js?v=131"></script>
-  <script src="js/seq.js?v=131"></script>
-  <script src="js/xy.js?v=131"></script>
-  <script src="js/vibrato.js?v=131"></script>
-  <script src="js/position.js?v=131"></script>
-  <script src="js/notes.js?v=131"></script>
-  <script src="js/chords.js?v=131"></script>
-  <script src="js/sound.js?v=131"></script>
-  <script src="js/view.js?v=131"></script>
-  <script src="js/controls.js?v=131"></script>
-  <script src="js/access.js?v=131"></script>
-  <script src="js/settings.js?v=131"></script>
-  <script src="js/user-presets.js?v=131"></script>
-  <script src="js/wizard.js?v=131"></script>
-  <script src="js/quick.js?v=131"></script>
-  <script src="js/pwa.js?v=131"></script>
-  <script src="js/main.js?v=131"></script>
+  <script src="js/synth.js?v=132"></script>
+  <script src="js/fm-library.js?v=132"></script>
+  <script src="js/pm-library.js?v=132"></script>
+  <script src="js/wt-library.js?v=132"></script>
+  <script src="js/vwg-library.js?v=132"></script>
+  <script src="js/lib-levels.js?v=132"></script>
+  <script src="js/sound-library.js?v=132"></script>
+  <script src="js/layout.js?v=132"></script>
+  <script src="js/core.js?v=132"></script>
+  <script src="js/audio.js?v=132"></script>
+  <script src="js/drums.js?v=132"></script>
+  <script src="js/fx.js?v=132"></script>
+  <script src="js/pads.js?v=132"></script>
+  <script src="js/osc.js?v=132"></script>
+  <script src="js/arp.js?v=132"></script>
+  <script src="js/seq.js?v=132"></script>
+  <script src="js/xy.js?v=132"></script>
+  <script src="js/vibrato.js?v=132"></script>
+  <script src="js/position.js?v=132"></script>
+  <script src="js/notes.js?v=132"></script>
+  <script src="js/chords.js?v=132"></script>
+  <script src="js/sound.js?v=132"></script>
+  <script src="js/view.js?v=132"></script>
+  <script src="js/controls.js?v=132"></script>
+  <script src="js/access.js?v=132"></script>
+  <script src="js/settings.js?v=132"></script>
+  <script src="js/user-presets.js?v=132"></script>
+  <script src="js/wizard.js?v=132"></script>
+  <script src="js/quick.js?v=132"></script>
+  <script src="js/pwa.js?v=132"></script>
+  <script src="js/main.js?v=132"></script>
 </body>
 </html>

@@ -974,6 +974,8 @@ body[data-scan="off"] .only-scan { display: none !important; }
 @keyframes learn-pulse { 50% { background: rgba(255, 255, 255, 0.08); } }
 .reduce-motion .switch-row button.learning { animation: none; }
 .switch-reset { align-self: flex-start; }
+/* Tangenter för ackordrutorna: ackordnamnet under "Ackord N" */
+.chord-learn .switch-row > span small { display: block; font-size: 0.8em; opacity: 0.75; }
 
 /* Aktiveringstid: rutan fylls inifrån tills den spelar */
 .pad { isolation: isolate; }
@@ -1307,7 +1309,14 @@ html.show-keys .pad[data-key]::before {
   content: attr(data-key);
   display: block;
   margin: 0 auto 0.15em;
-  width: 1.7em;
+  width: fit-content;
+  min-width: 1.7em;
+  max-width: 90%;
+  padding: 0 0.3em;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   height: 1.7em;
   line-height: 1.55em;
   border: 2px solid currentColor;

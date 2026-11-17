@@ -49,6 +49,7 @@ function refreshAccess() {
   renderSeq(); // (även efter ett laddat preset)
   root.dataset.pointer = ui.showPointer.value;
   renderSwitchKeys(); // (även efter ett laddat preset)
+  renderChordKeys();
   syncPlayModeButtons();
   document.body.dataset.playMode = ui.playMode.value;
   document.body.dataset.scan = ui.scanMode.value;
@@ -343,7 +344,10 @@ const scanning = () => ui.scanMode.value !== 'off' && isPlayTab();
 // Siffran som spelar rutan, visas på rutorna om "Visa tangentsiffror" är på
 function markKeys() {
   allPads().forEach((p) => p.el.removeAttribute('data-key'));
-  visiblePads().slice(0, 10).forEach((p, i) => p.el.setAttribute('data-key', (i + 1) % 10));
+  if (document.body.dataset.tab === 'chords') {
+    const list = chordKeyList();
+    chordPads.forEach((p, i) => { const k = chordKeyLabel(i, list); if (k) p.el.setAttribute('data-key', k); });
+  } else visiblePads().slice(0, 10).forEach((p, i) => p.el.setAttribute('data-key', (i + 1) % 10));
 }
 
 // Det som stegningen går igenom: rutorna, och sist stegsequencerns Start/Stopp (och knappen som stoppar
@@ -448,7 +452,8 @@ function renderSwitchKeys() {
   $('switch-reset').disabled = !ui.switch1Key.value && !ui.switch2Key.value;
 }
 
-let learning = null; // { n, btn, timer }
+// Inlärning (Lär): för kontakt 1/2 eller för en ackordruta. Bara en i taget.
+let learning = null; // { kind: 'switch' | 'chord', n, btn, timer, msg }
 
 function stopLearning(msg) {
   if (!learning) return;
@@ -456,8 +461,21 @@ function stopLearning(msg) {
   clearTimeout(learning.timer);
   learning.btn.classList.remove('learning');
   learning.btn.textContent = t('Lär');
+  const box = $(learning.msg);
   learning = null;
-  if (msg) $('switch-learn-msg').textContent = msg;
+  if (msg) box.textContent = msg;
+}
+
+function startLearning(kind, n, btn, msgId, prompt) {
+  const again = learning?.kind === kind && learning.n === n;
+  stopLearning();
+  if (again) { $(msgId).textContent = t('Avbrutet. Inget är ändrat.'); return; }
+  learning = { kind, n, btn, msg: msgId, timer: setTimeout(() => stopLearning(t('Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.')), 15000) };
+  btn.classList.add('learning');
+  btn.textContent = t('Väntar …');
+  $(msgId).textContent = prompt;
+  // Vänta tills tangenten som eventuellt klickade på knappen (mellanslag/Enter) har släppts
+  setTimeout(() => { if (learning?.btn === btn) document.addEventListener('keydown', learnKey, true); }, 0);
 }
 
 function learnKey(e) {
@@ -465,8 +483,9 @@ function learnKey(e) {
   e.preventDefault();
   e.stopImmediatePropagation();
   if (e.repeat) return;
+  if (e.code === 'Escape') { stopLearning(t('Avbrutet. Inget är ändrat.')); return; }
+  if (learning.kind === 'chord') { learnChordKey(e.code); return; }
   const { n } = learning;
-  if (e.code === 'Escape') { stopLearning(t('Avbrutet. Kontakten är oförändrad.')); return; }
   const other = n === 1 ? 2 : 1;
   if (switchCodes(other).includes(e.code)) {
     $('switch-learn-msg').textContent = t(`${keyName(e.code)} används redan av kontakt ${other}. Tryck på en annan kontakt eller tangent.`);
@@ -482,15 +501,7 @@ function learnKey(e) {
 function setupSwitchLearn() {
   document.querySelectorAll('[data-learn]').forEach((btn) => btn.addEventListener('click', () => {
     const n = Number(btn.dataset.learn);
-    const again = learning?.n === n;
-    stopLearning();
-    if (again) { $('switch-learn-msg').textContent = t('Avbrutet. Kontakten är oförändrad.'); return; }
-    learning = { n, btn, timer: setTimeout(() => stopLearning(t('Ingen tangent kom. Tryck på Lär igen för att försöka på nytt.')), 15000) };
-    btn.classList.add('learning');
-    btn.textContent = t('Väntar …');
-    $('switch-learn-msg').textContent = t(`Tryck nu på kontakt ${n} (eller tangenten som ska användas). Esc avbryter.`);
-    // Vänta tills tangenten som eventuellt klickade på knappen (mellanslag/Enter) har släppts
-    setTimeout(() => { if (learning?.btn === btn) document.addEventListener('keydown', learnKey, true); }, 0);
+    startLearning('switch', n, btn, 'switch-learn-msg', t(`Tryck nu på kontakt ${n} (eller tangenten som ska användas). Esc avbryter.`));
   }));
   $('switch-reset').addEventListener('click', () => {
     stopLearning();
@@ -502,6 +513,113 @@ function setupSwitchLearn() {
     log(t('Kontakter: standard'));
   });
   renderSwitchKeys();
+}
+
+// ---------- Tangenter för ackordrutorna: siffrorna 1–8 eller inlärda ----------
+// ui.chordKeys: JSON-lista med en tangent (KeyboardEvent.code) per ackordruta; tom plats = rutans siffra.
+// En inlärd tangent ersätter siffran. Lär sig en ruta en annan rutas siffra spelar siffran den nya rutan,
+// och den andra rutan har ingen tangent förrän den lärs in eller allt återställs.
+// (Tangenter för rutor som inte syns just nu, när antalet ackord minskats, finns kvar till nästa gång.)
+function allChordKeys() {
+  try {
+    const a = JSON.parse(ui.chordKeys.value || '[]');
+    return Array.isArray(a) ? a.map((c) => (typeof c === 'string' ? c : '')) : [];
+  } catch { return []; }
+}
+const chordKeyList = () => allChordKeys().slice(0, chordPads.length);
+// En siffra är samma tangent på sifferraden och det numeriska tangentbordet
+const digitCodes = (d) => [`Digit${d}`, `Numpad${d}`];
+function chordKeyCodes(i, list = chordKeyList()) {
+  if (list[i]) return keyDigit(list[i]) !== null ? digitCodes(keyDigit(list[i])) : [list[i]];
+  if (i > 9) return [];
+  const d = (i + 1) % 10;
+  return list.some((c) => keyDigit(c) === d) ? [] : digitCodes(d);
+}
+const chordPadOfKey = (code) => {
+  const list = chordKeyList();
+  return chordPads.find((_, i) => chordKeyCodes(i, list).includes(code)) || null;
+};
+// Det som står på rutan och i listan: den inlärda tangenten, annars siffran (tomt = ingen tangent)
+function chordKeyLabel(i, list = chordKeyList()) {
+  if (list[i]) return keyDigit(list[i]) !== null ? String(keyDigit(list[i])) : keyName(list[i]);
+  const codes = chordKeyCodes(i, list);
+  return codes.length ? String((i + 1) % 10) : '';
+}
+
+function renderChordKeys() {
+  const box = $('chord-key-rows');
+  if (!box) return;
+  if (box.children.length !== chordPads.length) {
+    if (learning?.kind === 'chord') stopLearning();
+    box.innerHTML = chordPads.map((_, i) => `<div class="switch-row"><span>${t(`Ackord ${i + 1}`)}<small></small></span>`
+      + `<kbd></kbd><button type="button" data-chord-learn="${i}" aria-describedby="chord-learn-msg">${t('Lär')}</button></div>`).join('');
+    box.querySelectorAll('[data-chord-learn]').forEach((btn) => btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.chordLearn);
+      startLearning('chord', i, btn, 'chord-learn-msg', t(`Tryck nu på kontakten eller tangenten som ska spela ackord ${i + 1}. Esc avbryter.`));
+    }));
+  }
+  const list = chordKeyList();
+  chordPads.forEach((pad, i) => {
+    const row = box.children[i];
+    row.querySelector('small').textContent = pad.label();
+    const k = chordKeyLabel(i, list);
+    row.querySelector('kbd').textContent = k || '–';
+    row.querySelector('kbd').title = k ? '' : t('Ingen tangent');
+  });
+  $('chord-key-reset').disabled = !list.some(Boolean);
+}
+
+function setChordKeys(list) {
+  while (list.length && !list[list.length - 1]) list.pop();
+  ui.chordKeys.value = list.length ? JSON.stringify(list) : '';
+  saveSettings();
+  renderChordKeys();
+  markKeys();
+}
+
+const MODIFIER_KEY = /^(Shift|Control|Alt|Meta|OS|CapsLock|Tab|Fn)/;
+
+function learnChordKey(code) {
+  const i = learning.n;
+  const msg = $('chord-learn-msg');
+  const digit = keyDigit(code);
+  const name = digit !== null ? String(digit) : keyName(code);
+  if (MODIFIER_KEY.test(code)) {
+    msg.textContent = t(`${name} går inte att använda. Tryck på en annan kontakt eller tangent.`);
+    return;
+  }
+  if (ui.scanMode.value !== 'off' && switchOf(code)) {
+    msg.textContent = t(`${name} används redan av kontakt ${switchOf(code)}. Tryck på en annan kontakt eller tangent.`);
+    return;
+  }
+  const list = chordKeyList();
+  if (digit !== null) code = `Digit${digit}`; // (sparas som sifferradens tangent)
+  const taken = list.findIndex((c, j) => c === code && j !== i);
+  if (taken >= 0) {
+    msg.textContent = t(`${name} används redan av ackord ${taken + 1}. Tryck på en annan kontakt eller tangent.`);
+    return;
+  }
+  // Rutans egen siffra = som förut (ingen inlärd tangent)
+  const own = i <= 9 && digit === (i + 1) % 10;
+  // Vilken ruta tappar sin siffra?
+  const loser = own ? -1 : chordPads.findIndex((_, j) => j !== i && !list[j] && chordKeyCodes(j, list).includes(code));
+  const all = allChordKeys().map((c, j) => (j >= chordPads.length && c === code ? '' : c)); // (en dold ruta släpper den)
+  all[i] = own ? '' : code;
+  setChordKeys(Array.from(all, (c) => c || ''));
+  let text = t(`Ackord ${i + 1} spelas nu med ${name}.`);
+  if (loser >= 0) text += ` ${t(`Ackord ${loser + 1} har ingen tangent längre.`)}`;
+  stopLearning(text);
+  log(t(`Ackord ${i + 1}: ${name}`));
+}
+
+function setupChordKeys() {
+  $('chord-key-reset').addEventListener('click', () => {
+    if (learning?.kind === 'chord') stopLearning();
+    setChordKeys([]);
+    $('chord-learn-msg').textContent = t('Ackordrutorna spelas med siffrorna igen.');
+    log(t('Ackordtangenter: siffror'));
+  });
+  renderChordKeys();
 }
 
 function setupKeys() {
@@ -520,12 +638,17 @@ function setupKeys() {
       else scanPress();
       return;
     }
-    if (e.repeat) { if (isSwitch) e.preventDefault(); return; }
+    // På sidan Ackord: rutans siffra eller inlärda tangent (Hjälpmedel → Tangenter för ackordrutorna)
+    const chordPad = document.body.dataset.tab === 'chords' ? chordPadOfKey(e.code) : null;
+    if (e.repeat) { if (isSwitch || chordPad) e.preventDefault(); return; }
     let pad = null;
     const d = keyDigit(e.code);
-    if (d !== null) {
+    if (chordPad) {
+      e.preventDefault();
+      pad = chordPad;
+    } else if (d !== null) {
       e.preventDefault(); // t.ex. en fokuserad lista ska inte byta värde
-      pad = visiblePads()[d === 0 ? 9 : d - 1];
+      if (document.body.dataset.tab === 'notes') pad = notePads[d === 0 ? 9 : d - 1];
     } else if (isSwitch && e.target.classList?.contains('pad')) {
       e.preventDefault();
       pad = allPads().find((p) => p.el === e.target);
@@ -592,6 +715,7 @@ function setupAccess() {
   setupLock();
   setupKeys();
   setupSwitchLearn();
+  setupChordKeys();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
     'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb', 'arpBpm', 'arpGate', 'seqGate']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));
