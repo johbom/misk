@@ -119,6 +119,10 @@ html.steppers .quick-close { width: 46px; height: 46px; }
 .quick-forms { display: grid; grid-template-columns: repeat(3, minmax(84px, 1fr)); gap: 6px; }
 .quick-roots { display: grid; grid-template-columns: repeat(6, minmax(42px, 1fr)); gap: 6px; }
 .quick-scales { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.quick-scales button { display: inline-flex; align-items: center; gap: 6px; }
+.quick-scales .seg-icon { width: 20px; height: 20px; }
+/* Symbolen framför Antal, Oktav och Mellanrum */
+.row-icon { width: 18px; height: 18px; vertical-align: -4px; margin-right: 6px; }
 .quick-octaves { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 8px; }
 .quick-octaves > span { margin-right: 4px; color: var(--muted); font-weight: 600; font-size: 0.9rem; }
 .quick-octaves button { min-width: 38px; }
@@ -1911,7 +1915,7 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 .set-icon.wide { width: 1.65em; }
 #settings-nav button { display: inline-flex; align-items: center; gap: 7px; }
 #settings-nav .set-icon { width: 18px; height: 18px; }
-#settings legend .set-icon { width: 17px; height: 17px; margin-right: 7px; vertical-align: -3px; }
-#settings legend .set-icon.wide { width: 23px; }
+:is(#settings, #quick-pop) legend .set-icon { width: 17px; height: 17px; margin-right: 7px; vertical-align: -3px; }
+:is(#settings, #quick-pop) legend .set-icon.wide { width: 23px; }
 .profile strong { display: flex; align-items: center; gap: 8px; }
 .profile .set-icon { width: 22px; height: 22px; }

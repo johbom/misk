@@ -20,13 +20,16 @@ function setupQuick() {
   syncQuick();
 }
 
+// Symbol framför en rad i snabbvalet (antal, oktav, mellanrum)
+const quickRowIcon = (k) => segIconSvg(QUICK_ROW_ICONS[k]).replace('class="seg-icon"', 'class="seg-icon row-icon"');
+
 const scaleName = () => ui.scale.selectedOptions[0]?.textContent.toLowerCase() || '';
 
 // Knapparnas text följer inställningarna
 function syncQuick() {
   const f = ui.formation.value;
   $('quick-formation').innerHTML = `${FORMATION_ICONS[f] || ''}<span>${FORMATIONS[f] || ''}</span>`;
-  $('quick-key').innerHTML = `<b>${NOTE_NAMES[Number(ui.root.value)]}</b><span>${scaleName()}</span>`;
+  $('quick-key').innerHTML = `${segIconSvg(SCALE_ICONS[ui.scale.value] || '')}<b>${NOTE_NAMES[Number(ui.root.value)]}</b><span>${scaleName()}</span>`;
   $('quick-formation').setAttribute('aria-label', `Formation: ${FORMATIONS[f] || ''}`);
   $('quick-key').setAttribute('aria-label', `Tonart: ${NOTE_NAMES[Number(ui.root.value)]} ${scaleName()}`);
   if (quick.open) renderQuick();
@@ -138,8 +141,9 @@ function renderQuick() {
       NOTE_NAMES.map((n, r) => `<button type="button" role="radio" aria-checked="${r === root}" class="${
         r === root ? 'on' : ''}" data-root="${r}">${n}</button>`).join('')}</div>${octaveRow()}${
       scales.length ? `<div class="quick-scales" role="radiogroup" aria-label="Skala">${
-        scales.map((o) => `<button type="button" role="radio" aria-checked="${o.value === ui.scale.value}" class="${
-          o.value === ui.scale.value ? 'on' : ''}" data-scale="${o.value}">${o.textContent}</button>`).join('')}</div>` : ''}${
+        scales.map((o) => `<button type="button" role="radio" aria-checked="${o.value === ui.scale.value}" class="has-icon${
+          o.value === ui.scale.value ? ' on' : ''}" data-scale="${o.value}">${segIconSvg(SCALE_ICONS[o.value] || '')}<span>${
+          o.textContent}</span></button>`).join('')}</div>` : ''}${
       `<p class="hint">${chordsTab ? 'Ackorden' : 'Ackorden på sidan Ackord'} flyttas med till den nya tonarten.</p>`}`;
     pop.querySelectorAll('[data-root]').forEach((b) => b.addEventListener('click', () => setKeyRoot(Number(b.dataset.root))));
     pop.querySelectorAll('[data-octave]').forEach((b) => b.addEventListener('click', () => {
@@ -171,7 +175,7 @@ function countRow() {
   const cur = Number(el.value);
   const counts = QUICK_COUNTS[document.body.dataset.tab];
   const what = document.body.dataset.tab === 'chords' ? 'Antal ackord' : 'Antal rutor';
-  return `<div class="quick-octaves quick-count" role="radiogroup" aria-label="${what}"><span>${what}</span>${
+  return `<div class="quick-octaves quick-count" role="radiogroup" aria-label="${what}"><span>${quickRowIcon('count')}${what}</span>${
     counts.map((n) => `<button type="button" role="radio" aria-checked="${n === cur}" class="${
       n === cur ? 'on' : ''}" data-count="${n}">${n}</button>`).join('')}</div>`;
 }
@@ -182,7 +186,7 @@ const quickGapSrc = () => (ui.formation.value === 'ring' ? ui.ringSpace : $('pad
 const quickGapText = () => `${ui.formation.value === 'ring' ? ui.ringSpace.value : ui.padSpace.value} %`;
 function gapRow() {
   const src = quickGapSrc();
-  return `<label class="quick-gap"><span>${t('Mellanrum')}</span><input type="range" min="${src.min}" max="${src.max}" step="${
+  return `<label class="quick-gap"><span>${quickRowIcon('gap')}${t('Mellanrum')}</span><input type="range" min="${src.min}" max="${src.max}" step="${
     src.step || 1}" value="${src.value}" aria-label="${t('Mellanrum')}" /><b class="val">${quickGapText()}</b></label>`;
 }
 function setupGapRow(pop) {
@@ -214,7 +218,7 @@ function octaveRow() {
   const octs = [];
   // Oktav 7 och 8 är för höga för att vara med i snabbvalet (de finns kvar under Inställningar)
   for (let o = Number(el.min); o <= Math.min(6, Number(el.max)); o++) octs.push(o);
-  return `<div class="quick-octaves" role="radiogroup" aria-label="Oktav"><span>Oktav</span>${
+  return `<div class="quick-octaves" role="radiogroup" aria-label="Oktav"><span>${quickRowIcon('octave')}Oktav</span>${
     octs.map((o) => `<button type="button" role="radio" aria-checked="${o === cur}" class="${
       o === cur ? 'on' : ''}" data-octave="${o}">${o}</button>`).join('')}</div>`;
 }

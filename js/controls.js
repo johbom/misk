@@ -85,6 +85,45 @@ function setupSettingsIcons() {
   document.querySelectorAll('#settings [data-icon]').forEach((el) => el.insertAdjacentHTML('afterbegin', settingsIcon(el.dataset.icon)));
 }
 
+// Symboler för skalorna: glad och ledsen för dur och moll, och för de andra en "trappa" med skalans toner
+// (en prick per ton upp till oktaven, höjden = antal halvtoner från grundtonen)
+const scaleStairs = (steps, r = 2) => [...steps, 12].map((st, i, all) =>
+  `<circle cx="${(3.5 + (i * 17) / (all.length - 1)).toFixed(1)}" cy="${(20 - st * 1.35).toFixed(1)}" r="${r}" fill="currentColor" stroke="none"/>`).join('');
+const faceEyes = '<circle cx="9" cy="9.8" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="9.8" r="1.2" fill="currentColor" stroke="none"/>';
+const SCALE_ICONS = {
+  major: `<circle cx="12" cy="12" r="9"/>${faceEyes}<path d="M8 14c1 1.8 2.4 2.7 4 2.7s3-.9 4-2.7"/>`,
+  minor: `<circle cx="12" cy="12" r="9"/>${faceEyes}<path d="M8 17.2c1-1.8 2.4-2.7 4-2.7s3 .9 4 2.7"/>`,
+  pentatonic: scaleStairs([0, 2, 4, 7, 9]),
+  // Blues: "blå tonen" (den sänkta kvinten) som en ring
+  blues: scaleStairs([0, 3, 5, 6, 7, 10], 1.8).replace(/<circle cx="([\d.]+)" cy="11.9" r="1.8" fill="currentColor" stroke="none"\/>/,
+    '<circle cx="$1" cy="11.9" r="2.6" stroke-width="1.6"/>'),
+  // Kromatisk: alla tangenter
+  chromatic: '<rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M7.5 19.5v-5M12 19.5v-5M16.5 19.5v-5"/>'
+    + [6, 10.5, 15].map((x) => `<rect x="${x - 0.2}" y="4.5" width="3" height="10" rx=".6" fill="currentColor" stroke="none"/>`).join(''),
+};
+// Symboler för notvärdena (arpeggiatorns och sequencerns takt): hel-, halv-, fjärdedels-, åttondels- och sextondelsnot
+const noteHead = (x, y, fill) => `<ellipse cx="${x}" cy="${y}" rx="3.6" ry="2.6" transform="rotate(-22 ${x} ${y})"${fill ? ' fill="currentColor" stroke="none"' : ''}/>`;
+const NOTE_VALUE_ICONS = {
+  1: noteHead(12, 13, false).replace('rx="3.6" ry="2.6"', 'rx="5" ry="3.4"'),
+  2: `${noteHead(10, 18, false)}<path d="M13.3 17V3.5"/>`,
+  4: `${noteHead(10, 18, true)}<path d="M13.3 17V3.5"/>`,
+  8: `${noteHead(10, 18, true)}<path d="M13.3 17V3.5c0 3.5 5 4.5 4.5 9"/>`,
+  '8t': `${noteHead(6.5, 18.5, true)}${noteHead(16.5, 18.5, true)}<path d="M9.8 17.5V7.5h10v10"/>`
+    + '<text x="15" y="5.2" font-size="6.5" font-weight="700" text-anchor="middle" fill="currentColor" stroke="none">3</text>',
+  16: `${noteHead(10, 18, true)}<path d="M13.3 17V3.5c0 3 5 3.5 4.5 7.5M13.3 8c0 3 5 3.5 4.5 7.5"/>`,
+};
+// Retrigg: av = takten löper vidare (pil framåt), på = börjar om (pil runt)
+const RETRIG_ICONS = {
+  off: '<path d="M3 12h17M16 8l4 4-4 4"/>',
+  on: '<path d="M20 12a8 8 0 1 1-2.4-5.7"/><path d="M20 3.5v4.5h-4.5"/>',
+};
+// Symboler framför raderna i snabbvalen: antal rutor, oktav och mellanrum
+const QUICK_ROW_ICONS = {
+  count: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  octave: '<path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/>',
+  gap: '<rect x="2.5" y="5" width="6" height="14" rx="1.5"/><rect x="15.5" y="5" width="6" height="14" rx="1.5"/><path d="M10.6 12h2.8M11.6 10.4 10.6 12l1 1.6M12.4 10.4l1 1.6-1 1.6"/>',
+};
+
 const segIconSvg = (inner) =>
   `<svg class="seg-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
 
@@ -149,7 +188,7 @@ const syncSegments = () => segmented.forEach(syncSegment);
 
 function setupSegments() {
   segmentSelect(ui.root, 'seg-notes');
-  segmentSelect(ui.scale);
+  segmentSelect(ui.scale, '', SCALE_ICONS);
   segmentSelect(ui.notesKind);
   segmentSelect(ui.drumKit);
   segmentSelect(ui.chordCount, 'seg-count');
@@ -161,13 +200,13 @@ function setupSegments() {
   segmentSelect(ui.keyPage, 'seg-pages', { notes: tabIcon('notes'), chords: tabIcon('chords') });
   segmentSelect(ui.xyOctaves, 'seg-count');
   segmentSelect(ui.arpPattern, '', ARP_ICONS);
-  segmentSelect(ui.arpRate);
+  segmentSelect(ui.arpRate, '', NOTE_VALUE_ICONS);
   segmentSelect(ui.hexOrder, '', ORDER_ICONS);
   segmentSelect(ui.stringDir, '', STRING_DIR_ICONS);
   segmentSelect(ui.arpOctaves, 'seg-count');
-  segmentSelect(ui.arpRetrig, 'seg-count');
+  segmentSelect(ui.arpRetrig, 'seg-count', RETRIG_ICONS);
   segmentSelect(ui.seqSteps, 'seg-count');
-  segmentSelect(ui.seqRate);
+  segmentSelect(ui.seqRate, '', NOTE_VALUE_ICONS);
   segmentSelect(ui.xySound, 'seg-xy', WAVE_ICONS);
   segmentSelect(synthInputs.model.input);
 }
