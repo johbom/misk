@@ -1923,3 +1923,10 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 :is(#settings, #quick-pop) legend .set-icon.wide { width: 23px; }
 .profile strong { display: flex; align-items: center; gap: 8px; }
 .profile .set-icon { width: 22px; height: 22px; }
+
+/* Enkel eller avancerad version (överst under Inställningar) */
+#app-level-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 12px; }
+#app-level-row > .lbl { font-weight: 600; }
+#app-level-row > .desc { flex: 1 1 220px; color: var(--muted); }
+/* Enkel: ingen stegsequencer och ingen MIDI-status */
+body[data-level="simple"] :is(#seq-toggle, #seq-bar, #seq-set, #midi-status) { display: none !important; }

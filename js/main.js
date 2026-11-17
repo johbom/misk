@@ -36,6 +36,7 @@ setupKeyFollow();
 setupSegments();
 setupSettingsIcons();
 setupAccess();
+setupAppLevel();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 
 for (const k of SAVED) ui[k].addEventListener('change', saveSettings);

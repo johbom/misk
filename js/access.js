@@ -46,6 +46,7 @@ function refreshAccess() {
   root.classList.toggle('show-keys', ui.showKeys.checked);
   syncSegments();
   syncArpToggle();
+  if (typeof applyAppLevel === 'function' && ui.appLevel) applyAppLevel(); // enkel version: ingen sequencer, även efter ett preset
   renderSeq(); // (även efter ett laddat preset)
   root.dataset.pointer = ui.showPointer.value;
   renderSwitchKeys(); // (även efter ett laddat preset)

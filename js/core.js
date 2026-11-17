@@ -111,6 +111,7 @@ const ui = {
   velocity: $('velocity'),
   panic: $('panic'),
   midiStatus: $('midi-status'),
+  appLevel: $('app-level'), // Enkel / Avancerad (överst under Inställningar)
   pads: $('pads'),
   chordPads: $('chord-pads'),
   log: $('log'),

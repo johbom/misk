@@ -305,3 +305,43 @@ function applyGap() {
   $('gap-value').textContent = `${v} %`;
   layoutPads();
 }
+
+// ---------- Enkel eller avancerad version ----------
+// Enkel: ingen stegsequencer (knappen, raden och inställningarna) och ingen MIDI-status uppe till höger.
+// Allt annat är som vanligt. Valet sparas för sig (inte i Mina presets): det gäller appen, inte ljudet.
+const APP_LEVEL_DESC = {
+  simple: 'Utan stegsequencer och MIDI-status. Passar när man bara vill spela.',
+  advanced: 'Allt: stegsequencer, MIDI-status och alla inställningar.',
+};
+const simpleApp = () => ui.appLevel.value === 'simple';
+let appLevelReady = false; // (refreshAccess anropar applyAppLevel redan innan det sparade valet lästs in)
+
+function applyAppLevel() {
+  if (!appLevelReady) return;
+  const simple = simpleApp();
+  document.body.dataset.level = simple ? 'simple' : 'advanced';
+  $('app-level-desc').textContent = t(APP_LEVEL_DESC[simple ? 'simple' : 'advanced']);
+  // Sequencern stängs av (och slingorna stoppas) i den enkla versionen, även efter ett laddat preset
+  if (simple && ui.seqOn.checked) {
+    ui.seqOn.checked = false;
+    ui.seqOn.dispatchEvent(new Event('change'));
+    if (quick.open === 'seq') closeQuick();
+  }
+}
+
+function setupAppLevel() {
+  const saved = localStorage.getItem('hoverPadsLevel');
+  if (saved === 'simple' || saved === 'advanced') ui.appLevel.value = saved;
+  else ui.appLevel.value = 'advanced'; // som förut
+  segmentSelect(ui.appLevel, 'seg-level', {
+    simple: '<rect x="5" y="5" width="14" height="14" rx="3.5"/>',
+    advanced: document.querySelector('#tabs [data-tab="settings"] svg')?.innerHTML || '',
+  });
+  appLevelReady = true;
+  ui.appLevel.addEventListener('change', () => {
+    localStorage.setItem('hoverPadsLevel', ui.appLevel.value);
+    applyAppLevel();
+    log(t(simpleApp() ? 'Enkel version' : 'Avancerad version'));
+  });
+  applyAppLevel();
+}
