@@ -223,6 +223,47 @@ function wizCustomEditor(d, mode) {
   </div>`;
 }
 
+// ---------- Symboler i guiden ----------
+// Rubriker, skalor, trumset, ljudgrupper och reverb får en symbol (samma stil som under Inställningar)
+const wizIcon = (inner) => segIconSvg(inner);
+const tabIconInner = (tab) => document.querySelector(`#tabs [data-tab="${tab}"] svg`)?.innerHTML || '';
+const reverbIcon = (n) => '<circle cx="5" cy="12" r="2.4" fill="currentColor" stroke="none"/>'
+  + [5, 9, 13].slice(0, n).map((r) => `<path d="M${5 + r * 0.6} ${12 - r * 0.8}a${r} ${r} 0 0 1 0 ${r * 1.6}"/>`).join('');
+const WIZ_HEAD_ICONS = {
+  root: '<path d="M3 17.5h18"/><ellipse cx="10.5" cy="17.5" rx="3.6" ry="2.6" transform="rotate(-22 10.5 17.5)" fill="currentColor" stroke="none"/><path d="M13.8 16.5V4"/>',
+  scale: scaleStairs([0, 2, 4, 5, 7, 9, 11], 1.7),
+  count: QUICK_ROW_ICONS.count,
+  octave: QUICK_ROW_ICONS.octave,
+  reverb: reverbIcon(3),
+  kit: DRUM_ICONS.snare,
+  fx: '<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 16l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/>',
+  custom: '<path d="M4 20l1-4.5L16 4.5l3.5 3.5L8.5 19z"/><path d="M14 6.5l3.5 3.5"/>',
+};
+const DRUM_MACHINE = '<rect x="2.5" y="4.5" width="19" height="15" rx="2"/><circle cx="6.5" cy="8.5" r="1.3"/><circle cx="10.5" cy="8.5" r="1.3"/>'
+  + [5, 9, 13, 17].map((x) => `<rect x="${x}" y="13" width="2.6" height="3" rx=".5" fill="currentColor" stroke="none"/>`).join('');
+const WIZ_KIT_ICONS = {
+  acoustic: DRUM_ICONS.snare,
+  e808: DRUM_MACHINE,
+  e909: DRUM_MACHINE,
+  lofi: '<rect x="2.5" y="5.5" width="19" height="13" rx="2"/><circle cx="8.5" cy="11" r="2"/><circle cx="15.5" cy="11" r="2"/><path d="M8.5 13h7M6.5 18.5l1.5-3h8l1.5 3"/>',
+  latin: DRUM_ICONS.congaMid,
+  disco: '<path d="M12 1.5v3.5"/><circle cx="12" cy="13" r="7.5"/><path d="M4.5 13h15M12 5.5v15M6 9h12M6 17h12"/>',
+  dub: '<rect x="5" y="2.5" width="14" height="19" rx="2"/><circle cx="12" cy="8" r="2.2"/><circle cx="12" cy="15.5" r="3.6"/>',
+  cartoon: '<circle cx="12" cy="4.5" r="2.5"/><path d="M12 7v1.5l-4.5 1.6 9 2.2-9 2.2 9 2.2-4.5 1.6v2.2M7 21.5h10"/>',
+};
+const WIZ_ENGINE_ICONS = {
+  Oscillatorer: WAVE_ICONS.sine,
+  'Sträng': '<path d="M3 5.5h18M3 9.5h18M3 18.5h18"/><path d="M3 14c6 0 6-2.5 9-2.5s3 2.5 9 2.5"/>',
+  Resonans: '<rect x="3" y="5" width="3.2" height="14" rx="1"/><rect x="8" y="6.5" width="3.2" height="11" rx="1"/><rect x="13" y="8" width="3.2" height="8" rx="1"/><rect x="18" y="9.5" width="3" height="5" rx="1"/>',
+  FM: '<path d="M2 12c2.5-8 7.5-8 10 0s7.5 8 10 0"/><path d="M2 12c1.2-4 3.8-4 5 0s3.8 4 5 0 3.8-4 5 0 3.8 4 5 0" opacity=".5"/>',
+  Wavetable: '<path d="M2 7.5c2.5-4 7.5-4 10 0s7.5 4 10 0"/><path d="M2 14l5-4 5 4 5-4 5 4" opacity=".7"/><path d="M2 20.5v-4h5v4h5v-4h5v4h5" opacity=".45"/>',
+  'Röst': '<circle cx="9" cy="8" r="4"/><path d="M3 21c0-4 2.7-6.5 6-6.5s6 2.5 6 6.5"/><path d="M16.5 6a4 4 0 0 1 0 5M19 4a7.5 7.5 0 0 1 0 9"/>',
+  'Blås': '<path d="M2.5 17.5 20 9.5l1.2 2.7L3.7 20.2z"/><path d="M8 16.2h0M11.5 14.6h0M15 13h0" stroke-width="2.6"/>',
+  'Granulär': [[5, 8, 1.5], [10, 5, 1], [15, 7, 2], [19, 11, 1.2], [8, 13, 2.2], [13.5, 12.5, 1], [17, 16.5, 1.6], [6, 18, 1], [11, 18.5, 1.4]]
+    .map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="currentColor" stroke="none"/>`).join(''),
+};
+const wizHead = (tag, icon, text, cls = '') => `<${tag}${cls ? ` class="${cls}"` : ''}>${icon ? wizIcon(icon) : ''}${text}</${tag}>`;
+
 // Knapp i en valgrupp
 function wizOption(key, value, inner, on, extra = '') {
   return `<button type="button" class="wiz-opt ${extra}" role="radio" aria-checked="${on}" data-key="${key}" data-value="${value}">${inner}</button>`;
@@ -249,13 +290,13 @@ function renderWizard() {
     title = 'Vilken tonart?';
     const scales = d.tab === 'chords' ? { major: 'Dur', minor: 'Moll' } : WIZ_SCALES;
     if (!(d.scale in scales)) d.scale = 'major';
-    html = `<h4>Grundton</h4><div class="wiz-keys" role="radiogroup" aria-label="Grundton">${
+    html = `${wizHead('h4', WIZ_HEAD_ICONS.root, 'Grundton')}<div class="wiz-keys" role="radiogroup" aria-label="Grundton">${
       CHORD_ROOTS.map((n, r) => wizOption('root', r, n, d.root === r)).join('')}</div>
-      <h4>${d.tab === 'chords' ? 'Dur eller moll' : 'Skala'}</h4>
+      ${wizHead('h4', WIZ_HEAD_ICONS.scale, d.tab === 'chords' ? 'Dur eller moll' : 'Skala')}
       <div class="wiz-row" role="radiogroup" aria-label="Skala">${
-      Object.entries(scales).map(([s, name]) => wizOption('scale', s, name, d.scale === s)).join('')}</div>`;
+      Object.entries(scales).map(([s, name]) => wizOption('scale', s, `${wizIcon(SCALE_ICONS[s])}<span>${name}</span>`, d.scale === s, 'wiz-wave')).join('')}</div>`;
     if (d.tab === 'notes') {
-      html += `<h4>Antal rutor</h4><div class="wiz-row" role="radiogroup" aria-label="Antal rutor">${
+      html += `${wizHead('h4', WIZ_HEAD_ICONS.count, 'Antal rutor')}<div class="wiz-row" role="radiogroup" aria-label="Antal rutor">${
         WIZ_NOTE_COUNTS.map((n) => wizOption('noteCount', n, n, d.noteCount === n)).join('')}</div>`;
     }
     html += `<p class="wiz-now">Tonart: <b>${CHORD_ROOTS[d.root]} ${WIZ_SCALES[d.scale].toLowerCase()}</b>
@@ -267,7 +308,7 @@ function renderWizard() {
     html = `<p class="wiz-hint">T = tonika, S = subdominant, D = dominant, p = parallell${
       mode === 'minor' ? '. Små bokstäver är mollackord.' : ' (mollparallellerna).'} Tryck för att lyssna.</p>
       <div class="wiz-progs" role="radiogroup" aria-label="Ackordmall">
-      ${wizOption('prog', KEEP_CHORDS, `<span class="wiz-prog-head"><b>Egen ackordrunda</b><small>${d.customCount} ackord</small></span>
+      ${wizOption('prog', KEEP_CHORDS, `<span class="wiz-prog-head"><b>${wizIcon(WIZ_HEAD_ICONS.custom)}Egen ackordrunda</b><small>${d.customCount} ackord</small></span>
         <span class="wiz-chords">${customChords(d).map((c, k) => wizChordCell(c, k, funcOf(c, mode, d.root))).join('')}</span>
         <small class="wiz-desc">${d.prog === KEEP_CHORDS ? 'Ställ in varje ackord här under.' : 'Välj för att ställa in egna ackord, ett i taget.'}</small>`,
         d.prog === KEEP_CHORDS, 'wiz-prog')}
@@ -305,27 +346,27 @@ function renderWizard() {
     } else {
       title = 'Vilket ljud?';
       const kits = (fx) => Object.entries(DRUM_KITS).filter(([, k]) => !!k.fx === fx)
-        .map(([id, k]) => wizOption('drumKit', id, k.name, d.drumKit === id)).join('');
-      const drums = d.tab === 'notes' ? `<h4>Trumset</h4><p class="wiz-hint">Varje ruta blir en trumma.</p>
+        .map(([id, k]) => wizOption('drumKit', id, `${wizIcon(WIZ_KIT_ICONS[id] || DRUM_ICONS.snare)}<span>${k.name}</span>`, d.drumKit === id)).join('');
+      const drums = d.tab === 'notes' ? `${wizHead('h4', WIZ_HEAD_ICONS.kit, 'Trumset')}<p class="wiz-hint">Varje ruta blir en trumma.</p>
         <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Trumset">${kits(false)}</div>
-        <h4>Ljudeffekter</h4><p class="wiz-hint">Varje ruta blir en ljudeffekt: sirén, lufthorn, laser, boing …</p>
+        ${wizHead('h4', WIZ_HEAD_ICONS.fx, 'Ljudeffekter')}<p class="wiz-hint">Varje ruta blir en ljudeffekt: sirén, lufthorn, laser, boing …</p>
         <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Ljudeffekter">${kits(true)}</div>
-        <h4>Toner</h4>` : '';
+        ${wizHead('h4', tabIconInner('notes'), 'Toner')}` : '';
       const cur = d.sound === null && !d.drumKit ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
-      html = `${drums}${cur}${QUICK_SOUNDS.map(([engineName, names]) => `<h5 class="wiz-engine">${engineName}</h5>
+      html = `${drums}${cur}${QUICK_SOUNDS.map(([engineName, names]) => `${wizHead('h5', WIZ_ENGINE_ICONS[engineName], engineName, 'wiz-engine')}
         <div class="wiz-sounds" role="radiogroup" aria-label="Ljud: ${engineName}">${
         names.map((n) => wizOption('sound', n, n, !d.drumKit && d.sound === n)).join('')}</div>`).join('')}
         <p class="wiz-hint">Tryck för att lyssna. Alla 560 ljud finns under Inställningar → Ljud.</p>`;
     }
   } else if (step === 'xyfeel') {
     title = 'Omfång och reverb';
-    html = `<h4>Omfång i oktaver</h4><p class="wiz-hint">Hur många oktaver plattan räcker över. Färre oktaver gör det lättare att träffa rätt ton.</p>
+    html = `${wizHead('h4', WIZ_HEAD_ICONS.octave, 'Omfång i oktaver')}<p class="wiz-hint">Hur många oktaver plattan räcker över. Färre oktaver gör det lättare att träffa rätt ton.</p>
       <div class="wiz-octs" role="radiogroup" aria-label="Omfång i oktaver">${
       [1, 2, 3, 4, 5].map((n) => wizOption('xyOctaves', n,
         `<b>${n}</b><small>${xyRangeName(n)}</small>`, d.xyOctaves === n)).join('')}</div>
-      <h4>Reverb</h4>
+      ${wizHead('h4', WIZ_HEAD_ICONS.reverb, 'Reverb')}
       <div class="wiz-row" role="radiogroup" aria-label="Reverb">${
-      WIZ_REVERBS.map(([v, name]) => wizOption('xyReverb', v, name, d.xyReverb === v)).join('')}</div>
+      WIZ_REVERBS.map(([v, name], i) => wizOption('xyReverb', v, `${wizIcon(reverbIcon(i))}<span>${name}</span>`, d.xyReverb === v, 'wiz-wave')).join('')}</div>
       <button type="button" class="wiz-toggle" role="switch" aria-checked="${d.arpOn}" data-act="arp">
         ${$('arp-toggle').querySelector('svg')?.outerHTML || ''}<span><b>Arpeggiator</b><small>Fingrarnas toner spelas en i taget, i takt.</small></span><i class="wiz-switch"></i>
       </button>`;

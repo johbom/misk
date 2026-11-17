@@ -10,6 +10,8 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 **Symboler i snabbvalen och knappgrupperna:** skalorna har en glad (dur) och en ledsen (moll) min, och Pentatonisk och Blues en trappa med skalans toner (blå tonen som en ring). Kromatisk har ett pianoklaviatur (alla tangenter). Skalans symbol syns också på tonartsknappen i spelraden (☺ C dur). Notvärdena för arpeggiatorn och sequencern visas som noter (hel-, halv-, fjärdedels-, åttondels- och sextondelsnot, triol med en 3:a), och Retrigg med en pil framåt (av) eller runt (på). I formations- och tonartsrutan har raderna *Antal rutor/ackord*, *Oktav* och *Mellanrum* en symbol framför. Samma symboler syns under Inställningar → Instrument.
 
+**Symboler i startguiden:** utöver sida, spelsätt, formation och XY-klang har guiden symboler för rubrikerna (Grundton, Skala, Antal rutor, Trumset, Ljudeffekter, Toner, Omfång, Reverb), skalorna (samma som i snabbvalet), trumseten (trumma, trummaskin för 808/909, kassett för Lo-fi, conga för Slagverk) och ljudeffekterna (discokula, högtalare för Reggae & dub, fjäder för Tecknat & lek), ljudgrupperna (våg, strängar, marimba, FM, wavetable, röst, flöjt, korn), reverbnivåerna (fler bågar = mer reverb) och en penna för Egen ackordrunda.
+
 Hover Pads är en app från **TFH Sensory**. TFH-loggan står uppe till vänster vid rubriken, på startrutan och i Om-rutan. Den länkar till [tfhsensory.se](https://tfhsensory.se) i en ny flik. På smal mobil ligger loggan på raden med Lås och MIDI.
 
 Om-rutan har också en **ansvarsfriskrivning**: appen är gratis och tillhandahålls i befintligt skick, och TFH tar inget ansvar för hur den används eller för fel, buggar och andra problem.
