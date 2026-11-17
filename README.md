@@ -222,7 +222,9 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 - **Oscillatorernas** detune (vibrato, böjning, Läge på rutan) uppdateras på samma sätt. FM går till frekvensen och räknas fortfarande per sampel.
 - **Drive** kopplas förbi när det är av, så att den 4× översamplade waveshapern inte räknas i onödan.
 - **Svansen** på en släppt ton stoppas vid cirka −61 dB (7 tidskonstanter i stället för 9).
-- **Högst 32 röster per motor.** Blir det fler tonas de äldsta som redan släppts bort på 10 ms. Toner som hålls rörs aldrig.
+- **Högst 32 röster per motor (12 på Android).** Blir det fler tonas de äldsta som redan släppts bort på 10 ms. Toner som hålls rörs aldrig.
+- **Ljudvakten** (alltid på): märker när ljudet hackar, dvs. när ljudklockan halkar efter klockan på väggen (mätt med `getOutputTimestamp`, annars `currentTime`). Då tonas alla toner som släppts och klingat ut i mer än 0,15 s bort direkt, och taket för antalet röster sänks tillfälligt (lägst 6). Det går tillbaka med fyra röster var tredje sekund som ljudet är helt. Utan vakten blev det på svaga telefoner allt tätare hack tills svansarna tonat ut, och man fick vänta innan det gick att spela igen.
+- **Android:** ljudet startas med `latencyHint: 'balanced'`, en något större buffert (några ms mer fördröjning) än den minsta, som lätt hackar på telefoner.
 - **Smala röster:** varje ton byggs med så få ljudnoder som möjligt. Safari hackar när många noder skapas och kopplas på en gång, som när ett ackord, sequencern eller arpeggiot startar flera toner. Noderna för Läge på rutan skapas bara för den parameter som är vald, vibratonoden bara när vibrato är på, tremolosteget bara med tremolo, och oscillatorn själv håller reda på när tonen är slut. Orgel gick från 14 till 8 noder per ton, Elpiano från 17 till 12 och Piano från 19 till 14.
 - **Ljudtrådens motorer laddas vid behov.** Sträng, Resonans, FM, Wavetable, Röst, Blås och Granulär räknas i en AudioWorklet. Modulen laddas först när ett sådant ljud väljs, så vanliga oscillatorljud (Elpiano, Orgel, pads …) spelas utan den. Safari renderar allt ljud i en egen tråd så fort en AudioWorklet finns.
 - **Ljusblinket** på rutor som sequencern och arpeggiot spelar görs med Web Animations, och stegmarkeringen ändrar bara det förra och det nya steget. Tidigare tvingade varje ton fram en omräkning av sidans layout.
@@ -238,7 +240,7 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 | `nomaster` | Slutmixen |
 | `nochorus` | Chorus |
 | `nodelay` | Delay |
-| `meter` | Inget slås av: statusraden räknar ljudavbrott (när ljudklockan halkar efter klockan på väggen, det man hör som knaster) |
+| `meter` | Inget slås av: statusraden räknar ljudavbrott (när ljudklockan halkar efter klockan på väggen, det man hör som knaster) och visar ljudvaktens tak för antalet röster |
 
 Safari följer inte önskemål om längre ljudbuffert (`latencyHint`). Bufferten är alltid 128 sampel (2,7 ms), så varje block måste bli klart inom den tiden.
 

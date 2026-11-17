@@ -11,7 +11,9 @@ const padEngine = (pad) => (pad && pad.chord ? engines.chords : engines.notes);
 function initAudio() {
   // iPhone: spela även när ljudlös-knappen är på (Safari 16.4+)
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  // Android: lite större ljudbuffert (några ms mer fördröjning) – den minsta hackar lätt på telefoner
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  try { audioCtx = new Ctx(IS_ANDROID ? { latencyHint: 'balanced' } : undefined); } catch { audioCtx = new Ctx(); }
   // iOS: väck ljudet i samma tryck genom att spela en kort tyst buffert
   try {
     const silent = audioCtx.createBufferSource();
@@ -33,20 +35,45 @@ function initAudio() {
     engines[slot] = e;
   }
   engine = engines[soundSlot];
-  if (AUDIO_DIAG.has('meter')) startAudioMeter();
+  startAudioGuard();
 }
 
-// ?diag=meter: räknar ljudavbrott. Ljudklockan går bara fram när ljudtråden hunnit räkna fram ljudet;
-// halkar den efter klockan på väggen har ljudet hackat (det man hör som knaster).
-function startAudioMeter() {
-  let base = null; let lost = 0; let hacks = 0; let shown = '';
+// Ljudvakten: märker när ljudet hackar och lättar då på lasten direkt. Ljudklockan går bara fram när
+// ljudtråden hunnit räkna fram ljudet; halkar den efter klockan på väggen har ljudet hackat (det man
+// hör som knaster). Då tonas släppta toner som klingar ut bort, och taket för antalet röster sänks
+// tillfälligt (det går tillbaka, fyra röster var tredje sekund som ljudet är helt). Utan vakten blir det på en svag
+// telefon allt tätare hack tills svansarna tonat ut, och man måste vänta innan det går att spela igen.
+// ?diag=meter skriver också ut avbrotten i loggen.
+const GUARD_LATE_MS = 12; // så mycket efter (utöver det vanliga) räknas som ett avbrott
+function startAudioGuard() {
+  let base = null; let lost = 0; let hacks = 0; let shown = ''; let calmSince = performance.now(); let exact = null;
+  // Ljudklockan och väggklockan för samma ögonblick: getOutputTimestamp är exakt; currentTime går
+  // fram i hela buffertar (på Android 10–20 ms åt gången), så då tas det minsta värdet som bas
+  const behindNow = () => {
+    const ts = audioCtx.getOutputTimestamp?.();
+    const ok = !!ts && ts.performanceTime > 0;
+    if (ok !== exact) { exact = ok; base = null; lost = 0; } // (annat sätt att mäta: börja om)
+    return ok ? ts.performanceTime - ts.contextTime * 1000 : performance.now() - audioCtx.currentTime * 1000;
+  };
   setInterval(() => {
-    if (audioCtx.state !== 'running') { base = null; return; }
-    const behind = performance.now() - audioCtx.currentTime * 1000; // ms
+    if (audioCtx.state !== 'running') { base = null; lost = 0; return; }
+    const behind = behindNow();
     if (base === null || behind < base) { base = behind; return; }
     const late = behind - base - lost;
-    if (late > 4) { hacks++; lost += late; }
-    const msg = t(`Ljudmätare: ${hacks} avbrott (${Math.round(lost)} ms tappat ljud)`);
+    const now = performance.now();
+    if (late > GUARD_LATE_MS) {
+      hacks++;
+      lost += late;
+      calmSince = now;
+      // Lätta på lasten: svansarna bort, och färre röster ett tag
+      voiceBudget.cap = Math.max(6, Math.min(voiceBudget.cap, Math.max(...Object.values(engines).filter(Boolean).map((e) => e.voices.size))) - 2);
+      Object.values(engines).forEach((e) => e?.shedVoices());
+    } else if (voiceBudget.cap < MAX_VOICES && now - calmSince > 3000) {
+      voiceBudget.cap = Math.min(MAX_VOICES, voiceBudget.cap + 4);
+      calmSince = now;
+    }
+    if (!AUDIO_DIAG.has('meter')) return;
+    const msg = t(`Ljudmätare: ${hacks} avbrott (${Math.round(lost)} ms tappat ljud), högst ${voiceBudget.cap} röster`);
     if (msg !== shown) { log(msg); shown = msg; }
   }, 250);
 }

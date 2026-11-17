@@ -432,8 +432,12 @@ function kRate(param) {
 
 // Högst så här många röster per motor. Fler: de äldsta som redan släppts (och bara klingar ut) tonas
 // bort på 10 ms. Toner som hålls rörs aldrig. Håller processorn på jorden med långa svansar och
-// sequencer/arpeggio som spelar många toner.
-const MAX_VOICES = 32;
+// sequencer/arpeggio som spelar många toner. Android-telefoner orkar betydligt färre: där är taket lägre.
+const IS_ANDROID = /Android/i.test(navigator.userAgent);
+const MAX_VOICES = IS_ANDROID ? 12 : 32;
+// Taket just nu: sänks tillfälligt när ljudet börjar hacka (js/audio.js: ljudvakten), och går
+// sedan sakta tillbaka till MAX_VOICES
+const voiceBudget = { cap: MAX_VOICES };
 // En motor som varit helt tyst så här länge (s) kopplas bort från slutmixen och räknas inte alls
 // (reverb, chorus, delay …), tills nästa ton väcker den.
 const ENGINE_SLEEP_AFTER = 2;
@@ -602,12 +606,20 @@ class SynthEngine {
 
   // Tak på antalet röster: tona bort de äldsta släppta
   limitVoices() {
-    if (this.voices.size < MAX_VOICES) return;
+    const cap = voiceBudget.cap;
+    if (this.voices.size < cap) return;
     const released = [...this.voices].filter((v) => v.released).sort((a, b) => a.released - b.released);
     for (const v of released) {
-      if (this.voices.size < MAX_VOICES) break;
+      if (this.voices.size < cap) break;
       v.kill();
     }
+  }
+
+  // Ljudet hackar: tona bort alla toner som släppts och redan klingat ut en stund (svansen hörs knappt,
+  // men räknas fortfarande). Toner som hålls, och de som nyss släppts, rörs inte.
+  shedVoices(olderThan = 0.15) {
+    const now = this.ctx.currentTime;
+    [...this.voices].forEach((v) => { if (v.released && now - v.released > olderThan) v.kill(); });
   }
 
   setParams(params) {

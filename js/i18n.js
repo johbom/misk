@@ -894,7 +894,7 @@ const EN_HTML = {
 // Texter som byggs ihop med siffror och namn. Varje mönster gäller hela texten.
 const q = (s) => `"${s}"`;
 const EN_PATTERNS = [
-  [/^Ljudmätare: (\d+) avbrott \((\d+) ms tappat ljud\)$/, (n, ms) => `Audio meter: ${n} dropouts (${ms} ms of audio lost)`],
+  [/^Ljudmätare: (\d+) avbrott \((\d+) ms tappat ljud\), högst (\d+) röster$/, (n, ms, v) => `Audio meter: ${n} dropouts (${ms} ms of audio lost), at most ${v} voices`],
   [/^Håll tonerna i skalan \((.+)\) – av: steglös tonhöjd$/, (k) => `Keep the notes in the scale (${k}) – off: gliding pitch`],
   [/^Ljudet för (Toner|Ackord)$/, (p) => `Sound for ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Antal (rutor|ackord): (\d+)$/, (w, n) => `Number of ${w === 'rutor' ? 'pads' : 'chords'}: ${n}`],
