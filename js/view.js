@@ -60,6 +60,7 @@ function setupAbout() {
 function showSettingsPanel(panel) {
   if (['notes', 'chords', 'surfaces'].includes(panel)) panel = 'play'; // gamla flikar (Spelytor ligger nu under Instrument)
   if (!document.querySelector(`#settings .panel[data-panel="${panel}"]`)) panel = 'play';
+  if (panel === 'io' && simpleApp()) panel = 'play'; // Ut, MIDI & OSC finns inte i den enkla versionen
   document.querySelectorAll('#settings-nav button').forEach((b) =>
     b.classList.toggle('on', b.dataset.panel === panel));
   document.querySelectorAll('#settings .panel').forEach((p) =>
@@ -310,8 +311,8 @@ function applyGap() {
 // Enkel: ingen stegsequencer (knappen, raden och inställningarna) och ingen MIDI-status uppe till höger.
 // Allt annat är som vanligt. Valet sparas för sig (inte i Mina presets): det gäller appen, inte ljudet.
 const APP_LEVEL_DESC = {
-  simple: 'Utan stegsequencer och MIDI-status. Passar när man bara vill spela.',
-  advanced: 'Allt: stegsequencer, MIDI-status och alla inställningar.',
+  simple: 'Utan stegsequencer, MIDI och OSC, Skruva själv, Läge på rutan och de finaste reglagen. Passar när man bara vill spela.',
+  advanced: 'Allt: stegsequencer, MIDI och OSC, Skruva själv och alla inställningar.',
 };
 const simpleApp = () => ui.appLevel.value === 'simple';
 let appLevelReady = false; // (refreshAccess anropar applyAppLevel redan innan det sparade valet lästs in)
@@ -327,6 +328,18 @@ function applyAppLevel() {
     ui.seqOn.dispatchEvent(new Event('change'));
     if (quick.open === 'seq') closeQuick();
   }
+  if (!simple) return;
+  // Voicing-läget för ackorden visas inte i den enkla versionen
+  if (ui.chordAdvanced.checked) {
+    ui.chordAdvanced.checked = false;
+    ui.chordAdvanced.dispatchEvent(new Event('change'));
+  }
+  // Utgångarna går inte att nå i den enkla versionen, så ljudet måste vara på
+  if (!ui.outAudio.checked) {
+    ui.outAudio.checked = true;
+    ui.outAudio.dispatchEvent(new Event('change'));
+  }
+  if (document.querySelector('#settings-nav button.on')?.dataset.panel === 'io') showSettingsPanel('play');
 }
 
 function setupAppLevel() {
