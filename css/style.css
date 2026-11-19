@@ -2018,3 +2018,25 @@ html.fixed-screen.steppers #play-bar .xy-sound .seg button { min-width: 0; paddi
 html.reduce-motion #xy-rec.recording { animation: none; }
 html.fixed-screen #play-bar #xy-rec { padding-top: 3px; padding-bottom: 3px; }
 
+/* Toner: inspelningsläget (en inspelning per ruta, js/padrec.js) */
+#pad-rec, #pad-rec-del { min-height: 32px; padding: 4px 14px; border-radius: 999px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+#pad-rec-del[hidden] { display: none; }
+#pad-rec.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+#pad-rec.recording { background: #b3261e; border-color: #ff6b5e; color: #fff; }
+#pad-rec-del.on { background: #6b2a2a; border-color: #ff6b5e; color: #fff; }
+html.steppers :is(#pad-rec, #pad-rec-del) { min-height: 46px; padding: 6px 18px; }
+html.fixed-screen #play-bar :is(#pad-rec, #pad-rec-del) { padding-top: 3px; padding-bottom: 3px; }
+body.pad-rec[data-tab="notes"] #pads .pad { outline: 3px dashed rgba(255, 110, 100, 0.75); outline-offset: -8px; cursor: pointer; }
+body.pad-rec-del[data-tab="notes"] #pads .pad.sample { outline-color: #ffd400; }
+#pads .pad.pad-recording { background: #7a1d18 !important; animation: rec-pulse 1s ease-in-out infinite; }
+#pads .pad.pad-recording::after {
+  content: attr(data-rec-left); position: absolute; inset: 8px 10px auto auto; padding: 2px 8px; border-radius: 999px;
+  background: #ff5a4e; color: #fff; font-size: 0.8rem; font-weight: 700;
+  opacity: 1; transform: none; z-index: 2; animation: none; /* (::after används annars för väntetidens ring) */
+}
+html.reduce-motion #pads .pad.pad-recording { animation: none; }
+@media (max-width: 600px) {
+  #play-bar > :is(#pad-rec, #pad-rec-del) { order: 2; }
+  #play-bar #pad-rec:not(.recording):not(.on) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+

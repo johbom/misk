@@ -59,6 +59,7 @@ function cancelDwell(pad) {
 
 // Spela, om spärrtiden har gått ut (gäller inte när man trycker/drar)
 function activate(pad, pressed = false) {
+  if (typeof padRecOn === 'function' && padRecOn() && notePads.includes(pad)) return; // inspelningsläget (js/padrec.js)
   const h = hoverState(pad);
   const now = performance.now();
   if (!pressed && now - h.last < ms(ui.lockout)) return;

@@ -36,6 +36,7 @@ function initAudio() {
   }
   engine = engines[soundSlot];
   startAudioGuard();
+  if (typeof padRestoreSamples === 'function') padRestoreSamples(); // rutornas sparade ljud (js/padrec.js)
 }
 
 // Ljudvakten: märker när ljudet hackar och lättar då på lasten direkt. Ljudklockan går bara fram när

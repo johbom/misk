@@ -538,7 +538,7 @@ function xyDraw() {
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.globalCompositeOperation = 'source-over';
   g.clearRect(0, 0, W, H);
-  if (xyRecOn() || xyRec.recording) xyDrawRec(g, W, H, hc); // inspelningens vågform (och medan den spelas in)
+  if (xyRecOn() || xyRecording()) xyDrawRec(g, W, H, hc); // inspelningens vågform (och medan den spelas in)
   else xyDrawGrid(g, W, H, hc);
 
   // Spåren: glöder (adderas ljust på ljust) och bleknar med åldern

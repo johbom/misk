@@ -17,6 +17,7 @@ function buildNotePads() {
   while (notePads.length > count) notePads.pop().el.remove();
   while (notePads.length < count) addNotePad(notePads.length);
   updateNotes();
+  if (typeof padRestoreSamples === 'function') padRestoreSamples(); // sparade inspelningar och ljudfiler
   layoutPads();
 }
 
@@ -42,6 +43,7 @@ function addNotePad(i) {
     e.preventDefault();
     pad.sample = null;
     renderNotePad(pad);
+    micDelete(`pad${notePads.indexOf(pad)}`); // (sparad i webbläsaren)
     log(`Ruta ${i + 1}: ljudfil borttagen`);
   });
 
@@ -91,6 +93,7 @@ async function onDropSample(e, pad) {
     pad.sample = await audioCtx.decodeAudioData(await file.arrayBuffer());
     pad.sampleName = file.name;
     renderNotePad(pad);
+    padSaveSample(pad); // finns kvar efter omladdning
     log(`Laddade "${file.name}" till ${noteName(pad.note)}`);
   } catch {
     log(`Kunde inte läsa "${file.name}" som ljud.`);

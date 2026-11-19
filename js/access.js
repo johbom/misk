@@ -421,6 +421,7 @@ function scanPress() {
   clearInterval(scan.timer); // stå still medan kontakten hålls in
   scan.timer = 0;
   if (pad.ctl) pad.el.click(); // sequencerns Start/Stopp
+  else if (padRecOn() && notePads.includes(pad)) padRecPick(pad); // inspelningsläget på Toner
   else activate(pad);
 }
 
@@ -720,6 +721,7 @@ function setupKeys() {
       pad = allPads().find((p) => p.el === e.target);
     }
     if (!pad || keyPads.has(e.code)) return;
+    if (padRecOn() && notePads.includes(pad)) { padRecPick(pad); return; } // inspelningsläget på Toner
     keyPads.set(e.code, pad);
     activate(pad);
   });

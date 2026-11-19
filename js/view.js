@@ -8,6 +8,9 @@ function showTab(tab) {
   allPads().forEach(release);
   arpReset();
   // (stegsequencerns slingor fortsätter: man ska kunna spela till dem på en annan sida)
+  // Inspelning pågår eller inspelningsläget är på: avsluta när man lämnar sidan
+  if (typeof micActive === 'function' && micActive()) micStop();
+  if (tab !== 'notes' && typeof padRec !== 'undefined' && padRec.on) padRecSetMode(false);
   document.body.dataset.tab = tab;
   if (tab === 'notes' || tab === 'chords') useSoundSlot(tab); // var sitt ljud (js/sound.js)
   syncSoundSelect(); // trumseten finns i listan Ljud bara på sidan Toner

@@ -96,6 +96,7 @@ function gpPress(code) {
   const el = gp.markEl && gpItems().includes(gp.markEl) ? gp.markEl : null;
   if (!el) { gpMark(gpItems()[0] || null); return; } // första trycket: markera
   const pad = allPads().find((p) => p.el === el);
+  if (pad && padRecOn() && notePads.includes(pad)) { padRecPick(pad); return; } // inspelningsläget på Toner
   if (pad) { gp.held.set(code, pad); activate(pad); return; } // en ruta spelar så länge knappen hålls in
   el.click(); // en knapp: tryck på den (Arp, Seq, ◀ ▶, en flik, ett val i en snabbruta …)
   // Öppnades en snabbruta? Markera dess första val. Försvann knappen? Markera det första som finns.

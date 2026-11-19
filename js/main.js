@@ -26,6 +26,7 @@ setupPosition();
 setupOsc();
 setupXY();
 setupXyRec();
+setupPadRec();
 setupArp();
 setupSeq();
 setupUserPresets();

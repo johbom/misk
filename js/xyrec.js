@@ -1,8 +1,8 @@
 // XY: spela in från mikrofonen (högst 10 s) och spela inspelningen granulärt med fingrarna/musen.
 //
 // Knappen ● Spela in (spelraden på XY) startar mikrofonen; ett tryck till – eller 10 sekunder – stoppar.
-// Mikrofonen stängs direkt efteråt (på iPhone låter annars allt tystare medan den är öppen). Inspelningen
-// normaliseras, sparas i webbläsaren (IndexedDB) och XY byter till klangen "Inspelning".
+// Själva inspelningen sköts av js/micrec.js (tystnaden i början och slutet klipps bort, normaliseras).
+// Den sparas i webbläsaren (IndexedDB) och XY byter till klangen "Inspelning".
 //
 // Granulärt: varje pekare spelar korta, överlappande korn (90 ms, ett nytt var 30:e ms) ur inspelningen.
 //  X = var i inspelningen kornen tas (vänster = början, höger = slutet)
@@ -18,90 +18,38 @@ const GRAIN_EVERY = 0.03; // tid mellan kornen (tre överlappar)
 const GRAIN_JITTER = 0.015; // slumpad förskjutning i inspelningen (s)
 const GRAIN_LEVEL = 0.55;
 
-const xyRec = { buf: null, recording: false, stream: null, src: null, node: null, chunks: [], timer: 0, tick: 0, started: 0 };
+const xyRec = { buf: null, pending: null, peaks: null };
 const xyGrains = new Map(); // pointerId -> { nx, ny, next, amp }
 let xyGrainTimer = 0;
 
 const xyRecOn = () => xySoundKey() === 'rec';
+const xyRecording = () => micActive() && mic.onDone === xyRecDone;
 
-// ---------- Inspelning ----------
+// ---------- Inspelning (js/micrec.js: mikrofonen, tystnaden klipps bort) ----------
 async function xyRecStart() {
-  if (xyRec.recording) return;
-  if (!navigator.mediaDevices?.getUserMedia) { log(t('Den här webbläsaren kan inte spela in från mikrofonen.')); return; }
-  if (!audioCtx) { try { initAudio(); } catch {} }
-  if (!audioCtx) return;
-  if (audioCtx.state !== 'running') audioCtx.resume();
-  let stream;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-  } catch {
-    log(t('Mikrofonen gick inte att öppna. Tillåt mikrofonen för sidan och försök igen.'));
-    return;
-  }
-  // Ljudtrådens modul (laddas annars först när ett ljud behöver den)
-  if (!audioCtx.pmModule) audioCtx.pmModule = audioCtx.audioWorklet.addModule(PM_WORKLET_URL);
-  try { await audioCtx.pmModule; } catch { log(t('Mikrofonen gick inte att öppna. Tillåt mikrofonen för sidan och försök igen.')); stream.getTracks().forEach((tr) => tr.stop()); return; }
+  if (micActive()) return;
   xyStopAll();
-  xyRec.stream = stream;
-  xyRec.chunks = [];
-  xyRec.src = audioCtx.createMediaStreamSource(stream);
-  xyRec.node = new AudioWorkletNode(audioCtx, 'rec-capture', { numberOfOutputs: 1, outputChannelCount: [1] });
-  xyRec.node.port.onmessage = (e) => {
-    if (e.data === 'done') { xyRecFinish(); return; }
-    xyRec.chunks.push(e.data);
-  };
-  const mute = audioCtx.createGain();
-  mute.gain.value = 0; // (noden måste vara kopplad för att räknas, men ska inte höras)
-  xyRec.src.connect(xyRec.node).connect(mute).connect(audioCtx.destination);
-  xyRec.mute = mute;
-  xyRec.recording = true;
-  xyRec.started = performance.now();
-  xyRec.timer = setTimeout(xyRecStop, XYREC_MAX_S * 1000);
-  xyRec.tick = setInterval(() => { xyRecSync(); xyDraw(); }, 250);
+  const ok = await micStart({ max: XYREC_MAX_S, onDone: xyRecDone, onTick: () => { xyRecSync(); xyDraw(); } });
+  if (!ok) return;
   xyRecSync();
   xyDraw();
   log(t('Spelar in … (högst 10 sekunder, tryck igen för att sluta)'));
 }
 
-function xyRecStop() {
-  if (!xyRec.recording) return;
-  xyRec.recording = false;
-  clearTimeout(xyRec.timer);
-  clearInterval(xyRec.tick);
-  xyRec.node?.port.postMessage('stop'); // sista blocket kommer, sedan 'done'
-  xyRec.stream?.getTracks().forEach((tr) => tr.stop()); // stäng mikrofonen direkt
-  xyRecSync();
-}
+function xyRecStop() { if (xyRecording()) micStop(); }
 
-function xyRecFinish() {
-  try { xyRec.src?.disconnect(); xyRec.node?.disconnect(); xyRec.mute?.disconnect(); } catch {}
-  xyRec.src = xyRec.node = xyRec.mute = xyRec.stream = null;
-  const n = xyRec.chunks.reduce((a, c) => a + c.length, 0);
-  const max = Math.round(XYREC_MAX_S * audioCtx.sampleRate);
-  const data = new Float32Array(Math.min(n, max));
-  let o = 0;
-  for (const c of xyRec.chunks) { if (o >= data.length) break; data.set(c.subarray(0, data.length - o), o); o += c.length; }
-  xyRec.chunks = [];
-  if (data.length < audioCtx.sampleRate * 0.2) { log(t('Inspelningen blev för kort. Försök igen.')); xyRecSync(); xyDraw(); return; }
-  // Normalisera (toppen till 0,9) och tona in/ut 5 ms
-  let peak = 0;
-  for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
-  if (peak < 1e-4) { log(t('Det hördes inget i mikrofonen. Försök igen.')); xyRecSync(); xyDraw(); return; }
-  const k = 0.9 / peak;
-  const fade = Math.round(audioCtx.sampleRate * 0.005);
-  for (let i = 0; i < data.length; i++) {
-    const f = Math.min(1, i / fade, (data.length - 1 - i) / fade);
-    data[i] *= k * f;
-  }
-  xyRecSet(data, audioCtx.sampleRate);
-  xyRecSave(data, audioCtx.sampleRate);
+function xyRecDone(data, sr, err) {
+  xyRecSync();
+  if (!data) { log(err); xyDraw(); return; }
+  xyRecSet(data, sr);
+  micSave('xy', { sr, data });
   // Byt till klangen Inspelning
   if (ui.xySound.value !== 'rec') {
     ui.xySound.value = 'rec';
     ui.xySound.dispatchEvent(new Event('change'));
     if (ui.xySound.segBox) syncSegment(ui.xySound);
   }
-  log(t(`Inspelat: ${(data.length / audioCtx.sampleRate).toFixed(1).replace('.', ',')} s. Rör dig över plattan: X = var i inspelningen, Y = tonhöjd.`));
+  log(t(`Inspelat: ${(data.length / sr).toFixed(1).replace('.', ',')} s. Rör dig över plattan: X = var i inspelningen, Y = tonhöjd.`));
 }
 
 function xyRecSet(data, sr) {
@@ -124,38 +72,21 @@ function xyRecBuffer() {
 function xyRecSync() {
   const b = $('xy-rec');
   if (!b) return;
-  b.classList.toggle('recording', xyRec.recording);
-  b.setAttribute('aria-pressed', xyRec.recording);
-  const left = Math.max(0, Math.ceil(XYREC_MAX_S - (performance.now() - xyRec.started) / 1000));
-  b.querySelector('span').textContent = xyRec.recording ? `${left} s` : t('Spela in');
-  b.setAttribute('aria-label', xyRec.recording ? t(`Sluta spela in (${left} s kvar)`) : t('Spela in'));
-  b.title = t(xyRec.recording ? 'Sluta spela in' : 'Spela in från mikrofonen (högst 10 sekunder) och spela det på plattan');
+  const rec = xyRecording();
+  b.classList.toggle('recording', rec);
+  b.setAttribute('aria-pressed', rec);
+  const left = micLeft();
+  b.querySelector('span').textContent = rec ? `${left} s` : t('Spela in');
+  b.setAttribute('aria-label', rec ? t(`Sluta spela in (${left} s kvar)`) : t('Spela in'));
+  b.title = t(rec ? 'Sluta spela in' : 'Spela in från mikrofonen (högst 10 sekunder) och spela det på plattan');
   // Ikonen: mikrofon, eller en stoppruta medan inspelningen pågår
   const svg = b.querySelector('svg');
-  if (svg) svg.innerHTML = xyRec.recording ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>' : XYREC_DOT;
+  if (svg) svg.innerHTML = rec ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>' : XYREC_DOT;
 }
 
-// ---------- Spara i webbläsaren (IndexedDB) ----------
-function xyRecDb() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('hoverPads', 1);
-    req.onupgradeneeded = () => req.result.createObjectStore('rec');
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-async function xyRecSave(data, sr) {
-  try {
-    const db = await xyRecDb();
-    db.transaction('rec', 'readwrite').objectStore('rec').put({ sr, data }, 'xy');
-  } catch { /* ingen lagring: inspelningen finns kvar tills sidan laddas om */ }
-}
 async function xyRecLoad() {
-  try {
-    const db = await xyRecDb();
-    const req = db.transaction('rec').objectStore('rec').get('xy');
-    req.onsuccess = () => { const v = req.result; if (v?.data?.length) xyRecSet(v.data, v.sr); };
-  } catch { /* ingen sparad inspelning */ }
+  const v = await micLoad('xy');
+  if (v?.data?.length) xyRecSet(v.data, v.sr);
 }
 
 // ---------- Granulär uppspelning ----------
@@ -239,8 +170,8 @@ function xyGrainTick() {
 function xyDrawRec(g, W, H, hc) {
   g.font = '13px system-ui, sans-serif';
   g.textAlign = 'center';
-  if (xyRec.recording) {
-    const s = ((performance.now() - xyRec.started) / 1000).toFixed(1).replace('.', ',');
+  if (xyRecording()) {
+    const s = ((performance.now() - mic.started) / 1000).toFixed(1).replace('.', ',');
     g.fillStyle = hc ? '#fff' : 'rgba(255,120,120,0.9)';
     g.fillText(t(`Spelar in … ${s} s`), W / 2, H / 2);
     return;
@@ -289,7 +220,7 @@ function xyDrawRec(g, W, H, hc) {
 
 function setupXyRec() {
   const b = $('xy-rec');
-  b.addEventListener('click', () => (xyRec.recording ? xyRecStop() : xyRecStart()));
+  b.addEventListener('click', () => (xyRecording() ? xyRecStop() : xyRecStart()));
   ui.xySound.addEventListener('change', () => {
     xyStopAll();
     if (xyRecOn() && !xyRec.buf && !xyRec.pending) log(t('Spela in något först med ● Spela in.'));
