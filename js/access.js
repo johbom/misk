@@ -44,6 +44,10 @@ function refreshAccess() {
   root.classList.toggle('reduce-motion', ui.reduceMotion.checked);
   root.classList.toggle('steppers', ui.steppers.checked);
   root.classList.toggle('show-keys', ui.showKeys.checked);
+  // Låst spelyta: ljudlistan och Mina presets kan få synas (avancerat)
+  document.body.classList.toggle('lock-sound', ui.lockSound.checked);
+  document.body.classList.toggle('lock-presets', ui.lockPresets.checked);
+  if (typeof renderPresetBar === 'function') renderPresetBar();
   syncSegments();
   syncArpToggle();
   if (typeof applyAppLevel === 'function' && ui.appLevel) applyAppLevel(); // enkel version: ingen sequencer, även efter ett preset
@@ -739,7 +743,8 @@ function setupAccess() {
   setupSwitchLearn();
   setupPadKeys();
   ['noteLength', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
-    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb', 'arpBpm', 'arpGate', 'seqGate']
+    'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'playMode', 'showKeys', 'vibrato', 'xyReverb', 'arpBpm', 'arpGate', 'seqGate',
+    'lockSound', 'lockPresets']
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));
   // Ljudet kan ha pausats (t.ex. om Start valdes med blicken): väck det vid första riktiga tryck
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => {

@@ -78,6 +78,8 @@ const ui = {
   uiSize: $('ui-size'),
   steppers: $('steppers'),
   highContrast: $('high-contrast'),
+  lockSound: $('lock-sound'),
+  lockPresets: $('lock-presets'),
   reduceMotion: $('reduce-motion'),
   scanMode: $('scan-mode'),
   switch1Key: $('switch1-key'), // inlärd tangent för kontakt 1 (tom = standard)

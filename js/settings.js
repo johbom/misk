@@ -5,7 +5,8 @@ const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode
   'chordCount', 'chordOctave', 'chordBass', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
   'noteLength', 'vibrato', 'posParam', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'seqOn', 'seqSteps', 'seqRate', 'seqGate', 'seqAdvance', 'xyOctaves', 'xySound', 'xyReverb', 'xyQuantize', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
-  'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'switch1Key', 'switch2Key', 'noteKeys', 'chordKeys', 'showKeys'];
+  'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'switch1Key', 'switch2Key', 'noteKeys', 'chordKeys', 'showKeys',
+  'lockSound', 'lockPresets'];
 
 // Äldre värden som bytt namn (sparade inställningar och presets)
 function normalizeSetting(k, v) {

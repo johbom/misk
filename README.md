@@ -14,6 +14,8 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 **Symboler i startguiden:** utöver sida, spelsätt, formation och XY-klang har guiden symboler för rubrikerna (Grundton, Skala, Antal rutor, Trumset, Ljudeffekter, Toner, Omfång, Reverb), skalorna (samma som i snabbvalet), trumseten (trumma, trummaskin för 808/909, kassett för Lo-fi, conga för Slagverk) och ljudeffekterna (discokula, högtalare för Reggae & dub, fjäder för Tecknat & lek), ljudgrupperna (våg, strängar, marimba, FM, wavetable, röst, flöjt, korn), reverbnivåerna (fler bågar = mer reverb) och en penna för Egen ackordrunda.
 
+**Oktav i startguiden:** väljer man sidan Ackord har tonartssteget också raden **Oktav** (1–6, samma som Oktav i tonartsrutan). Provlyssningen spelar ackorden i den oktaven, och valet följer med när guiden är klar.
+
 Hover Pads är en app från **TFH Sensory**. TFH-loggan står uppe till vänster vid rubriken, på startrutan och i Om-rutan. Den länkar till [tfhsensory.se](https://tfhsensory.se) i en ny flik. På smal mobil ligger loggan på raden med Lås och MIDI.
 
 Under rubriken i Om-rutan står sloganen **Intryck Uttryck Avtryck** (på svenska även i den engelska versionen).
@@ -202,6 +204,8 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 
 **Lås spelytan** – knappen *🔒 Lås* (på Toner och Ackord) gömmer flikar, ljudval och volym så att bara rutorna syns. Lås upp genom att **hålla inne** knappen i hörnet i två sekunder. Ett vanligt klick, ett klick med ögonstyrning eller en blick räcker inte, så spelaren kan inte råka hamna i inställningarna. Låset finns kvar om sidan laddas om.
 
+**Låst spelyta med ljudlista eller Mina presets** (avancerat, *Tillgänglighet → Visning och reglage*): *Visa ljudlistan när spelytan är låst* låter listan **Ljud** (på XY: *Klang*) stå kvar, och *Visa Mina presets när spelytan är låst* låter raden **◀ Mina presets ▶** stå kvar – också om den inte visas annars. Allt annat är dolt som vanligt. Valen sparas med inställningarna och syns inte i den enkla versionen.
+
 Tillgänglighetsinställningarna följer med i *Mina presets*, så varje användare kan ha sitt eget.
 
 Ljud i webbläsare kräver ett riktigt klick eller tangenttryck en gång innan något får låta. Den som bara använder blicken behöver därför hjälp att välja var appen ska börja en gång.
@@ -373,6 +377,7 @@ python3 -m http.server 8080
 - `index.html` – sidan
 - `js/i18n.js` – engelsk översättning (ordlista, mönster och språkval); laddas först
 - `manifest.webmanifest`, `manifest-en.webmanifest`, `sw.js` – PWA: appinformation och offline-cache. Kör `python3 tools/bump_version.py` före varje ny version (höjer cacheversionen och `?v=` på filerna så att telefoner hämtar det nya)
+- **Om en fil inte kommer fram** (nätet sviktar, eller appen uppdateras mitt i en laddning) laddar sidan om sig själv en gång. Hjälper inte det står det *Fel: kunde inte hämta … – ladda om sidan*. Offline-cachen försöker hämta en fil två gånger och tar annars en äldre sparad kopia, innan den ger upp.
 - `app.js` – ersättning för gamla cachade sidor: laddar om dem till den nya versionen
 - `css/style.css` – utseende
 - `icons/` – appikoner (skapas med `python3 tools/make_icons.py icons`) , TFH Sensorys logga `tfh-logo.png` och QR-koden `qr-app.svg` (skapas med `tools/make_qr.py`)

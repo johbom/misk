@@ -3,7 +3,7 @@
 // svarar nätet inte inom några sekunder, eller är man offline, används cachen.
 // Kör tools/bump_version.py vid varje ny version (höjer VERSION här och ?v= i index.html).
 
-const VERSION = 'hover-pads-v156';
+const VERSION = 'hover-pads-v158';
 const ASSETS = [
   './',
   'index.html',
@@ -79,7 +79,9 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     const cache = await caches.open(VERSION);
     const cached = cache.match(key, { ignoreSearch: true });
-    const network = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' }).then((res) => {
+    // Ett nytt försök om nätet svek (ett tappat anrop ska inte göra att en del av appen saknas)
+    const get = () => fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
+    const network = get().catch(() => new Promise((r) => setTimeout(r, 600)).then(get)).then((res) => {
       if (res.ok) cache.put(key, res.clone());
       return res;
     });
@@ -89,7 +91,9 @@ self.addEventListener('fetch', (event) => {
     try {
       return await Promise.race([network, slow]);
     } catch {
-      return (await cached) || new Response('Offline', { status: 503, statusText: 'Offline' });
+      // Ingen kopia i den här versionens cache: ta den från vilken cache som helst (t.ex. förra versionen)
+      return (await cached) || (await caches.match(key, { ignoreSearch: true }))
+        || new Response('Offline', { status: 503, statusText: 'Offline' });
     }
   })());
 });

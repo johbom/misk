@@ -1198,6 +1198,14 @@ body[data-tab="settings"] .only-play { display: none !important; }
 @keyframes hold-fill { to { transform: scaleX(1); } }
 body.locked #unlock-btn { display: block; }
 body.locked header, body.locked #play-bar, body.locked #seq-bar, body.locked footer { display: none !important; }
+/* Låst men med ljudlistan och/eller Mina presets kvar (Tillgänglighet → Visning och reglage, avancerat) */
+body.locked:is(.lock-sound, .lock-presets) #play-bar { display: flex !important; padding-right: 150px; }
+body.locked #play-bar > :not(.preset-label):not(.xy-sound):not(#up-bar) { display: none !important; }
+body.locked:not(.lock-sound) #play-bar > :is(.preset-label, .xy-sound) { display: none !important; }
+body.locked:not(.lock-presets) #up-bar { display: none !important; }
+body:not(.locked):not(.up-bar-on) #up-bar { display: none; }
+body.locked:is(.lock-sound, .lock-presets) .pad-grid { padding-top: 0; }
+body.locked:is(.lock-sound, .lock-presets) #xy-pad { margin-top: 0; }
 body.locked .pad-grid { padding-top: 56px; }
 
 /* Bekräftelseruta */
@@ -1938,7 +1946,7 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 /* Enkel: ingen stegsequencer, ingen MIDI-status, ingen Ut/MIDI/OSC-flik, inget Skruva själv, inget Läge på rutan
    och inte de finaste reglagen (voicing, arpens Tonlängd och Retrigg) */
 body[data-level="simple"] :is(#seq-toggle, #fx-toggle, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
-  #settings-nav [data-panel="io"], #settings .panel[data-panel="io"]) { display: none !important; }
+  #settings-nav [data-panel="io"], #settings .panel[data-panel="io"], #lock-keep) { display: none !important; }
 body[data-level="simple"] label:has(#chord-advanced),
 body[data-level="simple"] label:has(#arp-gate),
 body[data-level="simple"] label:has(#arp-retrig),

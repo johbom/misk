@@ -111,6 +111,7 @@ function openWizard(fromStart = false) {
     // Egen ackordrunda: utgår från de ackord man har nu
     custom: chords.map((c) => ({ root: Number(c.root), type: c.type })),
     customCount: Number(ui.chordCount.value),
+    chordOctave: Number(ui.chordOctave.value), // ackordens oktav (väljs med tonarten)
     playMode: ui.playMode.value,
     arpOn: ui.arpOn.checked,
     formation: ui.formation.value,
@@ -151,8 +152,9 @@ function wizPlay(seq, dur = 0.6) {
   setTimeout(() => { wiz.stops = []; }, (seq.length * dur + 0.5) * 1000);
 }
 
+// Ackordens toner i guidens oktav (som på rutorna: oktav 4 = C4)
 const wizChordNotes = (c) => {
-  const base = 48 + c.root;
+  const base = 12 * ((wiz.draft?.chordOctave ?? 3) + 1) + c.root;
   return [base - 12, ...CHORD_INTERVALS[c.type].map((i) => base + i)].map(clampNote);
 };
 
@@ -295,6 +297,13 @@ function renderWizard() {
       ${wizHead('h4', WIZ_HEAD_ICONS.scale, d.tab === 'chords' ? 'Dur eller moll' : 'Skala')}
       <div class="wiz-row" role="radiogroup" aria-label="Skala">${
       Object.entries(scales).map(([s, name]) => wizOption('scale', s, `${wizIcon(SCALE_ICONS[s])}<span>${name}</span>`, d.scale === s, 'wiz-wave')).join('')}</div>`;
+    if (d.tab === 'chords') {
+      // Oktaven för ackorden (samma val som Oktav i tonartsrutan; 7 finns bara under Inställningar)
+      const octs = [1, 2, 3, 4, 5, 6];
+      if (!octs.includes(d.chordOctave)) octs.push(d.chordOctave);
+      html += `${wizHead('h4', WIZ_HEAD_ICONS.octave, 'Oktav')}<div class="wiz-row" role="radiogroup" aria-label="Oktav">${
+        octs.map((o) => wizOption('chordOctave', o, o, d.chordOctave === o)).join('')}</div>`;
+    }
     if (d.tab === 'notes') {
       html += `${wizHead('h4', WIZ_HEAD_ICONS.count, 'Antal rutor')}<div class="wiz-row" role="radiogroup" aria-label="Antal rutor">${
         WIZ_NOTE_COUNTS.map((n) => wizOption('noteCount', n, n, d.noteCount === n)).join('')}</div>`;
@@ -385,7 +394,7 @@ function renderWizard() {
 
 function wizChoose(key, raw) {
   const d = wiz.draft;
-  const num = ['root', 'noteCount', 'prog', 'xyOctaves', 'xyReverb'].includes(key);
+  const num = ['root', 'noteCount', 'prog', 'xyOctaves', 'xyReverb', 'chordOctave'].includes(key);
   d[key] = num ? Number(raw) : raw;
   if (key === 'tab' && raw === 'chords' && !(d.scale in { major: 1, minor: 1 })) d.scale = progMode(d.scale);
   if (key === 'scale') d.prog = 1;
@@ -397,7 +406,7 @@ function wizChoose(key, raw) {
   renderWizard();
   // Fokus kvar på det valda (tangentbord och kontakt)
   $('wiz-body').querySelector(`.wiz-opt[data-key="${key}"][data-value="${CSS.escape(String(d[key]))}"]`)?.focus();
-  if (key === 'root' || key === 'scale') wizPreviewSound();
+  if (key === 'root' || key === 'scale' || key === 'chordOctave') wizPreviewSound();
   if (key === 'prog') {
     const mode = progMode(d.scale);
     wizPlay((d.prog === KEEP_CHORDS ? customChords(d) : progChords(PROGRESSIONS[mode][d.prog], mode, d.root))
@@ -460,6 +469,7 @@ function finishWizard() {
   if (d.tab !== 'xy') data.settings.formation = d.formation;
   // Ny tonart för Toner: ackorden på Ackord följer med (som när tonarten byts på andra sätt)
   if (d.tab === 'notes') data.chords = rekeyChords(chords, keyState.root, keyState.scale, Number(d.root), d.scale);
+  if (d.tab === 'chords') data.settings.chordOctave = String(d.chordOctave);
   if (d.tab === 'chords' && d.prog === KEEP_CHORDS) {
     data.settings.chordCount = String(d.customCount);
     data.chords = chords.map((old, i) => {

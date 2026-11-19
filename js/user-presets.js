@@ -115,7 +115,8 @@ function renderPresetBar() {
   const active = localStorage.getItem(USER_PRESET_ACTIVE_KEY);
   const show = !!localStorage.getItem(USER_PRESET_ON_PLAY_KEY);
   $('up-show').checked = show;
-  $('up-bar').hidden = !show || !list.length;
+  // (raden finns också när den bara ska synas på en låst spelyta – css döljer den då annars)
+  $('up-bar').hidden = !list.length || !(show || ui.lockPresets.checked);
   document.body.classList.toggle('up-bar-on', show && list.length > 0);
   const sel = $('up-select');
   sel.innerHTML = '';

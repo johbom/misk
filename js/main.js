@@ -148,3 +148,8 @@ document.addEventListener('visibilitychange', () => {
   else if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
 });
 window.addEventListener('pagehide', stopAllSound);
+
+// Appen startade: allt laddades. (Felhanteraren i index.html laddar om en gång om en fil saknades;
+// spärren släpps när appen gått bra en stund, så att det kan hjälpa igen en annan gång.)
+window.hoverPadsReady = true;
+setTimeout(() => { try { sessionStorage.removeItem('hoverPadsReload'); } catch {} }, 5000);

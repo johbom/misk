@@ -10,21 +10,47 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=156" />
+  <link rel="stylesheet" href="css/style.css?v=158" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
-    window.addEventListener('error', (e) => {
-      if (/^ResizeObserver loop/.test(e.message)) return; // ofarligt webbläsarbesked, inget fel
-      const msg = `Fel: ${e.message} (${(e.filename || '').split('/').pop()}:${e.lineno})`;
-      const overlay = document.getElementById('start-overlay');
-      const onStart = overlay && !overlay.classList.contains('hidden');
-      const el = document.getElementById(onStart ? 'start-msg' : 'log');
-      if (el) el.textContent = msg;
-    });
+    // Gick en av appens filer inte att hämta (nätet svek, eller uppdatering mitt i)? Då saknas delar av appen
+    // – ladda om sidan en gång av sig själv. Hjälper inte det visas ett tydligt besked.
+    (() => {
+      const KEY = 'hoverPadsReload';
+      let missing = ''; // filen som inte gick att hämta (efter omladdningen)
+      const show = (msg) => {
+        const overlay = document.getElementById('start-overlay');
+        const onStart = overlay && !overlay.classList.contains('hidden');
+        const el = document.getElementById(onStart ? 'start-msg' : 'log');
+        if (el) el.textContent = msg;
+        else document.addEventListener('DOMContentLoaded', () => show(msg), { once: true });
+      };
+      const reloadOnce = () => {
+        try { if (sessionStorage.getItem(KEY)) return false; sessionStorage.setItem(KEY, '1'); } catch (_) { return false; }
+        setTimeout(() => location.reload(), 300);
+        return true;
+      };
+      window.addEventListener('error', (e) => {
+        const tg = e.target;
+        if (tg && tg.tagName === 'SCRIPT') { // en fil kunde inte hämtas
+          if (reloadOnce()) return;
+          missing = `Fel: kunde inte hämta ${(tg.src || '').split('/').pop().split('?')[0]} – ladda om sidan.`;
+          show(missing);
+          return;
+        }
+        if (!e.message || /^ResizeObserver loop/.test(e.message)) return; // ofarligt webbläsarbesked, inget fel
+        // Något saknas när appen startar (en fil som inte kom fram): försök en gång till
+        if (!window.hoverPadsReady && /is not defined|Can't find variable/.test(e.message)) {
+          if (reloadOnce()) return;
+          if (missing) return; // beskedet om filen som saknas står kvar (det här felet är bara en följd)
+        }
+        show(`Fel: ${e.message} (${(e.filename || '').split('/').pop()}:${e.lineno})`);
+      }, true);
+    })();
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=156"></script>
+  <script src="js/i18n.js?v=158"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -465,6 +491,11 @@
         <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter.</small></span></label>
         <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar<small>Ändra alla värden utan att dra eller öppna listor.</small></span></label>
         <p class="hint" data-i18n="lock-hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i två sekunder.</p>
+        <!-- Avancerat: det som får synas på en låst spelyta (js/access.js: refreshAccess, css: body.locked.lock-…) -->
+        <div class="lock-keep" id="lock-keep">
+          <label class="check"><input type="checkbox" id="lock-sound" /> <span>Visa ljudlistan när spelytan är låst<small>Ljud (på XY: Klang) går att byta, men inget annat.</small></span></label>
+          <label class="check"><input type="checkbox" id="lock-presets" /> <span>Visa Mina presets när spelytan är låst<small>Byt preset med ◀ ▶ – också om raden inte visas annars.</small></span></label>
+        </div>
       </fieldset>
 
       <fieldset class="access-set">
@@ -801,36 +832,36 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=156"></script>
-  <script src="js/fm-library.js?v=156"></script>
-  <script src="js/pm-library.js?v=156"></script>
-  <script src="js/wt-library.js?v=156"></script>
-  <script src="js/vwg-library.js?v=156"></script>
-  <script src="js/lib-levels.js?v=156"></script>
-  <script src="js/sound-library.js?v=156"></script>
-  <script src="js/layout.js?v=156"></script>
-  <script src="js/core.js?v=156"></script>
-  <script src="js/audio.js?v=156"></script>
-  <script src="js/drums.js?v=156"></script>
-  <script src="js/fx.js?v=156"></script>
-  <script src="js/pads.js?v=156"></script>
-  <script src="js/osc.js?v=156"></script>
-  <script src="js/arp.js?v=156"></script>
-  <script src="js/seq.js?v=156"></script>
-  <script src="js/xy.js?v=156"></script>
-  <script src="js/vibrato.js?v=156"></script>
-  <script src="js/position.js?v=156"></script>
-  <script src="js/notes.js?v=156"></script>
-  <script src="js/chords.js?v=156"></script>
-  <script src="js/sound.js?v=156"></script>
-  <script src="js/view.js?v=156"></script>
-  <script src="js/controls.js?v=156"></script>
-  <script src="js/access.js?v=156"></script>
-  <script src="js/settings.js?v=156"></script>
-  <script src="js/user-presets.js?v=156"></script>
-  <script src="js/wizard.js?v=156"></script>
-  <script src="js/quick.js?v=156"></script>
-  <script src="js/pwa.js?v=156"></script>
-  <script src="js/main.js?v=156"></script>
+  <script src="js/synth.js?v=158"></script>
+  <script src="js/fm-library.js?v=158"></script>
+  <script src="js/pm-library.js?v=158"></script>
+  <script src="js/wt-library.js?v=158"></script>
+  <script src="js/vwg-library.js?v=158"></script>
+  <script src="js/lib-levels.js?v=158"></script>
+  <script src="js/sound-library.js?v=158"></script>
+  <script src="js/layout.js?v=158"></script>
+  <script src="js/core.js?v=158"></script>
+  <script src="js/audio.js?v=158"></script>
+  <script src="js/drums.js?v=158"></script>
+  <script src="js/fx.js?v=158"></script>
+  <script src="js/pads.js?v=158"></script>
+  <script src="js/osc.js?v=158"></script>
+  <script src="js/arp.js?v=158"></script>
+  <script src="js/seq.js?v=158"></script>
+  <script src="js/xy.js?v=158"></script>
+  <script src="js/vibrato.js?v=158"></script>
+  <script src="js/position.js?v=158"></script>
+  <script src="js/notes.js?v=158"></script>
+  <script src="js/chords.js?v=158"></script>
+  <script src="js/sound.js?v=158"></script>
+  <script src="js/view.js?v=158"></script>
+  <script src="js/controls.js?v=158"></script>
+  <script src="js/access.js?v=158"></script>
+  <script src="js/settings.js?v=158"></script>
+  <script src="js/user-presets.js?v=158"></script>
+  <script src="js/wizard.js?v=158"></script>
+  <script src="js/quick.js?v=158"></script>
+  <script src="js/pwa.js?v=158"></script>
+  <script src="js/main.js?v=158"></script>
 </body>
 </html>
