@@ -78,7 +78,6 @@ const XY_SOUNDS = {
   sine: { level: 0.85, y: 'vibrato', fm: { ratio: 1, index: 3.5 } }, // vibrato + FM (filter hörs inte på en sinus)
   triangle: { level: 0.95, fm: { ratio: 2, index: 2.5 } }, // ihålig -> ljus
   warm: { level: 0.85, fm: { ratio: 1, index: 3 } },
-  sawtooth: { level: 1.05 },
   square: { level: 0.75 },
   supersaw: { level: 2.2, detunes: [-18, -9, 0, 9, 18], wave: 'sawtooth' }, // bred, i stereo
   rec: { level: 1, y: 'pitch' }, // inspelningen från mikrofonen, granulärt (js/xyrec.js)

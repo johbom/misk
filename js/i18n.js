@@ -986,6 +986,7 @@ const EN_PATTERNS = [
   [/^Spela en ruta eller Paus så byts steg (\d+) ut\.$/, (n) => `Play a pad or Rest to replace step ${n}.`],
   [/^Paus i steg (\d+)$/, (n) => `Rest in step ${n}`],
   [/^Stopp (\d+) s$/, (n) => `Stop ${n} s`],
+  [/^Sluta spela in \((\d+) s kvar\)$/, (n) => `Stop recording (${n} s left)`],
   [/^Spelar in … ([\d,]+) s$/, (n) => `Recording … ${n.replace(',', '.')} s`],
   [/^Inspelat: ([\d,]+) s\. Rör dig över plattan: X = var i inspelningen, Y = tonhöjd\.$/, (n) => `Recorded: ${n.replace(',', '.')} s. Move over the pad: X = where in the recording, Y = pitch.`],
   [/^Knapp (.+)$/, (k) => `Button ${k}`],

@@ -12,6 +12,7 @@
 // Allt går genom XY:s egen buss (reverben i spelraden).
 
 const XYREC_MAX_S = 10;
+const XYREC_DOT = '<circle cx="12" cy="12" r="6.5" fill="#ff5a4e" stroke="none"/>'; // inspelningsknappen: röd prick (klangen Inspelning har mikrofonen)
 const GRAIN_S = 0.09; // kornets längd
 const GRAIN_EVERY = 0.03; // tid mellan kornen (tre överlappar)
 const GRAIN_JITTER = 0.015; // slumpad förskjutning i inspelningen (s)
@@ -126,8 +127,12 @@ function xyRecSync() {
   b.classList.toggle('recording', xyRec.recording);
   b.setAttribute('aria-pressed', xyRec.recording);
   const left = Math.max(0, Math.ceil(XYREC_MAX_S - (performance.now() - xyRec.started) / 1000));
-  b.querySelector('span').textContent = xyRec.recording ? t(`Stopp ${left} s`) : t('Spela in');
+  b.querySelector('span').textContent = xyRec.recording ? `${left} s` : t('Spela in');
+  b.setAttribute('aria-label', xyRec.recording ? t(`Sluta spela in (${left} s kvar)`) : t('Spela in'));
   b.title = t(xyRec.recording ? 'Sluta spela in' : 'Spela in från mikrofonen (högst 10 sekunder) och spela det på plattan');
+  // Ikonen: mikrofon, eller en stoppruta medan inspelningen pågår
+  const svg = b.querySelector('svg');
+  if (svg) svg.innerHTML = xyRec.recording ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>' : XYREC_DOT;
 }
 
 // ---------- Spara i webbläsaren (IndexedDB) ----------
