@@ -40,6 +40,8 @@ async function micStart({ max = 10, onTick = null, onDone }) {
   mic.mute = audioCtx.createGain();
   mic.mute.gain.value = 0; // (noden måste vara kopplad för att räknas, men ska inte höras)
   mic.src.connect(mic.node).connect(mic.mute).connect(audioCtx.destination);
+  // iPhone kan pausa ljudet när mikrofonen öppnas: väck det igen (annars kommer inget ljud in)
+  if (audioCtx.state !== 'running') audioCtx.resume();
   mic.timer = setTimeout(micStop, max * 1000);
   mic.tick = setInterval(() => mic.onTick?.(micLeft()), 250);
   mic.onTick?.(micLeft());
@@ -54,6 +56,7 @@ function micStop() {
   mic.node?.port.postMessage('stop'); // sista blocket kommer, sedan 'done'
   mic.stream?.getTracks().forEach((tr) => tr.stop()); // stäng mikrofonen direkt
   mic.onTick?.(0);
+  setTimeout(() => { if (audioCtx.state !== 'running') audioCtx.resume(); }, 300); // (iPhone: ljudet tillbaka)
 }
 
 function micFinish() {

@@ -133,11 +133,24 @@ function setupPadRec() {
     padRecSync();
     log(t(padRec.del ? 'Tryck på rutan vars inspelning ska tas bort.' : 'Inspelningsläge: tryck på rutan som ska få en inspelning. Tryck igen för att sluta (högst 10 s).'));
   });
-  // Klick eller tryck på en ruta i inspelningsläget (svävning räknas inte – det skulle starta av misstag)
-  $('pads').addEventListener('click', (e) => {
-    if (!padRecOn()) return;
-    const pad = notePads.find((p) => p.el === e.target.closest('.pad'));
+  // Klick eller tryck på en ruta i inspelningsläget (svävning räknas inte – det skulle starta av misstag).
+  // Finger och penna: när fingret lyfts – på pekskärm blockerar spelytan webbläsarens tryck (för att flera
+  // fingrar ska kunna glida över rutorna), så något klick kommer aldrig fram (t.ex. iPhone).
+  let touchPick = 0;
+  const pick = (e) => {
+    const pad = notePads.find((p) => p.el === e.target.closest?.('.pad'));
     if (pad) padRecPick(pad);
+  };
+  $('pads').addEventListener('pointerup', (e) => {
+    if (!padRecOn() || e.pointerType === 'mouse') return;
+    touchPick = performance.now();
+    // (fingret kan ha glidit: rutan under fingret där det lyftes)
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    pick({ target: el || e.target });
+  });
+  $('pads').addEventListener('click', (e) => {
+    if (!padRecOn() || performance.now() - touchPick < 700) return; // (redan taget av fingret)
+    pick(e);
   });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && padRec.on && !padRec.pad) padRecSetMode(false);
