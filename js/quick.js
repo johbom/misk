@@ -141,7 +141,7 @@ function renderQuick() {
     const scales = chordsTab ? [] : [...ui.scale.options];
     pop.innerHTML = `<div class="quick-roots" role="radiogroup" aria-label="Grundton">${
       NOTE_NAMES.map((n, r) => `<button type="button" role="radio" aria-checked="${r === root}" class="${
-        r === root ? 'on' : ''}" data-root="${r}">${n}</button>`).join('')}</div>${octaveRow()}${
+        r === root ? 'on' : ''}" data-root="${r}">${n}</button>`).join('')}</div>${octaveRow()}${rangeRow()}${
       scales.length ? `<div class="quick-scales" role="radiogroup" aria-label="Skala">${
         scales.map((o) => `<button type="button" role="radio" aria-checked="${o.value === ui.scale.value}" class="has-icon${
           o.value === ui.scale.value ? ' on' : ''}" data-scale="${o.value}">${segIconSvg(SCALE_ICONS[o.value] || '')}<span>${
@@ -154,6 +154,14 @@ function renderQuick() {
       el.value = b.dataset.octave;
       el.dispatchEvent(new Event('change')); // sparar och stämmer om rutorna
       log(`Oktav ${el.value}`);
+      renderQuick();
+    }));
+    pop.querySelectorAll('[data-range]').forEach((b) => b.addEventListener('click', () => {
+      if (ui.xyOctaves.value === b.dataset.range) return;
+      ui.xyOctaves.value = b.dataset.range;
+      ui.xyOctaves.dispatchEvent(new Event('change')); // sparar och ritar om plattan
+      if (typeof syncSegment === 'function') syncSegment(ui.xyOctaves);
+      log(`${t('Omfång')}: ${xyRangeText(Number(b.dataset.range))}`);
       renderQuick();
     }));
     pop.querySelectorAll('[data-scale]').forEach((b) => b.addEventListener('click', () => {
@@ -223,6 +231,16 @@ function octaveRow() {
   return `<div class="quick-octaves" role="radiogroup" aria-label="Oktav"><span>${quickRowIcon('octave')}Oktav</span>${
     octs.map((o) => `<button type="button" role="radio" aria-checked="${o === cur}" class="${
       o === cur ? 'on' : ''}" data-octave="${o}">${o}</button>`).join('')}</div>`;
+}
+
+// XY: omfånget i oktaver (samma som Inställningar → Instrument → XY-platta → Omfång). Högerkanten är C7.
+const xyRangeText = (n) => `C${7 - n}–C7`;
+function rangeRow() {
+  if (document.body.dataset.tab !== 'xy') return '';
+  const cur = Number(ui.xyOctaves.value);
+  return `<div class="quick-octaves quick-range" role="radiogroup" aria-label="${t('Omfång')}"><span>${quickRowIcon('range')}${t('Omfång')}</span>${
+    [...ui.xyOctaves.options].map((o) => Number(o.value)).map((n) => `<button type="button" role="radio" aria-checked="${n === cur}" class="${
+      n === cur ? 'on' : ''}" data-range="${n}" title="${xyRangeText(n)}">${n}</button>`).join('')}<b class="val">${xyRangeText(cur)}</b></div>`;
 }
 
 // Ny grundton (ackorden flyttas med: followKey i js/chords.js)

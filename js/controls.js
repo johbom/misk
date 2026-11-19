@@ -122,6 +122,7 @@ const QUICK_ROW_ICONS = {
   count: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
   octave: '<path d="M12 3v18M8 7l4-4 4 4M8 17l4 4 4-4"/>',
   gap: '<rect x="2.5" y="5" width="6" height="14" rx="1.5"/><rect x="15.5" y="5" width="6" height="14" rx="1.5"/><path d="M10.6 12h2.8M11.6 10.4 10.6 12l1 1.6M12.4 10.4l1 1.6-1 1.6"/>',
+  range: '<path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/>',
 };
 
 const segIconSvg = (inner) =>
