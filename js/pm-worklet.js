@@ -87,7 +87,7 @@ class PmString extends AudioWorkletProcessor {
 
   process(inputs, outputs, parameters) {
     const out = outputs[0][0];
-    if (!out) return true;
+    if (!out) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     const freq = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
     // Lågpass i slingan: ljusare = mindre dämpning av diskanten
@@ -197,7 +197,7 @@ class PmModal extends AudioWorkletProcessor {
 
   process(inputs, outputs, parameters) {
     const out = outputs[0][0];
-    if (!out) return true;
+    if (!out) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
@@ -297,7 +297,7 @@ class Fm4 extends AudioWorkletProcessor {
 
   process(inputs, outputs, parameters) {
     const out = outputs[0][0];
-    if (!out) return true;
+    if (!out) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
@@ -535,7 +535,7 @@ class Wavetable extends AudioWorkletProcessor {
     if (this.warmOnly) return false;
     const L = outputs[0][0];
     const R = outputs[0][1] || L;
-    if (!L) return true;
+    if (!L) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
@@ -778,7 +778,7 @@ class Voice extends AudioWorkletProcessor {
   process(inputs, outputs, parameters) {
     const L = outputs[0][0];
     const R = outputs[0][1] || L;
-    if (!L) return true;
+    if (!L) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const skip = Math.max(0, Math.min(L.length, Math.ceil((this.start - t0) * sampleRate)));
@@ -851,7 +851,7 @@ class Wind extends AudioWorkletProcessor {
 
   process(inputs, outputs, parameters) {
     const out = outputs[0][0];
-    if (!out) return true;
+    if (!out) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const sr = sampleRate;
@@ -1136,7 +1136,7 @@ class Grain extends AudioWorkletProcessor {
     if (this.warmOnly) return false;
     const L = outputs[0][0];
     const R = outputs[0][1] || L;
-    if (!L) return true;
+    if (!L) return currentTime <= this.end; // urkopplad: sluta när tonen är slut
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const sr = sampleRate;

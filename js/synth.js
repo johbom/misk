@@ -1158,6 +1158,17 @@ class SynthEngine {
 
     sources.forEach((s) => s.start(t));
 
+    // Städning när rösten tystnat (eller avbrutits): koppla loss allt, så att inget räknar vidare
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      this.voices.delete(voice);
+      try { amp.disconnect(); } catch {}
+      onEnd.forEach((f) => { try { f(); } catch {} });
+      if (vib) try { this.vibLfo.disconnect(vib); } catch {}
+      if (posVib) try { this.vibLfo.disconnect(posVib); } catch {}
+    };
     // Röstregister (tak på antalet röster): en röst kan tonas bort snabbt om den redan är släppt
     const voice = {
       released: 0,
@@ -1166,6 +1177,10 @@ class SynthEngine {
         amp.gain.cancelScheduledValues(now);
         amp.gain.setTargetAtTime(0, now, 0.01);
         sources.forEach((s) => { try { s.stop(now + 0.08); } catch {} });
+        // Ljudtråden (Sträng, FM, Wavetable …) måste också få veta att rösten är slut nu – annars räknar
+        // den vidare till släppets gamla sluttid fast den inte hörs, och belastningen växer (sequencer, ackord)
+        onRelease.forEach((f) => { try { f(now, now + 0.08); } catch {} });
+        if (!voice.released && sources[0]) sources[0].onended = cleanup;
         this.voices.delete(voice);
       },
     };
@@ -1193,20 +1208,15 @@ class SynthEngine {
       voice.released = r;
       sources.forEach((s) => s.stop(end));
       onRelease.forEach((f) => f(r, end));
-      sources[0].onended = () => {
-        this.voices.delete(voice);
-        amp.disconnect();
-        onEnd.forEach((f) => f());
-        if (vib) try { this.vibLfo.disconnect(vib); } catch {}
-        if (posVib) try { this.vibLfo.disconnect(posVib); } catch {}
-      };
+      sources[0].onended = cleanup;
     };
     // Avbryt en ton som är planerad men inte har börjat än (arpeggiatorns retrigg). Tyst, utan klick.
     stop.cancel = () => {
-      if (ctx.currentTime >= t) return false;
-      this.voices.delete(voice);
-      try { amp.disconnect(); } catch {}
+      const now = ctx.currentTime;
+      if (now >= t) return false;
       sources.forEach((s) => { try { s.stop(); } catch {} });
+      onRelease.forEach((f) => { try { f(now, now); } catch {} }); // ljudtråden slutar direkt (annars aldrig)
+      cleanup();
       return true;
     };
     // Läge på rutan, x = 0..1. param: filter, volume, bend, vibrato, timbre (motorns klang: vokal,

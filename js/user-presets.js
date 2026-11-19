@@ -52,6 +52,7 @@ function applySnapshot(data) {
 
   // Stegsequencerns mönster (äldre presets saknar det: då behålls det som finns)
   if (data.seq) { seqStopAll(); applySeqData(data.seq); saveSeq(); }
+  else { seqCfgFromControls(); saveSeq(); } // äldre: samma steg, notvärde och tonlängd på båda sidorna
 
   // Ackord
   if (Array.isArray(data.chords) && data.chords.length === MAX_CHORDS) {

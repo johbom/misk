@@ -956,6 +956,7 @@ const EN_PATTERNS = [
   [/^(\d+) korn\/s$/, (n) => `${n} grains/s`],
   [/^([\d.,]+) okt$/, (n) => `${n} oct`],
   [/^([+−]\d) okt$/, (n) => `${n} oct`],
+  [/^Steg, notvärde och tonlängd för (Toner|Ackord) – (Toner|Ackord) har egna\.$/, (a, b) => `Steps, note value and note length for ${a === 'Toner' ? 'Notes' : 'Chords'} – ${b === 'Toner' ? 'Notes' : 'Chords'} has its own.`],
   [/^([+−-]?\d+) halvt\.$/, (n) => `${n} st`],
   [/^Framåt (.+)$/, (v) => `Forward ${v}`],
   [/^Bakåt (.+)$/, (v) => `Backward ${v}`],

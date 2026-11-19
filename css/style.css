@@ -1941,3 +1941,6 @@ body[data-level="simple"] label:has(#chord-advanced),
 body[data-level="simple"] label:has(#arp-gate),
 body[data-level="simple"] label:has(#arp-retrig),
 body[data-level="simple"] .lib-tweak { display: none !important; }
+
+/* Sloganen i Om-rutan */
+.about-slogan { margin: 4px 0 0; font-weight: 700; letter-spacing: 0.04em; word-spacing: 0.5em; color: var(--accent); }

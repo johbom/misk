@@ -15,31 +15,44 @@
 // inskrivningen (annars skulle en mus som glider in från kanten alltid få kantens värde).
 //
 // Tempot är detsamma som arpeggiatorns. Noterna planeras i ljudklockan en bit i förväg, som i js/arp.js.
+//
+// Toner och Ackord har var sitt antal steg, notvärde och tonlängd (seq.cfg) och var sin klocka (seq.clk),
+// så en ackordslinga i halvnoter kan gå samtidigt som en melodi i sextondelar. Reglagen under
+// Stegsequencer visar sidan man spelar på (på Inställningar: den man senast spelade på). Slingorna delar
+// tempo och taktslag: en slinga som startas medan den andra går hakar på i samma takt.
 
 const SEQ_MAX = 16;
 const SEQ_KEY = 'hoverPadsSeq';
 // Taktslag per steg för varje notvärde
 const SEQ_RATES = { 1: 4, 2: 2, 4: 1, 8: 0.5, 16: 0.25 };
 
+const seqClock = () => ({ nextTime: 0, step: 0, beat: 0, sched: [], now: -1 });
+const SEQ_CFG_DEFAULT = { steps: 8, rate: '8', gate: 80 };
 const seq = {
   pat: { notes: [], chords: [] },
-  play: { notes: false, chords: false }, // vilka sidors slingor som spelar (samma takt)
-  timer: 0, nextTime: 0, step: 0,
+  play: { notes: false, chords: false }, // vilka sidors slingor som spelar (samma tempo)
+  cfg: { notes: { ...SEQ_CFG_DEFAULT }, chords: { ...SEQ_CFG_DEFAULT } }, // steg, notvärde, tonlängd per sida
+  clk: { notes: seqClock(), chords: seqClock() }, // nextTime, step, beat (taktslag sedan start), sched, now
+  cfgPage: '', // sidan vars inställningar reglagen visar just nu
+  timer: 0,
   sel: -1, // markerat steg som det man spelar skrivs in i (-1 = inget)
   fix: -1, // ifyllt steg som man klickat på för att ändra: Gå vidare gäller inte där
   rec: false, // spela in medan sequencern går
   edit: null, // { pad, entry }: senast inskrivna rutan, vars läge följer pekaren medan den låter
-  sched: [], // planerade steg: { t, i } – för att hitta närmaste steg vid inspelning
   pending: [], // planerade toner som kan strykas när sequencern stoppas
-  now: -1, // steget som hörs just nu (markeras i raden)
 };
 
 const seqOn = () => ui.seqOn.checked;
 const seqTab = () => ['notes', 'chords'].includes(document.body.dataset.tab);
 const seqPage = () => (document.body.dataset.tab === 'chords' ? 'chords' : 'notes');
-const seqSteps = () => Math.min(SEQ_MAX, Number(ui.seqSteps.value) || 8);
-const seqStepDur = () => (60 / (Number(ui.arpBpm.value) || 120)) * (SEQ_RATES[ui.seqRate.value] || 0.5);
-const seqGateDur = () => seqStepDur() * Math.min(1, Math.max(0.05, Number(ui.seqGate.value) / 100));
+const seqOther = (page) => (page === 'chords' ? 'notes' : 'chords');
+// Reglagens sida: den man spelar på, annars den man senast spelade på (samma som ljudet, js/sound.js)
+const seqCfgPage = () => (seqTab() ? seqPage() : soundSlot === 'chords' ? 'chords' : 'notes');
+const seqSteps = (page = seqPage()) => Math.min(SEQ_MAX, Number(seq.cfg[page].steps) || 8);
+const seqBeats = (page) => SEQ_RATES[seq.cfg[page].rate] || 0.5; // taktslag per steg
+const seqBeatDur = () => 60 / (Number(ui.arpBpm.value) || 120);
+const seqStepDur = (page) => seqBeatDur() * seqBeats(page);
+const seqGateDur = (page) => seqStepDur(page) * Math.min(1, Math.max(0.05, Number(seq.cfg[page].gate) / 100));
 const seqPadsOf = (page) => (page === 'chords' ? chordPads : notePads);
 const seqEmpty = () => Array.from({ length: SEQ_MAX }, () => []);
 
@@ -47,7 +60,28 @@ const seqEmpty = () => Array.from({ length: SEQ_MAX }, () => []);
 // Ett steg = lista med { p: rutans index, x: läge på rutan 0..1 eller null }
 function seqData() {
   const copy = (steps) => steps.map((st) => st.map((e) => ({ p: e.p, x: e.x })));
-  return { notes: copy(seq.pat.notes), chords: copy(seq.pat.chords) };
+  return {
+    notes: copy(seq.pat.notes), chords: copy(seq.pat.chords),
+    cfg: { notes: { ...seq.cfg.notes }, chords: { ...seq.cfg.chords } },
+  };
+}
+
+// Steg, notvärde och tonlängd för en sida: sparade värden, annars reglagens (äldre mönster hade gemensamma)
+const seqCfgFromUi = () => ({
+  steps: Number(ui.seqSteps.value) || 8, rate: ui.seqRate.value in SEQ_RATES ? ui.seqRate.value : '8', gate: Number(ui.seqGate.value) || 80,
+});
+function seqCfg(c) {
+  const ui0 = seqCfgFromUi();
+  if (!c || typeof c !== 'object') return ui0;
+  const steps = [4, 8, 12, 16].includes(Number(c.steps)) ? Number(c.steps) : ui0.steps;
+  const rate = String(c.rate) in SEQ_RATES ? String(c.rate) : ui0.rate;
+  const gate = Number.isFinite(Number(c.gate)) ? Math.max(10, Math.min(100, Number(c.gate))) : ui0.gate;
+  return { steps, rate, gate };
+}
+// Båda sidorna får reglagens värden (äldre presets utan egna värden per sida)
+function seqCfgFromControls() {
+  seq.cfg = { notes: seqCfgFromUi(), chords: seqCfgFromUi() };
+  seq.cfgPage = '';
 }
 
 // Äldre mönster sparade bara rutans index (ett tal)
@@ -62,7 +96,9 @@ function applySeqData(d) {
   for (const page of ['notes', 'chords']) {
     const src = Array.isArray(d?.[page]) ? d[page] : [];
     seq.pat[page] = seqEmpty().map((_, i) => (Array.isArray(src[i]) ? src[i].map(seqEntry).filter(Boolean) : []));
+    seq.cfg[page] = seqCfg(d?.cfg?.[page]);
   }
+  seq.cfgPage = ''; // reglagen visar de nya värdena vid nästa renderSeq
 }
 
 function saveSeq() {
@@ -86,16 +122,29 @@ const SEQ_PAGE_NAME = { notes: 'Toner', chords: 'Ackord' };
 function seqStart(page = seqPage()) {
   if (seq.play[page] || !audioCtx) return; // (ljudet startas av startrutan)
   if (audioCtx.state !== 'running') audioCtx.resume();
-  seq.play[page] = true;
   // Under uppspelning skrivs inget in steg för steg (bara med Spela in, eller om man själv väljer ett steg)
   if (page === seqPage()) seq.sel = -1;
-  if (!seq.timer) {
-    // Takten börjar: första steget direkt. Går den redan hakar slingan på i takt.
-    seq.step = 0;
-    seq.sched = [];
-    seq.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
-    seq.timer = setInterval(seqTick, ARP_TICK_MS);
+  const c = seq.clk[page];
+  const o = seq.clk[seqOther(page)];
+  c.sched = [];
+  c.now = -1;
+  if (seq.play[seqOther(page)]) {
+    // Den andra slingan går: haka på i samma takt, på närmaste slag i det här notvärdet – och på det steg
+    // man skulle ha varit på om båda startat samtidigt.
+    const pb = seqBeats(page);
+    const bd = seqBeatDur();
+    const earliest = o.beat - (o.nextTime - (audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03)) / bd; // taktslag
+    c.beat = Math.ceil(earliest / pb - 1e-6) * pb;
+    c.nextTime = o.nextTime + (c.beat - o.beat) * bd;
+    c.step = Math.round(c.beat / pb);
+  } else {
+    // Takten börjar: första steget direkt
+    c.beat = 0;
+    c.step = 0;
+    c.nextTime = audioCtx.currentTime + NOTE_LOOKAHEAD + 0.03;
   }
+  seq.play[page] = true;
+  if (!seq.timer) seq.timer = setInterval(seqTick, ARP_TICK_MS);
   renderSeq();
   log(`▶ Sequencer: ${t(SEQ_PAGE_NAME[page])}`);
 }
@@ -110,10 +159,10 @@ function seqStop(page = seqPage()) {
     if (e.time > now) e.cancel();
     return false;
   });
+  seq.clk[page].now = -1;
   if (!seqAny()) {
     clearInterval(seq.timer);
     seq.timer = 0;
-    seq.now = -1;
     seq.pending.forEach((e) => { if (e.time > now) e.cancel(); });
     seq.pending = [];
   }
@@ -129,26 +178,37 @@ function seqStopAll() {
 
 function seqTick() {
   const now = audioCtx.currentTime;
-  // Har webbläsaren varit upptagen? Hoppa över missade steg i stället för att spela dem på en gång.
-  if (seq.nextTime < now - 0.05) seq.nextTime = now + NOTE_LOOKAHEAD;
-  while (seq.nextTime < now + ARP_LOOKAHEAD) {
-    const i = seq.step % seqSteps();
-    for (const page of ['notes', 'chords']) if (seq.play[page]) seqPlayStep(page, i, seq.nextTime);
-    seq.sched.push({ t: seq.nextTime, i });
-    if (seq.sched.length > 4) seq.sched.shift();
-    const time = seq.nextTime;
-    const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
-    const tm = setTimeout(() => { seq.now = i; markSeqNow(); }, wait);
-    seq.pending.push({ time, page: '', cancel: () => clearTimeout(tm) });
-    seq.nextTime += seqStepDur();
-    seq.step = i + 1;
+  seq.pending = seq.pending.filter((e) => e.time > now); // det som redan börjat behöver inte kunna strykas
+  for (const page of ['notes', 'chords']) {
+    if (!seq.play[page]) continue;
+    const c = seq.clk[page];
+    // Har webbläsaren varit upptagen? Hoppa över missade steg (i takt) i stället för att spela dem på en gång.
+    if (c.nextTime < now - 0.05) {
+      const skip = Math.ceil((now + NOTE_LOOKAHEAD - c.nextTime) / seqStepDur(page));
+      c.nextTime += skip * seqStepDur(page);
+      c.beat += skip * seqBeats(page);
+      c.step += skip;
+    }
+    while (c.nextTime < now + ARP_LOOKAHEAD) {
+      const i = c.step % seqSteps(page);
+      const time = c.nextTime;
+      seqPlayStep(page, i, time);
+      c.sched.push({ t: time, i });
+      if (c.sched.length > 4) c.sched.shift();
+      const wait = Math.max(0, (time - audioCtx.currentTime) * 1000);
+      const tm = setTimeout(() => { c.now = i; if (page === seqPage()) markSeqNow(); }, wait);
+      seq.pending.push({ time, page, cancel: () => clearTimeout(tm) });
+      c.nextTime += seqStepDur(page);
+      c.beat += seqBeats(page);
+      c.step = i + 1;
+    }
   }
 }
 
 function seqPlayStep(page, i, time) {
   const pads = seqPadsOf(page);
   const list = seq.pat[page][i].map((e) => ({ pad: pads[e.p], x: e.x })).filter((e) => e.pad);
-  const off = time + seqGateDur();
+  const off = time + seqGateDur(page);
   // Flera rutor i samma steg: lite svagare var, som när man spelar flera rutor samtidigt
   const count = list.reduce((n, e) => n + (e.pad.drum ? 1 : e.pad.notes().length), 0);
   const level = 0.8 / Math.sqrt(Math.max(1, count));
@@ -183,8 +243,6 @@ function seqPlayPad(pad, time, off, level, x, page) {
     flashPad(pad.el);
     timers.push(setTimeout(() => notes.forEach((n) => oscSend('note', n, 0)), (off - time) * 1000));
   }, wait));
-  const now = audioCtx.currentTime;
-  seq.pending = seq.pending.filter((e) => e.time > now);
   seq.pending.push({
     time,
     page,
@@ -209,7 +267,8 @@ function seqInput(pad) {
   if (live) {
     // Närmaste steg i tid (det som just spelats eller det som kommer strax)
     const now = audioCtx.currentTime;
-    const near = seq.sched.reduce((a, b) => (Math.abs(b.t - now) < Math.abs(a.t - now) ? b : a), seq.sched[0]);
+    const sched = seq.clk[page].sched;
+    const near = sched.reduce((a, b) => (Math.abs(b.t - now) < Math.abs(a.t - now) ? b : a), sched[0]);
     if (!near) return;
     i = near.i;
     const old = steps[i].find((e) => e.p === k);
@@ -257,7 +316,33 @@ function stepText(page, i) {
   return seq.pat[page][i].map((e) => pads[e.p]).filter(Boolean).map((p) => t(p.label()));
 }
 
+// Reglagen Steg, Notvärde och Tonlängd visar sidans egna värden
+let seqCfgSyncing = false;
+function seqShowCfg() {
+  const page = seqCfgPage();
+  if (seq.cfgPage === page) return;
+  seq.cfgPage = page;
+  const c = seq.cfg[page];
+  seqCfgSyncing = true;
+  ui.seqSteps.value = String(c.steps);
+  ui.seqRate.value = String(c.rate);
+  ui.seqGate.value = String(c.gate);
+  $('seq-gate-value').textContent = `${c.gate} %`;
+  [ui.seqSteps, ui.seqRate].forEach((el) => { if (el.segBox) syncSegment(el); }); // (knapparna byggs efter setupSeq)
+  seqCfgSyncing = false;
+  $('seq-cfg-page').textContent = t(`Steg, notvärde och tonlängd för ${SEQ_PAGE_NAME[page]} – ${SEQ_PAGE_NAME[seqOther(page)]} har egna.`);
+}
+
+// Ett reglage ändrat: gäller sidan som visas
+function seqCfgChanged() {
+  if (seqCfgSyncing) return;
+  const page = seq.cfgPage || seqCfgPage();
+  seq.cfg[page] = { steps: Number(ui.seqSteps.value) || 8, rate: ui.seqRate.value, gate: Number(ui.seqGate.value) || 80 };
+  saveSeq();
+}
+
 function renderSeq() {
+  seqShowCfg();
   if (!seqOn() && seqAny()) { seqStopAll(); return; } // (seqStop ritar om)
   const bar = $('seq-bar');
   const show = seqOn();
@@ -333,7 +418,7 @@ function renderSeq() {
 
 // Bara det förra och det nya steget ändras (inte hela raden vid varje steg)
 function markSeqNow() {
-  const el = seq.play[seqPage()] ? $('seq-steps').children[seq.now] || null : null;
+  const el = seq.play[seqPage()] ? $('seq-steps').children[seq.clk[seqPage()].now] || null : null;
   if (el === seq.nowEl && el?.classList.contains('now')) return;
   seq.nowEl?.classList.remove('now');
   el?.classList.add('now');
@@ -396,6 +481,8 @@ function setupSeq() {
     renderSeq();
     log(t('Stegen är tömda.'));
   });
+  [ui.seqSteps, ui.seqRate].forEach((el) => el.addEventListener('change', seqCfgChanged));
+  ui.seqGate.addEventListener('input', seqCfgChanged);
   [ui.seqSteps, ui.seqAdvance].forEach((el) => el.addEventListener('change', () => {
     if (seq.sel >= seqSteps()) seq.sel = -1;
     renderSeq();

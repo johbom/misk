@@ -16,6 +16,8 @@ Huvudmenyn har symboler: ♪ **Toner**, staplade noter för **Ackord**, en kurva
 
 Hover Pads är en app från **TFH Sensory**. TFH-loggan står uppe till vänster vid rubriken, på startrutan och i Om-rutan. Den länkar till [tfhsensory.se](https://tfhsensory.se) i en ny flik. På smal mobil ligger loggan på raden med Lås och MIDI.
 
+Under rubriken i Om-rutan står sloganen **Intryck Uttryck Avtryck** (på svenska även i den engelska versionen).
+
 Om-rutan har också en **ansvarsfriskrivning**: appen är gratis och tillhandahålls i befintligt skick, och TFH tar inget ansvar för hur den används eller för fel, buggar och andra problem.
 
 ## Integritet och GDPR
@@ -124,7 +126,7 @@ Inställningarna är uppdelade i underflikar:
 
   **Uppspelning – och spela till:**
   - **▶ Start / ■ Stopp** spelar sidans steg om och om igen, och steget som hörs markeras.
-  - Toner och Ackord har var sin slinga med egen ▶, men samma takt. En ackordrunda och ett trumkomp kan alltså gå samtidigt.
+  - Toner och Ackord har var sin slinga med egen ▶ och **egna inställningar för antal steg, notvärde och tonlängd** (reglagen under *Stegsequencer* visar sidan man spelar på; under Inställningar den man senast spelade på). En ackordrunda i halvnoter kan alltså gå samtidigt som en melodi eller ett trumkomp i sextondelar. Tempot är gemensamt, och en slinga som startas medan den andra går hakar på i samma takt, på närmaste slag och på det steg den skulle ha varit på om båda startat samtidigt. Inställningarna per sida sparas med mönstret, också i Mina presets (äldre presets ger båda sidorna samma).
   - Slingorna **fortsätter när man byter sida**, så man kan spela till dem: på den andra sidan, på XY eller på samma sida. Går den andra sidans slinga visas en grön knapp med dess namn (t.ex. *■ Ackord*) som stoppar den.
   - På XY syns Seq-knappen, med en pulserande grön prick, medan en slinga går, och där stoppar den slingorna.
   - Det man spelar till skrivs **inte** in. Att starta en slinga avmarkerar steget, och inskrivning sker bara med **● Spela in** eller i ett steg man själv valt.
@@ -228,6 +230,7 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 - **Svansen** på en släppt ton stoppas vid cirka −61 dB (7 tidskonstanter i stället för 9).
 - **Högst 32 röster per motor (12 på Android).** Blir det fler tonas de äldsta som redan släppts bort på 10 ms. Toner som hålls rörs aldrig.
 - **Ljudvakten** (alltid på): märker när ljudet hackar, dvs. när ljudklockan halkar efter klockan på väggen (mätt med `getOutputTimestamp`, annars `currentTime`). Då tonas alla toner som släppts och klingat ut i mer än 0,15 s bort direkt, och taket för antalet röster sänks tillfälligt (lägst 6). Det går tillbaka med fyra röster var tredje sekund som ljudet är helt. Utan vakten blev det på svaga telefoner allt tätare hack tills svansarna tonat ut, och man fick vänta innan det gick att spela igen.
+- **Röster som tonas bort släpper ljudtråden direkt.** När taket på antalet röster nås (eller ljudvakten tonar bort utklingande toner) får motorerna som räknas i ljudtråden – Sträng, Resonans, FM, Wavetable, Röst, Blås och Granulär – besked att sluta räkna, och avbrutna toner (stoppad sequencer, arpens retrigg) avslutas också. Tidigare räknade de vidare utan att höras – vid en sequencer i sextondelar blev det hundratals osynliga röster som till slut fick ljudet att hacka och appen att krascha.
 - **Android:** ljudet startas med `latencyHint: 'balanced'`, en något större buffert (några ms mer fördröjning) än den minsta, som lätt hackar på telefoner.
 - **Smala röster:** varje ton byggs med så få ljudnoder som möjligt. Safari hackar när många noder skapas och kopplas på en gång, som när ett ackord, sequencern eller arpeggiot startar flera toner. Noderna för Läge på rutan skapas bara för den parameter som är vald, vibratonoden bara när vibrato är på, tremolosteget bara med tremolo, och oscillatorn själv håller reda på när tonen är slut. Orgel gick från 14 till 8 noder per ton, Elpiano från 17 till 12 och Piano från 19 till 14.
 - **Ljudtrådens motorer laddas vid behov.** Sträng, Resonans, FM, Wavetable, Röst, Blås och Granulär räknas i en AudioWorklet. Modulen laddas först när ett sådant ljud väljs, så vanliga oscillatorljud (Elpiano, Orgel, pads …) spelas utan den. Safari renderar allt ljud i en egen tråd så fort en AudioWorklet finns.
@@ -384,7 +387,7 @@ python3 -m http.server 8080
 - `js/osc.js` – OSC-utgång: kodar OSC-paket och skickar dem till bryggan
 - `tools/osc-bridge.mjs` – OSC-bryggan (WebSocket → UDP), serverar också appen lokalt
 - `js/arp.js` – arpeggiatorn: tonpool, mönster och planering i ljudklockan
-- `js/seq.js` – stegsequencern: mönster per sida, inskrivning, inspelning och uppspelning i ljudklockan
+- `js/seq.js` – stegsequencern: mönster, steg, notvärde och tonlängd per sida, inskrivning, inspelning och uppspelning i ljudklockan (en klocka per sida, samma tempo)
 - `js/xy.js` – XY-plattan: en oscillator per pekare, glödande spår
 - `js/vibrato.js` – känner av vickning fram och tillbaka och gör om den till vibrato
 - `js/position.js` – Läge på rutan: pekarens läge på rutan (per formation) styr filter, volym, vibrato eller tonhöjd, och MIDI CC/pitch bend
