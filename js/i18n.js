@@ -911,6 +911,7 @@ const EN_PATTERNS = [
   [/^Ljudet för (Toner|Ackord)$/, (p) => `Sound for ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Antal (rutor|ackord): (\d+)$/, (w, n) => `Number of ${w === 'rutor' ? 'pads' : 'chords'}: ${n}`],
   [/^Stoppa slingan på (Toner|Ackord)$/, (p) => `Stop the loop on ${p === 'Toner' ? 'Notes' : 'Chords'}`],
+  [/^Starta slingan på (Toner|Ackord)$/, (p) => `Start the loop on ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^([▶■]) Sequencer: (Toner|Ackord)$/, (s, p) => `${s} Sequencer: ${p === 'Toner' ? 'Notes' : 'Chords'}`],
   [/^Spela en ruta så hamnar den i steg (\d+)\.$/, (n) => `Play a pad to put it in step ${n}.`],
   [/^Spela en ruta så byts steg (\d+) ut\.$/, (n) => `Play a pad to replace step ${n}.`],

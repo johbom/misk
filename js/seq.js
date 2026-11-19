@@ -401,12 +401,17 @@ function renderSeq() {
   play.setAttribute('aria-pressed', playing);
   play.querySelector('span').textContent = t(playing ? 'Stopp' : 'Start');
   play.querySelector('b').textContent = playing ? '■' : '▶';
-  // Går den andra sidans slinga? Visa det, med en knapp som stoppar den.
-  const other = page === 'chords' ? 'notes' : 'chords';
+  // Den andra sidans slinga: ■ stoppar den när den går, ▶ startar den igen (i takt) när den har steg.
+  // Knappen står kvar när man stoppat, så att man kan starta den igen utan att byta sida.
+  const other = seqOther(page);
+  const otherOn = seq.play[other];
   const ob = $('seq-other');
-  ob.hidden = !seq.play[other];
+  ob.hidden = !otherOn && !seq.pat[other].slice(0, seqSteps(other)).some((st) => st.length);
+  ob.classList.toggle('stopped', !otherOn);
+  ob.setAttribute('aria-pressed', otherOn);
+  ob.querySelector('b').textContent = otherOn ? '■' : '▶';
   ob.querySelector('span').textContent = t(SEQ_PAGE_NAME[other]);
-  ob.title = t(`Stoppa slingan på ${SEQ_PAGE_NAME[other]}`);
+  ob.title = t(`${otherOn ? 'Stoppa' : 'Starta'} slingan på ${SEQ_PAGE_NAME[other]}`);
   $('seq-rec').classList.toggle('on', seq.rec);
   $('seq-rec').setAttribute('aria-pressed', seq.rec);
   $('seq-rest').disabled = seq.sel < 0;
@@ -458,7 +463,7 @@ function setupSeq() {
   });
   $('seq-settings').addEventListener('click', () => toggleQuick('seq'));
   $('seq-play').addEventListener('click', () => (seq.play[seqPage()] ? seqStop() : seqStart()));
-  $('seq-other').addEventListener('click', () => seqStop(seqPage() === 'chords' ? 'notes' : 'chords'));
+  $('seq-other').addEventListener('click', () => { const o = seqOther(seqPage()); if (seq.play[o]) seqStop(o); else seqStart(o); });
   // Spela in: startar sequencern (om den inte går) – ett tryck till slutar spela in, och sequencern fortsätter
   $('seq-rec').addEventListener('click', () => {
     seq.rec = !seq.rec;

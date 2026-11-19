@@ -1709,6 +1709,8 @@ html.reduce-motion #seq-toggle.running::after { animation: none; }
 #seq-other { border-color: #7be3a0; color: #c9f5d9; }
 #seq-other[hidden] { display: none; }
 #seq-other b { color: #7be3a0; }
+#seq-other.stopped { border-color: var(--border); color: var(--text); } /* stoppad: ▶ startar den igen */
+#seq-other.stopped b { color: var(--muted); }
 html.steppers #seq-toggle, html.steppers #xy-quant-toggle { min-height: 46px; padding: 6px 18px; }
 html.high-contrast #seq-toggle.on, html.high-contrast #xy-quant-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
 #seq-bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px 8px; padding: 6px 24px 0; }
