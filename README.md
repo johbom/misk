@@ -273,7 +273,7 @@ Under **Inställningar → Ljud** kan man skruva själv:
 - **Filter:** lågpass/högpass/bandpass med resonans och egen envelope.
 - **Volymkurva:** attack, decay, sustain, release.
 - **LFO:** vibrato, filter-wah eller tremolo.
-- **Effekter:** drive, chorus, delay och reverb.
+- **Effekter:** drive, chorus, delay och reverb. Delayn kan **synkas till tempot** (*Synk*: 1/2, 1/4 punkterad, 1/4, 1/8 punkterad, 1/8, 1/8 triol, 1/16) – då följer ekot arpens och sequencerns tempo, också när det ändras med reglaget eller Tap, och *Delaytid* gråas ut. *Av* = fri tid i ms som förut.
 
 **Fysisk modell:** i stället för att forma vågformer räknar motorn ut hur en riktig sträng eller kropp svänger, så klangen beter sig naturligt över hela registret.
 - *Sträng* – en räknad sträng (Karplus–Strong) som kan **knäppas**, **slås** (som en pianohammare) eller **strykas med stråke** (klingar så länge tonen hålls).

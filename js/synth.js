@@ -204,6 +204,8 @@ const SYNTH_PARAMS = [
   { group: 'Effekter', key: 'drive', label: 'Drive', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'chorus', label: 'Chorus', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'delayMix', label: 'Delay', min: 0, max: 1, step: 0.01, fmt: pct },
+  // Synk: delaytiden följer tempot (arpens och sequencerns) som ett notvärde; Av = fri tid i ms
+  { key: 'delaySync', label: 'Synk', options: [['off', 'Av (fri tid)'], ['2', '1/2'], ['1.5', '1/4 punkterad'], ['1', '1/4'], ['0.75', '1/8 punkterad'], ['0.5', '1/8'], ['0.333', '1/8 triol'], ['0.25', '1/16']] },
   { key: 'delayTime', label: 'Delaytid', min: 0.05, max: 1.5, log: true, fmt: sec },
   { key: 'delayFeedback', label: 'Feedback', min: 0, max: 0.9, step: 0.01, fmt: pct },
   { key: 'reverbMix', label: 'Reverb', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -260,10 +262,19 @@ const SYNTH_DISABLED_WHEN = {
   voiceSpread: (p) => p.voiceChoir === 1,
   lfoRate: (p) => p.lfoTarget === 'off',
   lfoDepth: (p) => p.lfoTarget === 'off',
-  delayTime: (p) => p.delayMix === 0,
+  delaySync: (p) => p.delayMix === 0,
+  delayTime: (p) => p.delayMix === 0 || (p.delaySync && p.delaySync !== 'off'), // synkad: tempot bestämmer
   delayFeedback: (p) => p.delayMix === 0,
   reverbSize: (p) => p.reverbMix === 0,
 };
+
+// Delaytiden i sekunder: fri, eller synkad till tempot (taktslag per eko × sekunder per taktslag)
+function delaySeconds(p) {
+  const beats = Number(p.delaySync);
+  if (!p.delaySync || p.delaySync === 'off' || !beats) return p.delayTime;
+  const bpm = (typeof ui !== 'undefined' && Number(ui.arpBpm?.value)) || 120;
+  return Math.min(3.9, beats * 60 / bpm);
+}
 
 // ---------- Presets ----------
 const SYNTH_DEFAULTS = {
@@ -285,7 +296,7 @@ const SYNTH_DEFAULTS = {
   filterType: 'lowpass', cutoff: 18000, q: 0.7, fEnv: 0, fAttack: 0.01, fDecay: 0.3, fSustain: 1,
   attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25, vol: 1,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
-  drive: 0, chorus: 0, delayMix: 0, delayTime: 0.3, delayFeedback: 0.3, reverbMix: 0.1, reverbSize: 2,
+  drive: 0, chorus: 0, delayMix: 0, delaySync: 'off', delayTime: 0.3, delayFeedback: 0.3, reverbMix: 0.1, reverbSize: 2,
 };
 
 // Varje preset ändrar bara det som skiljer sig från SYNTH_DEFAULTS.
@@ -487,7 +498,7 @@ class SynthEngine {
     this.chorusMix.connect(this.bus);
 
     // Delay med mörkare repetitioner (lågpass i återkopplingen)
-    this.delay = ctx.createDelay(2);
+    this.delay = ctx.createDelay(4); // (synkad 1/2 i långsamt tempo blir lång)
     this.delayFb = ctx.createGain();
     const fbTone = ctx.createBiquadFilter();
     fbTone.frequency.value = 3500;
@@ -674,7 +685,7 @@ class SynthEngine {
     smooth(this.chorusMix.gain, p.chorus * 0.8);
     this.chorusDepth.forEach((g) => smooth(g.gain, 0.001 + p.chorus * 0.004));
 
-    smooth(this.delay.delayTime, p.delayTime);
+    smooth(this.delay.delayTime, delaySeconds(p));
     smooth(this.delayFb.gain, p.delayFeedback);
     smooth(this.delayMix.gain, p.delayMix * 0.7);
 

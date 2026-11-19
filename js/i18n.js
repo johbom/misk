@@ -135,6 +135,9 @@ const EN = {
   'Hur stor del av varje steg tonen låter – kort = staccato': 'How much of each step the note sounds – short = staccato',
   'Notvärde': 'Note value',
   '1/8 triol': '1/8 triplet',
+  'Av (fri tid)': 'Off (free time)',
+  '1/4 punkterad': '1/4 dotted',
+  '1/8 punkterad': '1/8 dotted',
   'En ensam ton arpeggieras över oktaverna': 'A single note is arpeggiated across the octaves',
   'Oktaver': 'Octaves',
   'På: varje ny ruta, nytt ackord eller nytt finger på XY börjar om mönstret och takten från första tonen. Av: takten löper vidare och nya rutor hakar på i takt.':

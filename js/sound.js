@@ -395,6 +395,10 @@ function setupSynthUi() {
     else { synthLib = { name: '', edited: false }; applySynth(presetParams(lastPreset), lastPreset); }
   });
   $('synth-random').addEventListener('click', randomSynth);
+  // Synkad delay: nytt tempo (reglagen, Tap) ger ny delaytid direkt, på båda sidornas ljud.
+  // (efter en mikrostund: sequencerns tempo hinner föras över till arpens först)
+  const retime = () => queueMicrotask(() => Object.values(engines).forEach((e) => e?.updateEffects()));
+  [ui.arpBpm, ui.seqBpm].forEach((el) => ['input', 'change'].forEach((ev) => el.addEventListener(ev, retime)));
   // Ljud för Toner eller Ackord (Inställningar → Ljud)
   document.querySelectorAll('#sound-slot [data-slot]').forEach((b) => b.addEventListener('click', () => {
     useSoundSlot(b.dataset.slot);
