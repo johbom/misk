@@ -5,10 +5,13 @@
 // mönster: på Toner en melodi eller ett trumkomp, på Ackord en ackordföljd.
 //
 // Skriva: välj ett steg och spela en ruta – med mus, blick, finger eller kontakt, precis som vanligt.
-// Med "Gå vidare" på hamnar rutan i steget och markeringen flyttar till nästa (en ruta per steg).
-// Med den av stannar markeringen, och rutor läggs till eller tas bort (flera per steg, t.ex. bastrumma
-// och hihat). Paus tömmer steget och går vidare. Spela in: medan sequencern går hamnar det man spelar
-// på närmaste steg.
+// Paus skrivs in på samma sätt, som en tyst ruta: steget töms. Samma regler för båda (seqWrite):
+//  - Gå vidare på: rutan (eller pausen) ersätter steget och markeringen flyttar till nästa.
+//    Ett ifyllt steg man klickat på ändras på plats: markeringen stannar kvar.
+//  - Gå vidare av: markeringen stannar, och rutor läggs till eller tas bort (flera per steg, t.ex.
+//    bastrumma och hihat). Paus tömmer steget.
+//  - Medan sidans slinga går, utan markerat steg: rutor hamnar på närmaste steg med Spela in, och Paus
+//    tömmer alltid närmaste steg (man trycker där det ska vara tyst).
 //
 // Varje ruta i ett steg minns också sitt läge på rutan (0..1, js/position.js) – så filter eller det andra
 // som Läge på rutan styr spelas som när rutan skrevs in. Läget följer pekaren så länge rutan låter efter
@@ -254,42 +257,63 @@ function seqPlayPad(pad, time, off, level, x, page) {
 }
 
 // ---------- Skriva in (anropas av trigger() i js/pads.js när en ruta spelas) ----------
+// Var det man spelar (eller Paus) skrivs in: det markerade steget, annars – medan sidans slinga går –
+// närmaste steg i tid (det som just hörts eller kommer strax). Rutor bara med Spela in; Paus alltid.
+function seqTarget(page, isRest) {
+  if (seq.sel >= 0 && seq.sel < seqSteps(page)) return { i: seq.sel, live: false };
+  if (!seq.play[page] || !(isRest || seq.rec)) return null;
+  const now = audioCtx.currentTime;
+  const sched = seq.clk[page].sched;
+  const near = sched.reduce((a, b) => (Math.abs(b.t - now) < Math.abs(a.t - now) ? b : a), sched[0]);
+  return near ? { i: near.i, live: true } : null;
+}
+
+// Skriv in en ruta (entry = { p, x }) eller en paus (entry = null) enligt reglerna överst
+function seqWrite(page, entry) {
+  const tg = seqTarget(page, !entry);
+  if (!tg) return null;
+  const { i } = tg;
+  const steps = seq.pat[page];
+  let kept = entry; // rutan som ligger kvar i steget (vars läge följer pekaren)
+  if (tg.live) {
+    if (!entry) steps[i] = [];
+    else {
+      const old = steps[i].find((e) => e.p === entry.p);
+      if (old) { old.x = entry.x; kept = old; } else steps[i].push(entry);
+    }
+  } else if (ui.seqAdvance.checked) {
+    steps[i] = entry ? [entry] : []; // ett per steg: skriv över
+    if (seq.fix !== i) { // (ett ifyllt steg man klickat på ändras på plats)
+      seq.sel = i + 1 < seqSteps(page) ? i + 1 : -1;
+      if (seq.sel < 0) log(t('Sista steget är ifyllt.'));
+    }
+  } else if (!entry) {
+    steps[i] = [];
+  } else {
+    const at = steps[i].findIndex((e) => e.p === entry.p);
+    if (at >= 0) { steps[i].splice(at, 1); kept = null; } // samma ruta igen: ta bort
+    else steps[i].push(entry);
+  }
+  saveSeq();
+  renderSeq();
+  return { i, kept };
+}
+
 function seqInput(pad) {
   seq.edit = null; // en ny ruta: det som skrevs in förut följer inte längre pekaren
   if (!seqOn() || !seqTab()) return;
   const page = seqPage();
   const k = seqPadsOf(page).indexOf(pad);
   if (k < 0) return;
-  const steps = seq.pat[page];
-  const live = seq.rec && seq.play[page];
-  const entry = { p: k, x: seqPosNow(pad) };
-  let i;
-  if (live) {
-    // Närmaste steg i tid (det som just spelats eller det som kommer strax)
-    const now = audioCtx.currentTime;
-    const sched = seq.clk[page].sched;
-    const near = sched.reduce((a, b) => (Math.abs(b.t - now) < Math.abs(a.t - now) ? b : a), sched[0]);
-    if (!near) return;
-    i = near.i;
-    const old = steps[i].find((e) => e.p === k);
-    if (old) old.x = entry.x;
-    else steps[i].push(entry);
-  } else {
-    if (seq.sel < 0 || seq.sel >= seqSteps()) return;
-    i = seq.sel;
-    const at = steps[i].findIndex((e) => e.p === k);
-    if (ui.seqAdvance.checked && seq.fix === i) {
-      steps[i] = [entry]; // ändra ett enstaka steg: skriv över, och stanna kvar
-    } else if (ui.seqAdvance.checked) {
-      steps[i] = [entry]; // en ruta per steg: skriv över
-      seq.sel = i + 1 < seqSteps() ? i + 1 : -1;
-      if (seq.sel < 0) log(t('Sista steget är ifyllt.'));
-    } else if (at >= 0) { steps[i].splice(at, 1); seq.edit = null; saveSeq(); renderSeq(); return; } // samma ruta igen: ta bort
-    else steps[i].push(entry);
-  }
-  seq.edit = { pad, entry }; // läget följer pekaren medan rutan låter (seqPosMove)
-  saveSeq();
-  renderSeq();
+  const done = seqWrite(page, { p: k, x: seqPosNow(pad) });
+  if (done?.kept) seq.edit = { pad, entry: done.kept }; // läget följer pekaren medan rutan låter (seqPosMove)
+}
+
+function seqRest() {
+  if (!seqOn() || !seqTab()) return;
+  seq.edit = null;
+  const done = seqWrite(seqPage(), null);
+  if (done) log(t(`Paus i steg ${done.i + 1}`));
 }
 
 // Läget på rutan just nu: från pekaren som ligger över den (null om ingen gör det, t.ex. kontakt)
@@ -414,11 +438,17 @@ function renderSeq() {
   ob.title = t(`${otherOn ? 'Stoppa' : 'Starta'} slingan på ${SEQ_PAGE_NAME[other]}`);
   $('seq-rec').classList.toggle('on', seq.rec);
   $('seq-rec').setAttribute('aria-pressed', seq.rec);
-  $('seq-rest').disabled = seq.sel < 0;
+  // Paus går att trycka på när det finns ett steg att skriva i (markerat, eller slingan går)
+  const canRest = (seq.sel >= 0 && seq.sel < n) || playing;
+  $('seq-rest').disabled = !canRest;
+  $('seq-rest').title = t(!canRest ? 'Välj först ett steg – då blir det en paus där'
+    : seq.sel >= 0 ? `Paus i steg ${seq.sel + 1}` : 'Paus i steget som spelas nu');
   $('seq-clear').disabled = !seq.pat[page].slice(0, n).some((s) => s.length);
-  $('seq-hint').textContent = t(playing && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg.'
-    : seq.sel >= 0 && seq.fix === seq.sel && ui.seqAdvance.checked ? `Spela en ruta så byts steg ${seq.sel + 1} ut.`
-    : seq.sel >= 0 ? `Spela en ruta så hamnar den i steg ${seq.sel + 1}.` : 'Välj ett steg och spela en ruta för att skriva in den.');
+  $('seq-hint').textContent = t(seq.sel >= 0 && seq.fix === seq.sel && ui.seqAdvance.checked ? `Spela en ruta eller Paus så byts steg ${seq.sel + 1} ut.`
+    : seq.sel >= 0 ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}.`
+    : playing && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg. Paus tystar steget som spelas.'
+    : playing ? 'Paus tystar steget som spelas. Välj ett steg, eller Spela in, för att skriva in rutor.'
+    : 'Välj ett steg och spela en ruta eller Paus för att skriva in den.');
 }
 
 // Bara det förra och det nya steget ändras (inte hela raden vid varje steg)
@@ -470,13 +500,7 @@ function setupSeq() {
     if (seq.rec) { seq.sel = -1; seqStart(); }
     renderSeq();
   });
-  $('seq-rest').addEventListener('click', () => {
-    if (seq.sel < 0) return;
-    seq.pat[seqPage()][seq.sel] = [];
-    seq.sel = seq.sel + 1 < seqSteps() ? seq.sel + 1 : -1;
-    saveSeq();
-    renderSeq();
-  });
+  $('seq-rest').addEventListener('click', seqRest);
   $('seq-clear').addEventListener('click', () => {
     if (!confirm(t('Tömma alla steg på den här sidan?'))) return;
     seq.pat[seqPage()] = seqEmpty();

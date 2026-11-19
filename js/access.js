@@ -351,13 +351,14 @@ function markKeys() {
   KEY_PAGES[page].pads().forEach((p, i) => { const k = padKeyLabel(page, i, list); if (k) p.el.setAttribute('data-key', k); });
 }
 
-// Det som stegningen går igenom: rutorna, och sist stegsequencerns Start/Stopp (och knappen som stoppar
-// den andra sidans slinga) när raden syns – så att sequencern kan startas och stoppas med kontakt.
+// Det som stegningen går igenom: rutorna, och sist stegsequencerns Start/Stopp, Paus (när det finns ett steg att
+// skriva i) och knappen som stoppar/startar
+// den andra sidans slinga, när raden syns – så att sequencern kan skötas med kontakt.
 const scanCtls = new Map(); // knapp -> { el, ctl: true } (samma objekt varje gång)
 function scanItems() {
   const pads = visiblePads();
   if (!pads.length || !seqOn()) return pads;
-  const ctls = [...document.querySelectorAll('#seq-play, #seq-other:not([hidden])')].map((el) => {
+  const ctls = [...document.querySelectorAll('#seq-play, #seq-rest:not(:disabled), #seq-other:not([hidden])')].map((el) => {
     if (!scanCtls.has(el)) scanCtls.set(el, { el, ctl: true });
     return scanCtls.get(el);
   });

@@ -120,7 +120,8 @@ Inställningarna är uppdelade i underflikar:
   - *Gå vidare efter varje ruta* (på från början): en ruta per steg, och markeringen flyttar till nästa steg, så man fyller i en melodi genom att spela den. Det som redan låg i steget skrivs över.
   - Klickar man på ett steg som redan är ifyllt ändras bara det steget: rutan man spelar byter ut det som låg där, och markeringen stannar kvar (man kan prova flera toner). Ett tomt steg man klickar på fylls i som vanligt, och markeringen går vidare.
   - Med *Gå vidare* av stannar markeringen, och flera rutor kan ligga i samma steg, till exempel bastrumma och hihat. Samma ruta igen tar bort den.
-  - **Paus** tömmer steget och går vidare. **Rensa** tömmer alla steg på sidan, efter en fråga.
+  - **Paus** skrivs in som en tyst ruta, med samma regler: med *Gå vidare* på blir steget tomt och markeringen går vidare (i ett ifyllt steg man klickat på stannar den kvar), med *Gå vidare* av töms steget. **Rensa** tömmer alla steg på sidan, efter en fråga.
+  - **Paus medan slingan går:** utan markerat steg tystar Paus steget som spelas just nu (närmaste steg i tid) – tryck där det ska vara tyst. Det gäller med och utan *Spela in*. Paus är grå bara när slingan står still och inget steg är valt. I stegningen med kontakt kommer Paus med efter Start/Stopp när den går att använda.
 
   **Läge på rutan i stegen:** varje ruta i ett steg minns också sitt läge på rutan, alltså var pekaren eller fingret var. Används *Läge på rutan* (filter, volym, vibrato, tonhöjd eller ljudmotorns egna) spelas steget med samma värde som när det skrevs in. Värdet följer pekaren så länge rutan låter efter inskrivningen, så det är där man stannar som räknas, inte kanten man gled in över. En liten stapel på stegets vänsterkant visar läget, och skärmläsare säger det i procent. Med MIDI skickas samma CC eller pitch bend strax före tonen. Steg som skrivits in med kontakt saknar läge och spelas som vanligt.
 
