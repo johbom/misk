@@ -36,6 +36,8 @@ setupKeyFollow();
 setupSegments();
 setupSettingsIcons();
 setupAccess();
+setupShortcuts();
+setupGamepad();
 setupAppLevel();
 showTab(localStorage.getItem('hoverPadsTab') || 'notes');
 

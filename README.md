@@ -193,19 +193,38 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 - *Hög kontrast* (svart, vita kanter, gul markering) och *Minska rörelse*. Båda följer datorns/telefonens inställning tills man själv väljer.
 - Frågor som "Ta bort?" visas i en egen ruta med stora Ja/Nej-knappar (Nej är förval) som går att använda med blicken.
 
-**Kontakt** och **Tangentbord** (två egna rutor)
+**Kontakt** (under Tillgänglighet) och **Rutornas tangenter** (under Kortkommandon)
 - Tangenterna <kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt (på sidan Ackord ackordruta 1–8); håll inne för lång ton. Flera tangenter kan hållas samtidigt, så **flera kontakter** – via ett kontaktinterface som skickar siffror – kan spela var sitt ackord. Både sifferraden och det numeriska tangentbordet fungerar, och siffrorna spelar även om preset-listan eller volymen nyss använts (listan byter inte värde).
 - *Visa tangenterna på rutorna* – en liten etikett på varje ruta visar vilken tangent/kontakt som spelar den (siffran eller den inlärda tangenten).
 - *Stegning med en kontakt*: rutorna markeras en i taget i vald takt (medan stegningen är på spelar pekare och finger inte rutorna, och harpan är avstängd). <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick/tryck på spelytan spelar den markerade, och stegningen står still medan kontakten hålls in.
 - *Två kontakter*: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar. F1 och F2 passar kontaktinterface som skickar funktionstangenter; webbläsarens hjälp (F1) öppnas inte medan stegningen är på.
 - *Stegsequencern med kontakt*: när sequencern är på kommer, efter rutorna, också sequencerns **▶ Start / ■ Stopp** i stegningen, och knappen som stoppar eller startar den andra sidans slinga när den syns. Man trycker dem med kontakten som en ruta, så att slingor kan startas och stoppas utan pekare.
 - *Lär (andra tangenter)*: när Stegning är på visas **Kontakter** med en rad för kontakt 1 och kontakt 2. Där syns vilka tangenter kontakten använder. Tryck på **Lär** och sedan på kontakten eller tangenten, så används den i stället för standardtangenterna. Det fungerar med vilket kontaktinterface som helst, oavsett vad det skickar. En tangent som redan används av den andra kontakten avvisas, <kbd>Esc</kbd> avbryter, och efter 15 sekunder utan tangent avbryts inlärningen. **Återställ till standard** ger tillbaka Mellanslag/F1 och Enter/F2. Inlärda tangenter sparas med inställningarna och följer med i Mina presets (`switch1Key`, `switch2Key` = `KeyboardEvent.code`).
-- *Tangenter för rutorna* (egen ruta, **Tangentbord**): välj **Toner** eller **Ackord** (med menyns symboler; visar sidan man senast spelade på) så syns en knapp per ruta med rutans nummer, ton eller ackord och den tangent som spelar den. Tryck på knappen (**Lär**) och sedan på kontakten eller tangenten, så spelar den just den rutan i stället för siffran – t.ex. bokstäver, F-tangenter eller mellanslag från ett kontaktinterface, och även rutor efter 10 som saknar siffra. En siffra räknas lika på sifferraden och det numeriska tangentbordet. Lär sig en ruta en annan rutas siffra spelar siffran den nya rutan, och den andra visas med – (ingen tangent) tills den lärs in. En tangent som redan används av en annan ruta på samma sida avvisas, liksom Skift/Ctrl/Alt/Cmd/Tab och – när Stegning är på – kontakternas tangenter. <kbd>Esc</kbd> avbryter. *Visa tangenterna på rutorna* visar den inlärda tangenten på rutan. **Återställ till siffror** tar bort alla på den valda sidan. Toner och Ackord har var sin lista; sparas med inställningarna och i Mina presets (`noteKeys`, `chordKeys`: JSON-listor med `KeyboardEvent.code` per ruta, tom = siffran; tangenter för rutor som inte syns när antalet minskats finns kvar).
+- *Tangenter för rutorna* (egen ruta, **Rutornas tangenter** under *Inställningar → Kortkommandon*): välj **Toner** eller **Ackord** (med menyns symboler; visar sidan man senast spelade på) så syns en knapp per ruta med rutans nummer, ton eller ackord och den tangent som spelar den. Tryck på knappen (**Lär**) och sedan på kontakten eller tangenten, så spelar den just den rutan i stället för siffran – t.ex. bokstäver, F-tangenter eller mellanslag från ett kontaktinterface, och även rutor efter 10 som saknar siffra. En siffra räknas lika på sifferraden och det numeriska tangentbordet. Lär sig en ruta en annan rutas siffra spelar siffran den nya rutan, och den andra visas med – (ingen tangent) tills den lärs in. En tangent som redan används av en annan ruta på samma sida avvisas, liksom Skift/Ctrl/Alt/Cmd/Tab och – när Stegning är på – kontakternas tangenter. <kbd>Esc</kbd> avbryter. *Visa tangenterna på rutorna* visar den inlärda tangenten på rutan. **Återställ till siffror** tar bort alla på den valda sidan. Toner och Ackord har var sin lista; sparas med inställningarna och i Mina presets (`noteKeys`, `chordKeys`: JSON-listor med `KeyboardEvent.code` per ruta, tom = siffran; tangenter för rutor som inte syns när antalet minskats finns kvar).
 - <kbd>Tab</kbd> flyttar mellan rutor och knappar med tydlig fokusram; <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.
 
 **Lås spelytan** – knappen *🔒 Lås* (på Toner och Ackord) gömmer flikar, ljudval och volym så att bara rutorna syns. Lås upp genom att **hålla inne** knappen i hörnet i två sekunder. Ett vanligt klick, ett klick med ögonstyrning eller en blick räcker inte, så spelaren kan inte råka hamna i inställningarna. Låset finns kvar om sidan laddas om.
 
 **Låst spelyta med ljudlista eller Mina presets** (avancerat, *Tillgänglighet → Visning och reglage*): *Visa ljudlistan när spelytan är låst* låter listan **Ljud** (på XY: *Klang*) stå kvar, och *Visa Mina presets när spelytan är låst* låter raden **◀ Mina presets ▶** stå kvar – också om den inte visas annars. Allt annat är dolt som vanligt. Valen sparas med inställningarna och syns inte i den enkla versionen.
+
+**Kortkommandon** (*Inställningar → Kortkommandon*): viktiga funktioner har en tangent och en joystickknapp, som båda går att lära om (tryck på rutan och sedan på tangenten/knappen) eller ta bort med ✕; *Återställ alla* ger förvalen igen. Förval:
+
+| Funktion | Tangent | Joystick |
+|---|---|---|
+| Föregående / nästa ljud (på XY: klang) | ← / → | LB / RB |
+| Föregående / nästa preset (Mina presets) | ↑ / ↓ | LT / RT |
+| Sidan Toner / Ackord / XY | T / K / X | – |
+| Arpeggiator på/av | A | Select |
+| Sequencer: Start/Stopp, Spela in, Paus (avancerat) | S, R, P | Start |
+| Volym upp / ned | + / − på numeriska tangentbordet | – |
+| Tysta allt | Backsteg | – |
+
+Kortkommandona gäller på spelsidorna, inte när en lista eller ett reglage har fokus (ljudlistan släpper fokus när man valt). En tangent eller knapp kan bara ha en uppgift: rutornas tangenter, kontakterna och kortkommandona kollar mot varandra när man lär in. Skiljetecken visas som de står på tangentbordet (svensk layout om webbläsaren inte kan tala om det). Ändringarna sparas med inställningarna.
+
+**Joystick och spelkontroll** (USB eller Bluetooth, Gamepad API; samma sida visar om en är ansluten). Två sätt:
+- **Fasta knappar:** varje knapp och spakriktning blir en "tangent" (*Knapp A*, *Joystick upp* …) som kan läras in för en funktion, för en ruta (*Rutornas tangenter*) eller som Kontakt 1/2.
+- **Stega och bekräfta:** knappar som inte är inlärda flyttar en markering – spak eller styrkors – mellan rutorna och knapparna på spelsidan (flikarna Toner/Ackord/XY, spelraden, sequencerns rad), åt det håll man trycker. **A** (eller B, X, Y) spelar rutan så länge knappen hålls in, eller trycker på knappen; öppnas en snabbruta flyttar markeringen in i den, och **B** stänger den. Med stegning på (*Tillgänglighet → Kontakt*) stegar spaken i stället (framåt/bakåt) och knapparna väljer.
+Ljudet måste ändå startas med ett tryck på startrutan (webbläsarna låter inte en spelkontroll starta ljud).
 
 **Layout på telefon och surfplatta:** i spelraden krymper reglagen (Volym, Reverb) och XY-klangerna aldrig under sitt innehåll – får inte allt plats bryts raden i stället, så att inget hamnar ovanpå något annat. Med större storlek (Stor/Extra stor) får rubriken bryta rad, och på liggande mobil ligger rubrik och spelrad då på var sin rad. Med stora −/+-knappar får XY-klangerna smalare knappar på telefon. På stående surfplatta visas Guide och Om som ikoner. Kontrollerat automatiskt på tio iPhone- och tio iPad-storlekar, stående och liggande, i alla tre storlekar, med och utan −/+-knappar och på båda språken.
 
@@ -415,5 +434,7 @@ python3 -m http.server 8080
 - `js/fx.js` – Ljudeffekterna: Disco, Reggae & dub och Tecknat & lek (syntetiserade, med dubeko)
 - `js/wizard.js` – Startguiden och ackordmallarna (funktionsanalys utifrån tonarten)
 - `js/quick.js` – snabbknapparna Formation, Tonart och Effekter i spelraden
+- `js/shortcuts.js` – kortkommandon (tangent och joystick per funktion) och sidan Kortkommandon
+- `js/gamepad.js` – joystick och spelkontroll: knappar som tangenter, stega och bekräfta
 - `js/pwa.js` – service worker och Installera-knapp
 - `js/main.js` – uppstart

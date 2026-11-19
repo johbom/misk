@@ -385,6 +385,14 @@ function scanStep() {
   markScan();
 }
 
+// Ett steg tillbaka (joystickens bakåt)
+function scanBack() {
+  const n = scanItems().length;
+  if (!n) return;
+  scan.idx = (scan.idx - 1 + n) % n;
+  markScan();
+}
+
 // Anropas vid varje omplacering (byte av flik, antal rutor m.m.)
 function syncScan() {
   if (!scanning()) {
@@ -434,6 +442,19 @@ const SWITCH_DEFAULT = { 1: ['Space', 'F1'], 2: ['Enter', 'NumpadEnter', 'F2'] }
 const switchCodes = (n) => (ui[`switch${n}Key`].value ? [ui[`switch${n}Key`].value] : SWITCH_DEFAULT[n]);
 const switchOf = (code) => (switchCodes(1).includes(code) ? 1 : switchCodes(2).includes(code) ? 2 : 0);
 
+// Skiljetecken: det som står på tangenten. Webbläsaren kan ibland tala om det (tangentbordets egen layout);
+// annars svensk layout (engelsk på engelska), eftersom e.code alltid utgår från ett amerikanskt tangentbord.
+let keyLayout = null;
+const PUNCT = {
+  sv: { Minus: '+', Equal: '´', BracketLeft: 'Å', BracketRight: '¨', Semicolon: 'Ö', Quote: 'Ä', Backquote: '§', Backslash: "'", Slash: '-', Period: '.', Comma: ',', IntlBackslash: '<' },
+  en: { Minus: '-', Equal: '=', BracketLeft: '[', BracketRight: ']', Semicolon: ';', Quote: "'", Backquote: '`', Backslash: '\\', Slash: '/', Period: '.', Comma: ',', IntlBackslash: '\\' },
+};
+navigator.keyboard?.getLayoutMap?.().then((m) => {
+  keyLayout = m;
+  if (typeof renderShortcuts === 'function') renderShortcuts();
+  if (typeof renderPadKeys === 'function') renderPadKeys();
+}).catch(() => {});
+
 // Tangentens namn att visa (e.code → t.ex. "A", "Mellanslag", "Vänsterpil")
 function keyName(code) {
   const named = {
@@ -442,8 +463,13 @@ function keyName(code) {
     ShiftLeft: 'Skift', ShiftRight: 'Skift (höger)', ControlLeft: 'Ctrl', ControlRight: 'Ctrl (höger)',
     AltLeft: 'Alt', AltRight: 'Alt Gr', MetaLeft: 'Cmd', MetaRight: 'Cmd (höger)', CapsLock: 'Caps Lock',
     PageUp: 'Page Up', PageDown: 'Page Down', Home: 'Home', End: 'End', Insert: 'Insert', Delete: 'Delete',
+    NumpadAdd: '+ (numeriskt)', NumpadSubtract: '− (numeriskt)', NumpadMultiply: '× (numeriskt)', NumpadDivide: '÷ (numeriskt)',
+    NumpadDecimal: ', (numeriskt)', Escape: 'Esc',
   };
   if (named[code]) return t(named[code]);
+  if (typeof gamepadName === 'function') { const g = gamepadName(code); if (g) return g; } // joystick (js/gamepad.js)
+  const punct = keyLayout?.get(code) || PUNCT[typeof LANG !== 'undefined' && LANG === 'en' ? 'en' : 'sv'][code];
+  if (punct) return punct.toUpperCase();
   let m;
   if ((m = code.match(/^Key([A-Z])$/))) return m[1];
   if ((m = code.match(/^Digit(\d)$/))) return m[1];
@@ -492,10 +518,16 @@ function learnKey(e) {
   if (e.repeat) return;
   if (e.code === 'Escape') { stopLearning(t('Avbrutet. Inget är ändrat.')); return; }
   if (learning.kind === 'pad') { learnPadKey(e.code); return; }
+  if (learning.kind === 'shortcut') { learnShortcut(e.code); return; }
   const { n } = learning;
   const other = n === 1 ? 2 : 1;
   if (switchCodes(other).includes(e.code)) {
     $('switch-learn-msg').textContent = t(`${keyName(e.code)} används redan av kontakt ${other}. Tryck på en annan kontakt eller tangent.`);
+    return;
+  }
+  const sc = shortcutOf(e.code);
+  if (sc) {
+    $('switch-learn-msg').textContent = t(`${keyName(e.code)} används redan av "${sc.name}". Tryck på en annan kontakt eller tangent.`);
     return;
   }
   ui[`switch${n}Key`].value = e.code;
@@ -617,6 +649,11 @@ function learnPadKey(code) {
     msg.textContent = t(`${name} används redan av kontakt ${switchOf(code)}. Tryck på en annan kontakt eller tangent.`);
     return;
   }
+  const sc = shortcutOf(code);
+  if (sc) {
+    msg.textContent = t(`${name} används redan av "${sc.name}". Tryck på en annan kontakt eller tangent.`);
+    return;
+  }
   if (digit !== null) code = `Digit${digit}`; // (sparas som sifferradens tangent)
   const count = KEY_PAGES[page].pads().length;
   const list = padKeyList(page);
@@ -669,6 +706,8 @@ function setupKeys() {
     }
     // Rutans siffra eller inlärda tangent (Hjälpmedel → Tangentbord), på sidan som visas
     const keyPad = padOfKey(document.body.dataset.tab, e.code);
+    // Kortkommandon (Inställningar → Kortkommandon) – inte när en lista eller ett reglage har fokus
+    if (!keyPad && keyDigit(e.code) === null && !e.target.matches?.('select, input, textarea') && handleShortcut(e)) return;
     if (e.repeat) { if (isSwitch || keyPad) e.preventDefault(); return; }
     let pad = null;
     if (keyPad) {

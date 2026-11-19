@@ -57,6 +57,7 @@ const SETTINGS_ICONS = {
   eye: ICON_EYE,
   view: '<path d="M3 18.5 7.5 6l4.5 12.5M4.7 14h5.6"/><circle cx="17" cy="15.3" r="3"/><path d="M20 12v6.5"/>',
   switch: ICON_SWITCH,
+  gamepad: '<path d="M7 9h4M9 7v4"/><circle cx="15.5" cy="8.5" r="1" fill="currentColor" stroke="none"/><circle cx="17.5" cy="11" r="1" fill="currentColor" stroke="none"/><path d="M6.5 4.5h11a4 4 0 0 1 4 4.2l-.6 7.3a2.6 2.6 0 0 1-4.6 1.4L14 15h-4l-2.3 2.4a2.6 2.6 0 0 1-4.6-1.4l-.6-7.3a4 4 0 0 1 4-4.2z"/>',
   keyboard: '<rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6.5 10h0M10 10h0M14 10h0M17.5 10h0M7.5 14h9"/>',
   library: '<rect x="3.5" y="4" width="4.5" height="16" rx="1"/><rect x="9.5" y="4" width="4.5" height="16" rx="1"/><path d="m15.6 5.6 3.6-1 3.3 14.4-3.6 1z"/>',
   tweak: '<circle cx="12" cy="13.5" r="7"/><path d="M12 13.5l3.6-3.6M3.6 6l1.6 1.6M20.4 6l-1.6 1.6M12 2.5v2.2"/>',

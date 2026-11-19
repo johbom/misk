@@ -28,6 +28,7 @@ function showTab(tab) {
   layoutPads();
   xyShow(tab === 'xy');
   renderSeq(); // Toner och Ackord har var sitt mönster
+  if (typeof gpSyncMark === 'function') gpSyncMark(); // joystickens markering
 }
 
 // ---------- Om-rutan ----------

@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=165" />
+  <link rel="stylesheet" href="css/style.css?v=168" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     // Gick en av appens filer inte att hämta (nätet svek, eller uppdatering mitt i)? Då saknas delar av appen
@@ -50,7 +50,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=165"></script>
+  <script src="js/i18n.js?v=168"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -155,6 +155,7 @@
       <button type="button" data-panel="play" data-icon="instrument">Instrument</button>
       <button type="button" data-panel="sound" data-icon="sound">Ljud</button>
       <button type="button" data-panel="access" data-icon="access">Tillgänglighet</button>
+      <button type="button" data-panel="keys" data-icon="keyboard">Kortkommandon</button>
       <button type="button" data-panel="io" data-icon="midi">Ut, MIDI &amp; OSC</button>
       <button type="button" data-panel="mine" data-icon="mine">Mina presets</button>
     </nav>
@@ -526,32 +527,6 @@
         </div>
       </fieldset>
 
-      <fieldset class="access-set" id="keys-set">
-        <legend data-icon="keyboard">Tangentbord</legend>
-        <div class="key-learn">
-          <span class="lbl">Tangenter för rutorna</span>
-          <select id="key-page" aria-label="Sida">
-            <option value="notes">Toner</option>
-            <option value="chords">Ackord</option>
-          </select>
-          <div id="key-cells" class="key-cells"></div>
-          <small class="desc" id="key-learn-msg" aria-live="polite" data-i18n="key-learn-msg">Rutorna 1–10 spelas med <kbd>1</kbd>–<kbd>9</kbd> och <kbd>0</kbd>. Tryck på en ruta här (<strong>Lär</strong>) och sedan på kontakten eller tangenten som ska spela den i stället.</small>
-          <button type="button" id="key-reset" class="switch-reset">Återställ till siffror</button>
-          <input type="hidden" id="note-keys" /><input type="hidden" id="chord-keys" />
-        </div>
-        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangenterna på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
-        <details class="help">
-          <summary>Vilka tangenter gör vad?</summary>
-          <ul class="hint keys" data-i18n="keys">
-            <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
-            <li>Andra tangenter för rutorna: välj Toner eller Ackord under <em>Tangenter för rutorna</em>, tryck på rutan och sedan på kontakten eller tangenten.</li>
-            <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
-            <li>Två kontakter: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar.</li>
-            <li>Andra tangenter för kontakterna: tryck på <strong>Lär</strong> vid Kontakt 1 eller 2 (syns när Stegning är på) och sedan på kontakten.</li>
-            <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
-          </ul>
-        </details>
-      </fieldset>
     </div>
 
     <div class="panel" data-panel="sound">
@@ -583,6 +558,54 @@
       <fieldset id="synth">
         <legend data-icon="tweak">Skruva själv</legend>
         <div id="synth-groups"></div>
+      </fieldset>
+    </div>
+
+    <!-- Kortkommandon: funktioner (js/shortcuts.js), rutornas tangenter (js/access.js) och joystick (js/gamepad.js) -->
+    <div class="panel" data-panel="keys">
+      <fieldset id="shortcut-set">
+        <legend data-icon="quick">Funktioner</legend>
+        <p class="hint">Tryck på en ruta och sedan på tangenten eller joystickknappen som ska användas. ✕ tar bort. Gäller på spelsidorna.</p>
+        <div class="sc-head" aria-hidden="true"><span></span><span>Tangent</span><span>Joystick</span><span></span></div>
+        <div id="shortcut-list" class="sc-list"></div>
+        <small class="desc" id="shortcut-msg" aria-live="polite"></small>
+        <button type="button" id="shortcut-reset" class="switch-reset">Återställ alla</button>
+        <input type="hidden" id="shortcut-keys" />
+      </fieldset>
+      <fieldset class="access-set" id="keys-set">
+        <legend data-icon="keyboard">Rutornas tangenter</legend>
+        <div class="key-learn">
+          <span class="lbl">Tangenter för rutorna</span>
+          <select id="key-page" aria-label="Sida">
+            <option value="notes">Toner</option>
+            <option value="chords">Ackord</option>
+          </select>
+          <div id="key-cells" class="key-cells"></div>
+          <small class="desc" id="key-learn-msg" aria-live="polite" data-i18n="key-learn-msg">Rutorna 1–10 spelas med <kbd>1</kbd>–<kbd>9</kbd> och <kbd>0</kbd>. Tryck på en ruta här (<strong>Lär</strong>) och sedan på kontakten eller tangenten som ska spela den i stället.</small>
+          <button type="button" id="key-reset" class="switch-reset">Återställ till siffror</button>
+          <input type="hidden" id="note-keys" /><input type="hidden" id="chord-keys" />
+        </div>
+        <label class="check"><input type="checkbox" id="show-keys" /> <span>Visa tangenterna på rutorna<small>Visar vilken kontakt eller tangent som spelar vilken ruta.</small></span></label>
+        <details class="help">
+          <summary>Vilka tangenter gör vad?</summary>
+          <ul class="hint keys" data-i18n="keys">
+            <li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> spelar rutorna 1–10 direkt – på sidan Ackord ackordruta 1–8. Flera kan hållas samtidigt, så flera kontakter (via ett kontaktinterface som skickar siffror) kan spela var sitt ackord. Håll inne för lång ton.</li>
+            <li>Andra tangenter för rutorna: välj Toner eller Ackord under <em>Tangenter för rutorna</em>, tryck på rutan och sedan på kontakten eller tangenten.</li>
+            <li>En kontakt: <kbd>Mellanslag</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> eller ett klick på spelytan spelar den markerade rutan.</li>
+            <li>Två kontakter: kontakt 1 (<kbd>Mellanslag</kbd> eller <kbd>F1</kbd>) stegar vidare, kontakt 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> eller klick) spelar.</li>
+            <li>Andra tangenter för kontakterna: tryck på <strong>Lär</strong> vid Kontakt 1 eller 2 (syns när Stegning är på) och sedan på kontakten.</li>
+            <li><kbd>Tab</kbd> flyttar mellan rutor och knappar, <kbd>Mellanslag</kbd>/<kbd>Enter</kbd> spelar rutan som har fokus.</li>
+          </ul>
+        </details>
+      </fieldset>
+      <fieldset id="gamepad-set">
+        <legend data-icon="gamepad">Joystick och spelkontroll</legend>
+        <p class="gp-status" id="gamepad-status" aria-live="polite"></p>
+        <p class="hint" data-i18n="gamepad-hint">Anslut en joystick eller spelkontroll (USB eller Bluetooth) och tryck på en knapp. Två sätt att använda den:</p>
+        <ul class="hint gp-ways" data-i18n="gamepad-ways">
+          <li><strong>Fasta knappar:</strong> varje knapp eller spakriktning kan läras in för en funktion (ovan), för en ruta (Rutornas tangenter) eller som Kontakt 1 och 2 (Tillgänglighet → Kontakt). Samma sak går med tangenter.</li>
+          <li><strong>Stega och bekräfta:</strong> knappar som inte är inlärda flyttar en markering – spaken eller styrkorset – mellan rutorna och knapparna på spelsidan, och <strong>A</strong> (eller B, X, Y) bekräftar: spelar rutan eller trycker på knappen. <strong>B</strong> stänger en öppen ruta. Med stegning på (Tillgänglighet → Kontakt) stegar spaken i stället och knapparna väljer.</li>
+        </ul>
       </fieldset>
     </div>
 
@@ -833,36 +856,38 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=165"></script>
-  <script src="js/fm-library.js?v=165"></script>
-  <script src="js/pm-library.js?v=165"></script>
-  <script src="js/wt-library.js?v=165"></script>
-  <script src="js/vwg-library.js?v=165"></script>
-  <script src="js/lib-levels.js?v=165"></script>
-  <script src="js/sound-library.js?v=165"></script>
-  <script src="js/layout.js?v=165"></script>
-  <script src="js/core.js?v=165"></script>
-  <script src="js/audio.js?v=165"></script>
-  <script src="js/drums.js?v=165"></script>
-  <script src="js/fx.js?v=165"></script>
-  <script src="js/pads.js?v=165"></script>
-  <script src="js/osc.js?v=165"></script>
-  <script src="js/arp.js?v=165"></script>
-  <script src="js/seq.js?v=165"></script>
-  <script src="js/xy.js?v=165"></script>
-  <script src="js/vibrato.js?v=165"></script>
-  <script src="js/position.js?v=165"></script>
-  <script src="js/notes.js?v=165"></script>
-  <script src="js/chords.js?v=165"></script>
-  <script src="js/sound.js?v=165"></script>
-  <script src="js/view.js?v=165"></script>
-  <script src="js/controls.js?v=165"></script>
-  <script src="js/access.js?v=165"></script>
-  <script src="js/settings.js?v=165"></script>
-  <script src="js/user-presets.js?v=165"></script>
-  <script src="js/wizard.js?v=165"></script>
-  <script src="js/quick.js?v=165"></script>
-  <script src="js/pwa.js?v=165"></script>
-  <script src="js/main.js?v=165"></script>
+  <script src="js/synth.js?v=168"></script>
+  <script src="js/fm-library.js?v=168"></script>
+  <script src="js/pm-library.js?v=168"></script>
+  <script src="js/wt-library.js?v=168"></script>
+  <script src="js/vwg-library.js?v=168"></script>
+  <script src="js/lib-levels.js?v=168"></script>
+  <script src="js/sound-library.js?v=168"></script>
+  <script src="js/layout.js?v=168"></script>
+  <script src="js/core.js?v=168"></script>
+  <script src="js/audio.js?v=168"></script>
+  <script src="js/drums.js?v=168"></script>
+  <script src="js/fx.js?v=168"></script>
+  <script src="js/pads.js?v=168"></script>
+  <script src="js/osc.js?v=168"></script>
+  <script src="js/arp.js?v=168"></script>
+  <script src="js/seq.js?v=168"></script>
+  <script src="js/xy.js?v=168"></script>
+  <script src="js/vibrato.js?v=168"></script>
+  <script src="js/position.js?v=168"></script>
+  <script src="js/notes.js?v=168"></script>
+  <script src="js/chords.js?v=168"></script>
+  <script src="js/sound.js?v=168"></script>
+  <script src="js/view.js?v=168"></script>
+  <script src="js/controls.js?v=168"></script>
+  <script src="js/access.js?v=168"></script>
+  <script src="js/settings.js?v=168"></script>
+  <script src="js/user-presets.js?v=168"></script>
+  <script src="js/wizard.js?v=168"></script>
+  <script src="js/quick.js?v=168"></script>
+  <script src="js/pwa.js?v=168"></script>
+  <script src="js/gamepad.js?v=168"></script>
+  <script src="js/shortcuts.js?v=168"></script>
+  <script src="js/main.js?v=168"></script>
 </body>
 </html>
