@@ -66,6 +66,7 @@ const ui = {
   seqRate: $('seq-rate'),
   seqBpm: $('seq-bpm'), // samma tempo som arpeggiatorn (sparas inte för sig)
   seqGate: $('seq-gate'),
+  seqAskClear: $('seq-ask-clear'),
   seqAdvance: $('seq-advance'),
   xySound: $('xy-sound'),
   xyQuantize: $('xy-quantize'),

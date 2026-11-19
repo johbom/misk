@@ -341,6 +341,75 @@ function stepText(page, i) {
   return seq.pat[page][i].map((e) => pads[e.p]).filter(Boolean).map((p) => t(p.label()));
 }
 
+// ---------- Håll in ett steg: ändra läget på rutan ----------
+// Håll ett ifyllt steg en stund, dra sedan uppåt/åt höger (mer) eller nedåt/åt vänster (mindre). Alla rutor i
+// steget får samma läge. Släpper man hörs steget med det nya läget. (Bara när Läge på rutan används.)
+const SEQ_HOLD_MS = 400;
+const SEQ_HOLD_RANGE = 160; // px för hela vägen 0–100 %
+function seqHoldSetup(b, i) {
+  let timer = 0;
+  let start = null; // { x, y, v, id }
+  let adjusting = false;
+  const value = (e) => clamp01(start.v + ((e.clientX - start.x) - (e.clientY - start.y)) / SEQ_HOLD_RANGE);
+  const show = (v) => {
+    b.style.setProperty('--pos', v);
+    b.classList.add('has-pos');
+    b.dataset.posLabel = `${Math.round(v * 100)} %`;
+  };
+  const end = (e, cancel) => {
+    clearTimeout(timer);
+    timer = 0;
+    if (adjusting) {
+      adjusting = false;
+      b.classList.remove('adjusting');
+      b.dataset.held = '1'; // klicket som följer ska inte välja eller tömma steget
+      setTimeout(() => { delete b.dataset.held; }, 400);
+      if (!cancel) {
+        const page = seqPage();
+        const v = Math.round(value(e) * 1000) / 1000;
+        seq.pat[page][i].forEach((en) => { en.x = v; });
+        saveSeq();
+        log(t(`Steg ${i + 1}: läge ${Math.round(v * 100)} %`));
+        // Hör hur det blev (om slingan inte redan spelar)
+        if (audioCtx && !seq.play[page]) {
+          if (audioCtx.state !== 'running') audioCtx.resume();
+          seqPlayStep(page, i, audioCtx.currentTime + 0.03);
+        }
+      }
+      renderSeq();
+    }
+    start = null;
+  };
+  b.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    const entries = seq.pat[seqPage()][i];
+    if (!entries.length) return;
+    const first = entries.find((en) => en.x != null);
+    start = { x: e.clientX, y: e.clientY, v: first ? first.x : 0.5, id: e.pointerId };
+    timer = setTimeout(() => {
+      timer = 0;
+      if (!posOn()) { log(t('Välj vad läget ska styra under Inställningar → Instrument → Läge på rutan.')); return; }
+      adjusting = true;
+      try { b.setPointerCapture(start.id); } catch {}
+      b.classList.add('adjusting');
+      show(start.v);
+    }, SEQ_HOLD_MS);
+  });
+  b.addEventListener('pointermove', (e) => {
+    if (!start || e.pointerId !== start.id) return;
+    if (!adjusting) {
+      // Rör man sig innan hållningen börjat är det ingen hållning
+      if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) { clearTimeout(timer); timer = 0; start = null; }
+      return;
+    }
+    e.preventDefault();
+    show(value(e));
+  });
+  b.addEventListener('pointerup', (e) => { if (start && e.pointerId === start.id) end(e, false); });
+  b.addEventListener('pointercancel', (e) => { if (start && e.pointerId === start.id) end(e, true); });
+  b.addEventListener('contextmenu', (e) => e.preventDefault()); // långt tryck på telefon: ingen meny
+}
+
 // Reglagen Steg, Notvärde och Tonlängd visar sidans egna värden
 let seqCfgSyncing = false;
 function seqShowCfg() {
@@ -390,7 +459,9 @@ function renderSeq() {
       b.className = 'seq-step';
       b.dataset.i = i;
       b.innerHTML = '<small></small><span></span>';
+      seqHoldSetup(b, i);
       b.addEventListener('click', () => {
+        if (b.dataset.held) { delete b.dataset.held; return; } // det var en hållning (läget ändrades)
         // Tryck på ett markerat, ifyllt steg: töm det (markeringen stannar kvar). Ett markerat tomt steg:
         // avmarkera. Alltså: välj → töm → avmarkera.
         const pg = seqPage();
@@ -516,8 +587,9 @@ function setupSeq() {
     renderSeq();
   });
   $('seq-rest').addEventListener('click', seqRest);
-  $('seq-clear').addEventListener('click', () => {
-    if (!confirm(t('Tömma alla steg på den här sidan?'))) return;
+  $('seq-clear').addEventListener('click', async () => {
+    // Fråga först (går att stänga av under Stegsequencer)
+    if (ui.seqAskClear.checked && !await askConfirm(t('Tömma alla steg på den här sidan?'), t('Rensa'))) return;
     seq.pat[seqPage()] = seqEmpty();
     seq.sel = 0;
     seq.fix = -1;
