@@ -596,7 +596,7 @@ function xyDraw() {
   if (alive) xyLoop();
 }
 
-// Skala-knappen. När den är på visas också Tonart-knappen på XY (annars är tonarten ointressant där).
+// Skala-knappen (Tonart-knappen bredvid visas alltid på XY: grundton, skala och omfång).
 function syncXyQuant() {
   const b = $('xy-quant-toggle');
   const on = xyQuantOn();
@@ -604,7 +604,7 @@ function syncXyQuant() {
   b.classList.toggle('on', on);
   b.setAttribute('aria-pressed', on);
   b.querySelector('span').textContent = t('Skala');
-  $('quick-key').classList.toggle('xy-on', on);
-  if (!on && quick.open === 'key' && document.body.dataset.tab === 'xy') closeQuick();
+  // Tonart-knappen syns alltid på XY (där finns också Omfång); utan Skala är tonarten bara vilande
+  if (quick.open === 'key' && document.body.dataset.tab === 'xy') renderQuick();
   b.title = t(`Håll tonerna i skalan (${key}) – av: steglös tonhöjd`);
 }

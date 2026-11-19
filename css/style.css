@@ -286,7 +286,7 @@ footer p { margin: 0; font-family: ui-monospace, Menlo, monospace; }
 body:not([data-tab="notes"]) .only-notes,
 body:not([data-tab="chords"]) .only-chords,
 body:not([data-tab="xy"]) .only-xy,
-body[data-tab="xy"] .not-xy:not(#seq-toggle.running):not(#quick-key.xy-on),
+body[data-tab="xy"] .not-xy:not(#seq-toggle.running):not(#quick-key),
 body:not([data-tab="settings"]) .only-settings { display: none !important; }
 
 /* Ackordrutor */

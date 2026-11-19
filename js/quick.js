@@ -146,7 +146,9 @@ function renderQuick() {
         scales.map((o) => `<button type="button" role="radio" aria-checked="${o.value === ui.scale.value}" class="has-icon${
           o.value === ui.scale.value ? ' on' : ''}" data-scale="${o.value}">${segIconSvg(SCALE_ICONS[o.value] || '')}<span>${
           o.textContent}</span></button>`).join('')}</div>` : ''}${
-      `<p class="hint">${chordsTab ? 'Ackorden' : 'Ackorden på sidan Ackord'} flyttas med till den nya tonarten.</p>`}`;
+      `<p class="hint">${document.body.dataset.tab === 'xy' && !ui.xyQuantize.checked
+        ? 'Tonarten används på XY när Skala är på. Omfånget gäller alltid.'
+        : `${chordsTab ? 'Ackorden' : 'Ackorden på sidan Ackord'} flyttas med till den nya tonarten.`}</p>`}`;
     pop.querySelectorAll('[data-root]').forEach((b) => b.addEventListener('click', () => setKeyRoot(Number(b.dataset.root))));
     pop.querySelectorAll('[data-octave]').forEach((b) => b.addEventListener('click', () => {
       const el = quickOctaveInput();

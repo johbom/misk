@@ -582,6 +582,7 @@ const EN = {
   'Hastighet': 'Rate',
   'Effekter': 'Effects',
   'Stäng effekterna': 'Close the effects',
+  'Tonarten används på XY när Skala är på. Omfånget gäller alltid.': 'On XY the key is used when Scale is on. The range always applies.',
   'Effekter för ljudet (samma som under Ljud → Skruva själv)': 'Effects for the sound (same as under Sound → Tweak it yourself)',
   'Delaytid': 'Delay time',
   'Rumsstorlek': 'Room size',
