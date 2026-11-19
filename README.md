@@ -126,6 +126,7 @@ Inställningarna är uppdelade i underflikar:
 
   **Uppspelning – och spela till:**
   - **▶ Start / ■ Stopp** spelar sidans steg om och om igen, och steget som hörs markeras.
+  - **Tempo** är detsamma som arpeggiatorns, och bredvid reglaget finns en **Tap**-knapp (som arpens: tryck i takt, två tryck räcker). De två Tap-knapparna räknar tillsammans.
   - Toner och Ackord har var sin slinga med egen ▶ och **egna inställningar för antal steg, notvärde och tonlängd** (reglagen under *Stegsequencer* visar sidan man spelar på; under Inställningar den man senast spelade på). En ackordrunda i halvnoter kan alltså gå samtidigt som en melodi eller ett trumkomp i sextondelar. Tempot är gemensamt, och en slinga som startas medan den andra går hakar på i samma takt, på närmaste slag och på det steg den skulle ha varit på om båda startat samtidigt. Inställningarna per sida sparas med mönstret, också i Mina presets (äldre presets ger båda sidorna samma).
   - Slingorna **fortsätter när man byter sida**, så man kan spela till dem: på den andra sidan, på XY eller på samma sida. Går den andra sidans slinga visas en grön knapp med dess namn (t.ex. *■ Ackord*) som stoppar den.
   - På XY syns Seq-knappen, med en pulserande grön prick, medan en slinga går, och där stoppar den slingorna.

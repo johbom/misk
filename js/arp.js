@@ -242,12 +242,12 @@ function flashPad(el) {
 
 let taps = [];
 
-function tapTempo() {
+// Tap-knapparna under Arpeggiator och Stegsequencer: samma tempo (arpens), så de räknar tillsammans
+function tapTempo(btn) {
   const now = performance.now();
   if (taps.length && now - taps[taps.length - 1] > TAP_RESET_MS) taps = [];
   taps.push(now);
   if (taps.length > TAP_KEEP) taps.shift();
-  const btn = $('arp-tap');
   btn.classList.remove('tapped');
   void btn.offsetWidth;
   btn.classList.add('tapped');
@@ -264,11 +264,13 @@ function tapTempo() {
 
 function setupTapTempo() {
   // pointerdown: trycket räknas när fingret/knappen går ned, inte när det släpps (stramare takt)
-  const btn = $('arp-tap');
-  btn.addEventListener('pointerdown', (e) => { if (e.button === 0) { btn.dataset.tapped = '1'; tapTempo(); } });
-  btn.addEventListener('click', () => {
-    // Tangentbord, kontakt eller blickklick ger bara click
-    if (btn.dataset.tapped) { delete btn.dataset.tapped; return; }
-    tapTempo();
+  ['arp-tap', 'seq-tap'].forEach((id) => {
+    const btn = $(id);
+    btn.addEventListener('pointerdown', (e) => { if (e.button === 0) { btn.dataset.tapped = '1'; tapTempo(btn); } });
+    btn.addEventListener('click', () => {
+      // Tangentbord, kontakt eller blickklick ger bara click
+      if (btn.dataset.tapped) { delete btn.dataset.tapped; return; }
+      tapTempo(btn);
+    });
   });
 }
