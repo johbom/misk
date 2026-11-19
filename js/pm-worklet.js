@@ -1192,3 +1192,35 @@ class Grain extends AudioWorkletProcessor {
   }
 }
 registerProcessor('grain', Grain);
+
+// Inspelning från mikrofonen (XY: js/xyrec.js): samlar ljudet i block och skickar dem till huvudtråden
+class RecCapture extends AudioWorkletProcessor {
+  constructor() {
+    super();
+    this.buf = new Float32Array(4096);
+    this.n = 0;
+    this.on = true;
+    this.port.onmessage = (e) => {
+      if (e.data !== 'stop') return;
+      if (this.n) this.port.postMessage(this.buf.slice(0, this.n));
+      this.n = 0;
+      this.on = false;
+      this.port.postMessage('done');
+    };
+  }
+
+  process(inputs) {
+    if (!this.on) return false;
+    const ch = inputs[0];
+    const a = ch && ch[0];
+    if (a) {
+      const b = ch[1];
+      for (let i = 0; i < a.length; i++) {
+        this.buf[this.n++] = b ? (a[i] + b[i]) * 0.5 : a[i];
+        if (this.n === this.buf.length) { this.port.postMessage(this.buf.slice()); this.n = 0; }
+      }
+    }
+    return true;
+  }
+}
+registerProcessor('rec-capture', RecCapture);

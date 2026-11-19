@@ -1675,17 +1675,17 @@ html.reduce-motion .start-choice { transition: none; }
 }
 
 /* ===== Arpeggiator ===== */
-#arp-toggle {
+#arp-toggle, #xy-rec {
   min-height: 32px;
   padding: 4px 14px;
   border-radius: 999px;
   font-weight: 600;
   color: var(--muted);
 }
-#arp-toggle { display: inline-flex; align-items: center; gap: 6px; }
+#arp-toggle, #xy-rec { display: inline-flex; align-items: center; gap: 6px; }
 .arp-icon { width: 20px; height: 20px; flex: none; }
 #arp-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-html.steppers #arp-toggle { min-height: 46px; padding: 6px 18px; }
+html.steppers :is(#arp-toggle, #xy-rec) { min-height: 46px; padding: 6px 18px; }
 html.high-contrast #arp-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
 /* Kompakt: två kolumner (Tempo | Tonlängd, Notvärde | Oktaver), en kolumn på smal skärm */
 #arp-set { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
@@ -2007,4 +2007,10 @@ html.fixed-screen.steppers #play-bar .xy-sound .seg button { min-width: 0; paddi
   html.fixed-screen.ui-zoomed #seq-bar { grid-row: 3; }
   html.fixed-screen.ui-zoomed main, html.fixed-screen.ui-zoomed #settings { grid-row: 4; }
 }
+
+/* XY: spela in från mikrofonen */
+#xy-rec.recording { background: #b3261e; border-color: #ff6b5e; color: #fff; animation: rec-pulse 1s ease-in-out infinite; }
+@keyframes rec-pulse { 50% { box-shadow: 0 0 0 6px rgba(255, 80, 70, 0.25); } }
+html.reduce-motion #xy-rec.recording { animation: none; }
+html.fixed-screen #play-bar #xy-rec { padding-top: 3px; padding-bottom: 3px; }
 

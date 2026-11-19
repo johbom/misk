@@ -12,6 +12,7 @@ const WAVE_ICONS = {
   sawtooth: '<path d="M2 17l9-10v10l9-10v10"/>',
   square: '<path d="M2 17V7h5v10h5V7h5v10h5"/>',
   supersaw: '<path d="M2 18l9-10v10l9-10v10"/><path d="M4 14l9-10v10l9-10" opacity=".5"/>',
+  rec: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/>', // inspelning (mikrofon)
 };
 // Symboler för bikupans tonordning (pilar)
 const ORDER_ICONS = {

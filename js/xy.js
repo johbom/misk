@@ -81,6 +81,7 @@ const XY_SOUNDS = {
   sawtooth: { level: 1.05 },
   square: { level: 0.75 },
   supersaw: { level: 2.2, detunes: [-18, -9, 0, 9, 18], wave: 'sawtooth' }, // bred, i stereo
+  rec: { level: 1, y: 'pitch' }, // inspelningen från mikrofonen, granulärt (js/xyrec.js)
 };
 
 // Egen buss: torrt + egen reverb, direkt till volymen (efter rutornas effekter)
@@ -196,6 +197,7 @@ function xyVoiceEnd(v, at = 0) {
 function xyVoiceStart(id, nx, ny) {
   if (!audioCtx || !engines.notes || !ui.outAudio.checked) return;
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
+  if (xyRecOn()) { xyGrainStart(id, nx, ny); return; } // inspelningen, granulärt (js/xyrec.js)
   if (arpOn()) { xyArpAdd(id, nx, ny); return; } // arpeggio: pekaren blir en ton i arpeggiot
   const v = xyMakeVoice(xyFreq(nx), ny);
   v.holder = { released: 0, kill() {} }; // motorn somnar inte medan fingret ligger kvar
@@ -205,6 +207,7 @@ function xyVoiceStart(id, nx, ny) {
 
 function xyVoiceMove(id, nx, ny) {
   oscSend('xy', xyOscId(id), { f: nx }, { f: ny }, 1);
+  if (xyGrains.has(id)) { xyGrainMove(id, nx, ny); return; }
   if (xyArp.pts.has(id)) { xyArpMove(id, nx, ny); return; }
   const v = xy.voices.get(id);
   if (!v) return;
@@ -223,6 +226,7 @@ function xyVoiceMove(id, nx, ny) {
 }
 
 function xyVoiceStop(id) {
+  if (xyGrains.has(id)) { xyGrainStop(id); oscSend('xy', xyOscId(id), { f: 0 }, { f: 0 }, 0); return; }
   if (xyArp.pts.has(id)) { xyArpRemove(id); oscSend('xy', xyOscId(id), { f: 0 }, { f: 0 }, 0); return; }
   const v = xy.voices.get(id);
   if (!v) return;
@@ -362,7 +366,7 @@ function xyVibrato(id, cents, rate) {
   }
 }
 
-const xyStopAll = () => { [...xy.voices.keys()].forEach(xyVoiceStop); xyArpReset(); xy.present.clear(); };
+const xyStopAll = () => { [...xy.voices.keys()].forEach(xyVoiceStop); xyGrainStopAll(); xyArpReset(); xy.present.clear(); };
 const xyOscId = (id) => (id > 1e6 ? id % 1000 : id); // korta id:n i OSC
 
 // ---------- Pekare ----------
@@ -535,7 +539,8 @@ function xyDraw() {
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.globalCompositeOperation = 'source-over';
   g.clearRect(0, 0, W, H);
-  xyDrawGrid(g, W, H, hc);
+  if (xyRecOn() || xyRec.recording) xyDrawRec(g, W, H, hc); // inspelningens vågform (och medan den spelas in)
+  else xyDrawGrid(g, W, H, hc);
 
   // Spåren: glöder (adderas ljust på ljust) och bleknar med åldern
   const now = performance.now();
@@ -566,7 +571,7 @@ function xyDraw() {
       }
     }
     // Pekarens punkt (så länge den låter)
-    if (xy.voices.has(id) || xyArp.pts.has(id)) {
+    if (xy.voices.has(id) || xyArp.pts.has(id) || xyGrains.has(id)) {
       const last = pts[pts.length - 1];
       g.globalAlpha = 1;
       g.shadowBlur = hc ? 0 : 30;

@@ -350,7 +350,7 @@ function renderWizard() {
       title = 'Vilken klang på XY-plattan?';
       html = `<p class="wiz-hint">På XY glider tonhöjden steglöst från vänster till höger, och uppåt blir ljudet ljusare. Tryck för att lyssna.</p>
         <div class="wiz-row wiz-wrap" role="radiogroup" aria-label="Klang">${
-        [...ui.xySound.options].map((o) => wizOption('xySound', o.value,
+        [...ui.xySound.options].filter((o) => o.value !== 'rec').map((o) => wizOption('xySound', o.value,
           `${WAVE_ICONS?.[o.value] ? segIconSvg(WAVE_ICONS[o.value]) : ''}${o.textContent}`, d.xySound === o.value, 'wiz-wave')).join('')}</div>`;
     } else {
       title = 'Vilket ljud?';
