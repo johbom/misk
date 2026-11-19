@@ -64,6 +64,7 @@ function refreshAccess() {
   if (appliedZoom !== ui.uiSize.value) {
     appliedZoom = ui.uiSize.value;
     root.style.setProperty('--ui-zoom', ui.uiSize.value);
+    root.classList.toggle('ui-zoomed', Number(ui.uiSize.value) > 1); // (liggande mobil: rubrik och spelrad på var sin rad)
     layoutPads(); // större flikar = mindre spelyta
   }
 }

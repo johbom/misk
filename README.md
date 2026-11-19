@@ -207,6 +207,8 @@ Under *Inställningar → Tillgänglighet*. Ögonstyrning styr muspekaren, så a
 
 **Låst spelyta med ljudlista eller Mina presets** (avancerat, *Tillgänglighet → Visning och reglage*): *Visa ljudlistan när spelytan är låst* låter listan **Ljud** (på XY: *Klang*) stå kvar, och *Visa Mina presets när spelytan är låst* låter raden **◀ Mina presets ▶** stå kvar – också om den inte visas annars. Allt annat är dolt som vanligt. Valen sparas med inställningarna och syns inte i den enkla versionen.
 
+**Layout på telefon och surfplatta:** i spelraden krymper reglagen (Volym, Reverb) och XY-klangerna aldrig under sitt innehåll – får inte allt plats bryts raden i stället, så att inget hamnar ovanpå något annat. Med större storlek (Stor/Extra stor) får rubriken bryta rad, och på liggande mobil ligger rubrik och spelrad då på var sin rad. Med stora −/+-knappar får XY-klangerna smalare knappar på telefon. På stående surfplatta visas Guide och Om som ikoner. Kontrollerat automatiskt på tio iPhone- och tio iPad-storlekar, stående och liggande, i alla tre storlekar, med och utan −/+-knappar och på båda språken.
+
 Tillgänglighetsinställningarna följer med i *Mina presets*, så varje användare kan ha sitt eget.
 
 Ljud i webbläsare kräver ett riktigt klick eller tangenttryck en gång innan något får låta. Den som bara använder blicken behöver därför hjälp att välja var appen ska börja en gång.

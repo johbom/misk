@@ -1961,3 +1961,36 @@ body[data-level="simple"] .lib-tweak { display: none !important; }
 
 /* Sloganen i Om-rutan */
 .about-slogan { margin: 4px 0 0; font-weight: 700; letter-spacing: 0.04em; word-spacing: 0.5em; color: var(--accent); }
+
+/* ===== Spelraden på mobil och surfplatta: inget får hamna ovanpå något annat =====
+   (står sist så att det gäller över alla storlekar ovan)
+   - Reglagen (Volym, Reverb) och XY-klangerna krymper aldrig under sitt innehåll – förut kunde ett reglage
+     rita ut över knapparna bredvid (t.ex. Reverb över vågformerna). Får inte allt plats bryts raden i stället.
+   - Stora −/+-knappar: XY-klangerna får smalare knappar så att de ryms på telefonen.
+   - Liggande mobil med större storlek (Stor/Extra stor): rubriken och spelraden på var sin rad. */
+html.fixed-screen body #play-bar { flex-wrap: wrap; row-gap: 6px; }
+html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-reverb-bar, .xy-sound) { min-width: min-content; }
+html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-reverb-bar) input[type="range"] { min-width: 56px; }
+/* Surfplatta: bredden räknas från det minsta reglaget får vara, så att raden bara bryts när det verkligen inte ryms */
+@media (min-width: 601px) {
+  html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-reverb-bar) { flex: 1 1 0; max-width: 260px; }
+}
+/* Stående surfplatta: Guide och Om bara som ikoner (namnen finns kvar för skärmläsare), så att flikraden ryms */
+@media (orientation: portrait) and (min-width: 601px) and (max-width: 900px) {
+  html.fixed-screen #tabs :is(#wizard-btn, #about-btn) > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+}
+/* Större storlek: rubriken (flikar, Lås, MIDI-status) får bryta rad i stället för att gå utanför skärmen */
+html.fixed-screen.ui-zoomed header { flex-wrap: wrap; row-gap: 6px; }
+html.fixed-screen.steppers #play-bar .xy-sound .seg button { min-width: 0; padding-left: 3px; padding-right: 3px; }
+@media (max-width: 600px) {
+  html.fixed-screen.steppers #play-bar .xy-sound { font-size: 0; gap: 0; } /* ordet Klang göms (finns för skärmläsare) */
+  html.fixed-screen.steppers #play-bar .xy-sound .seg button { font-size: 0.9rem; }
+}
+@media (orientation: landscape) and (max-height: 500px) and (min-width: 700px) {
+  html.fixed-screen.ui-zoomed body { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto minmax(0, 1fr); }
+  html.fixed-screen.ui-zoomed header { grid-row: 1; grid-column: 1; }
+  html.fixed-screen.ui-zoomed #play-bar { grid-row: 2; grid-column: 1; justify-content: flex-start; padding-left: 10px; }
+  html.fixed-screen.ui-zoomed #seq-bar { grid-row: 3; }
+  html.fixed-screen.ui-zoomed main, html.fixed-screen.ui-zoomed #settings { grid-row: 4; }
+}
+
