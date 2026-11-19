@@ -6,6 +6,7 @@
 //
 // Skriva: välj ett steg och spela en ruta – med mus, blick, finger eller kontakt, precis som vanligt.
 // Paus skrivs in på samma sätt, som en tyst ruta: steget töms. Samma regler för båda (seqWrite):
+//  - Ett tryck till på ett markerat, ifyllt steg tömmer det (och ett tredje avmarkerar).
 //  - Gå vidare på: rutan (eller pausen) ersätter steget och markeringen flyttar till nästa.
 //    Ett ifyllt steg man klickat på ändras på plats: markeringen stannar kvar.
 //  - Gå vidare av: markeringen stannar, och rutor läggs till eller tas bort (flera per steg, t.ex.
@@ -390,6 +391,18 @@ function renderSeq() {
       b.dataset.i = i;
       b.innerHTML = '<small></small><span></span>';
       b.addEventListener('click', () => {
+        // Tryck på ett markerat, ifyllt steg: töm det (markeringen stannar kvar). Ett markerat tomt steg:
+        // avmarkera. Alltså: välj → töm → avmarkera.
+        const pg = seqPage();
+        if (seq.sel === i && seq.pat[pg][i].length) {
+          seq.pat[pg][i] = [];
+          seq.fix = i;
+          seq.edit = null;
+          saveSeq();
+          log(t(`Steg ${i + 1} tömt`));
+          renderSeq();
+          return;
+        }
         seq.sel = seq.sel === i ? -1 : i;
         // Ett ifyllt steg man klickar på ändras på plats: markeringen stannar kvar (inget Gå vidare)
         seq.fix = seq.sel >= 0 && seq.pat[seqPage()][i].length ? i : -1;
@@ -444,7 +457,9 @@ function renderSeq() {
   $('seq-rest').title = t(!canRest ? 'Välj först ett steg – då blir det en paus där'
     : seq.sel >= 0 ? `Paus i steg ${seq.sel + 1}` : 'Paus i steget som spelas nu');
   $('seq-clear').disabled = !seq.pat[page].slice(0, n).some((s) => s.length);
-  $('seq-hint').textContent = t(seq.sel >= 0 && seq.fix === seq.sel && ui.seqAdvance.checked ? `Spela en ruta eller Paus så byts steg ${seq.sel + 1} ut.`
+  const selFilled = seq.sel >= 0 && seq.sel < n && seq.pat[page][seq.sel].length > 0;
+  $('seq-hint').textContent = t(selFilled && seq.fix === seq.sel && ui.seqAdvance.checked ? `Spela en ruta eller Paus så byts steg ${seq.sel + 1} ut. Tryck på steget igen för att tömma det.`
+    : selFilled ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}. Tryck på steget igen för att tömma det.`
     : seq.sel >= 0 ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}.`
     : playing && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg. Paus tystar steget som spelas.'
     : playing ? 'Paus tystar steget som spelas. Välj ett steg, eller Spela in, för att skriva in rutor.'
