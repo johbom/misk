@@ -297,10 +297,13 @@ function setupSteppers() {
 
 // ---------- Lås spelytan ----------
 const UNLOCK_HOLD_MS = 2000;
+const UNLOCK_HOVER_MS = 3000; // pekaren vilar på knappen
+let unlockArm = null; // (sätts i setupLock: nollställ knappen när spelytan låses)
 
 function setLocked(on) {
   if (document.body.classList.contains('locked') === on) return;
   document.body.classList.toggle('locked', on);
+  if (on) unlockArm?.();
   localStorage.setItem('hoverPadsLocked', on ? '1' : '');
   if (on) {
     closeChordPicker();
@@ -312,28 +315,64 @@ function setLocked(on) {
 function setupLock() {
   $('lock-btn').addEventListener('click', () => {
     setLocked(true);
-    log('Spelytan är låst. Håll inne knappen i hörnet i två sekunder för att låsa upp.');
+    log('Spelytan är låst. Lås upp genom att hålla inne knappen i hörnet i två sekunder, eller vila pekaren på den i tre.');
   });
   const btn = $('unlock-btn');
-  let timer = 0;
-  const begin = () => {
-    if (timer) return;
-    btn.style.setProperty('--hold-ms', `${UNLOCK_HOLD_MS}ms`);
-    btn.classList.add('holding');
-    timer = setTimeout(() => { timer = 0; btn.classList.remove('holding'); setLocked(false); log('Upplåst'); }, UNLOCK_HOLD_MS);
+  const label = btn.querySelector('span');
+  let timer = 0, tick = 0, leave = 0;
+  let hover = false; // pekaren (mus, ögonstyrning, penna) vilar på knappen
+  let armed = false; // pekaren har varit utanför knappen sedan låsningen
+  const show = (left) => {
+    label.textContent = left ? t(`🔓 Låser upp om ${left} s`) : t('🔓 Håll kvar för att låsa upp');
   };
-  const end = () => { clearTimeout(timer); timer = 0; btn.classList.remove('holding'); };
+  const begin = (wait) => {
+    if (timer) return;
+    btn.style.setProperty('--hold-ms', `${wait}ms`);
+    btn.classList.remove('holding');
+    void btn.offsetWidth; // (starta om fyllningen)
+    btn.classList.add('holding');
+    const until = performance.now() + wait;
+    const count = () => show(Math.max(1, Math.ceil((until - performance.now()) / 1000)));
+    count();
+    tick = setInterval(count, 200);
+    timer = setTimeout(() => { end(); setLocked(false); log('Upplåst'); }, wait);
+  };
+  const end = () => {
+    clearTimeout(timer); clearInterval(tick); clearTimeout(leave);
+    timer = tick = leave = 0;
+    hover = false;
+    btn.classList.remove('holding');
+    show(0);
+  };
   btn.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     try { btn.setPointerCapture(e.pointerId); } catch {}
-    begin();
+    const h = hover; // (vilade pekaren redan där: tryck = håll inne, två sekunder från nu)
+    end();
+    hover = h;
+    begin(UNLOCK_HOLD_MS);
   });
-  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => btn.addEventListener(ev, end));
-  btn.addEventListener('keydown', (e) => {
-    if (e.key !== ' ' && e.key !== 'Enter') return;
-    e.preventDefault();
-    if (!e.repeat) begin();
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => btn.addEventListener(ev, () => { if (!hover) end(); }));
+  // Pekaren vilar på knappen (ögonstyrning, muspekarstyrning): samma nedräkning, lite längre. Bara riktig
+  // rörelse räknas, och pekaren måste först ha varit utanför – lås-knappen sitter där lås-upp-knappen
+  // dyker upp, så annars låstes det upp av sig självt. En blick som darrar ut över kanten en kort stund
+  // (som Släppfördröjning, minst 0,3 s) avbryter inte.
+  document.addEventListener('pointermove', (e) => {
+    if (!document.body.classList.contains('locked') || e.pointerType === 'touch') return;
+    const on = btn.contains(e.target);
+    if (!on) {
+      armed = true;
+      if (hover && !leave) leave = setTimeout(() => { leave = 0; if (hover) end(); }, Math.max(300, ms(ui.releaseDelay)));
+      return;
+    }
+    if (!armed) return;
+    clearTimeout(leave); leave = 0;
+    if (hover) return;
+    hover = true;
+    begin(UNLOCK_HOVER_MS);
   });
+  document.documentElement.addEventListener('mouseleave', () => { if (hover) end(); });
+  unlockArm = () => { end(); armed = false; };
   btn.addEventListener('keyup', end);
   btn.addEventListener('click', (e) => e.preventDefault());
   // Låst: ingen högerklicksmeny

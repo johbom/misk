@@ -355,10 +355,10 @@ const EN = {
   'Nästa': 'Next',
   'Minska': 'Decrease',
   'Öka': 'Increase',
-  'Spelytan är låst. Håll inne knappen i hörnet i två sekunder för att låsa upp.': 'The play area is locked. Hold the button in the corner for two seconds to unlock.',
+  'Spelytan är låst. Lås upp genom att hålla inne knappen i hörnet i två sekunder, eller vila pekaren på den i tre.': 'The play area is locked. Unlock by holding the button in the corner for two seconds, or resting the pointer on it for three.',
   'Upplåst': 'Unlocked',
-  'Lås upp – håll inne i två sekunder': 'Unlock – hold for two seconds',
-  '🔓 Håll inne för att låsa upp': '🔓 Hold to unlock',
+  'Lås upp – håll inne i två sekunder, eller vila pekaren på knappen i tre': 'Unlock – hold for two seconds, or rest the pointer on the button for three',
+  '🔓 Håll kvar för att låsa upp': '🔓 Hold to unlock',
 
   // ---------- Inställningar: Ljud ----------
   'Valt ljud': 'Current sound',
@@ -929,7 +929,7 @@ const EN_HTML = {
   'xy-fx-hint': 'The same effects as the pads’ sound, but separate for the XY pad. The effects under <em>Sound</em> only apply to the pads.',
   'xy-hint': 'The right edge is C7. Moving up opens the filter. Sine, Triangle and Warm also get FM upwards (more overtones), and Sine vibrato too. Tone and effects can also be set on the XY page.',
   'access-hint': 'Choose a profile and fine-tune below. Everything is saved in <em>My presets</em>.',
-  'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds.',
+  'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds, or <strong>resting the pointer</strong> on it for three (eye gaze, head or mouse pointer control).',
   'switch-learn-msg': 'Press <strong>Learn</strong> and then the switch or key to use.',
   'key-learn-msg': 'Pads 1–10 are played with <kbd>1</kbd>–<kbd>9</kbd> and <kbd>0</kbd>. Press a pad here (<strong>Learn</strong>) and then the switch or key that should play it instead.',
   'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–8. Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>
@@ -1018,6 +1018,7 @@ const EN_PATTERNS = [
   [/^Spelar in till ruta (\d+) … tryck på rutan igen för att sluta\.$/, (n) => `Recording to pad ${n} … press the pad again to stop.`],
   [/^Ruta (\d+): inspelning ([\d,]+) s$/, (n, s) => `Pad ${n}: recording ${s.replace(',', '.')} s`],
   [/^Sluta spela in \((\d+) s kvar\)$/, (n) => `Stop recording (${n} s left)`],
+  [/^🔓 Låser upp om (\d+) s$/, (n) => `🔓 Unlocking in ${n} s`],
   [/^Spelar in … ([\d,]+) s$/, (n) => `Recording … ${n.replace(',', '.')} s`],
   [/^Inspelat: ([\d,]+) s\. Rör dig över plattan: X = var i inspelningen, Y = tonhöjd\.$/, (n) => `Recorded: ${n.replace(',', '.')} s. Move over the pad: X = where in the recording, Y = pitch.`],
   [/^Knapp (.+)$/, (k) => `Button ${k}`],
