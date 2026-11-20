@@ -22,22 +22,24 @@ async function micOpen() {
   }
 }
 
-// Vad gick fel? (felkoden står inom parentes, så att den går att säga vidare)
+// Vad gick fel? Felkoden (och webbläsarens egen förklaring) står inom parentes, så att den går att säga vidare.
+const isStandalone = () => navigator.standalone === true || matchMedia?.('(display-mode: standalone)').matches;
 function micErrorText(err) {
   const name = err?.name || 'Error';
+  const why = err?.message ? `${name}: ${err.message}` : name;
   let msg;
   if (['NotAllowedError', 'SecurityError', 'PermissionDeniedError'].includes(name)) {
-    msg = isIos()
-      ? 'Mikrofonen är inte tillåten för sidan. Tryck på aA i adressfältet → Webbplatsinställningar → Mikrofon → Fråga eller Tillåt, och ladda om sidan. Kolla också Inställningar → Safari → Mikrofon (Chrome och andra appar: Inställningar → Integritet och säkerhet → Mikrofon).'
-      : 'Mikrofonen är inte tillåten för sidan. Tillåt den med ikonen i adressfältet (webbplatsinställningar) och ladda om sidan.';
+    if (isIos() && isStandalone()) msg = 'Mikrofonen är inte tillåten för appen. Öppna Inställningar → Appar → Safari → Mikrofon → Fråga eller Tillåt. Stäng sedan appen helt (svep bort den) och öppna den igen.';
+    else if (isIos()) msg = 'Mikrofonen är inte tillåten för sidan. Tryck på aA i adressfältet → Webbplatsinställningar → Mikrofon → Fråga eller Tillåt, och ladda om sidan. Kolla också Inställningar → Safari → Mikrofon (Chrome och andra appar: Inställningar → Integritet och säkerhet → Mikrofon).';
+    else msg = 'Mikrofonen är inte tillåten för sidan. Tillåt den med ikonen i adressfältet (webbplatsinställningar) och ladda om sidan.';
   } else if (['NotFoundError', 'DevicesNotFoundError', 'OverconstrainedError'].includes(name)) {
     msg = 'Ingen mikrofon hittades.';
   } else if (['NotReadableError', 'TrackStartError', 'AbortError'].includes(name)) {
     msg = 'Mikrofonen används av något annat just nu (till exempel ett samtal eller en annan app). Stäng det och försök igen.';
   } else {
-    msg = 'Mikrofonen gick inte att öppna. Tillåt mikrofonen för sidan och försök igen.';
+    msg = 'Mikrofonen startade inte. Ladda om sidan och försök igen.';
   }
-  return `${t(msg)} (${name})`;
+  return `${t(msg)} (${why})`;
 }
 
 // Ta emot ljudet från mikrofonen: i ljudtråden (AudioWorklet) eller, om den inte går att använda,
