@@ -108,6 +108,7 @@ const ui = {
   chordCount: $('chord-count'),
   chordOctave: $('chord-octave'),
   chordBass: $('chord-bass'),
+  chordRandom: $('chord-random'),
   chordAdvanced: $('chord-advanced'),
   preset: $('preset'),
   volume: $('volume'),

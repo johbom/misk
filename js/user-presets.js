@@ -46,6 +46,8 @@ function applySnapshot(data) {
     if (ui[k].type === 'checkbox') ui[k].checked = !!v;
     else ui[k].value = normalizeSetting(k, v);
   }
+  // (presets från innan Slumpad voicing fanns: av)
+  if (data.settings && !('chordRandom' in data.settings)) ui.chordRandom.checked = false;
   migrateNotesKind(data.settings || {});
   migrateSpace(data.settings || {});
   saveSettings();

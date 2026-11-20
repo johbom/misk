@@ -2045,3 +2045,6 @@ html.reduce-motion #pads .pad.pad-recording { animation: none; }
   #play-bar #pad-rec:not(.recording):not(.on) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 }
 
+
+/* Slumpad voicing på: ackordens egna voicing-val gäller inte */
+#chord-editor select:disabled { opacity: 0.45; cursor: not-allowed; }

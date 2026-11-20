@@ -623,7 +623,11 @@ class SynthEngine {
   limitVoices() {
     const cap = voiceBudget.cap;
     if (this.voices.size < cap) return;
-    const released = [...this.voices].filter((v) => v.released).sort((a, b) => a.released - b.released);
+    // Bara röster som verkligen släppts: arpeggiatorn och sequencern planerar släppet redan när tonen
+    // planeras, och de tonerna (som inte hörts än, eller ännu hålls) ska inte tas bort – det var så
+    // toner föll bort när snabb strum fyllde taket.
+    const now = this.ctx.currentTime;
+    const released = [...this.voices].filter((v) => v.released && v.released <= now).sort((a, b) => a.released - b.released);
     for (const v of released) {
       if (this.voices.size < cap) break;
       v.kill();
@@ -1183,8 +1187,9 @@ class SynthEngine {
     // Röstregister (tak på antalet röster): en röst kan tonas bort snabbt om den redan är släppt
     const voice = {
       released: 0,
-      kill: () => {
-        const now = ctx.currentTime;
+      // at (valfritt): ljudklockans tid då rösten ska tonas bort (arpeggiatorn: när samma ton slås an igen)
+      kill: (at = 0) => {
+        const now = Math.max(ctx.currentTime, at);
         amp.gain.cancelScheduledValues(now);
         amp.gain.setTargetAtTime(0, now, 0.01);
         sources.forEach((s) => { try { s.stop(now + 0.08); } catch {} });
@@ -1221,6 +1226,9 @@ class SynthEngine {
       onRelease.forEach((f) => f(r, end));
       sources[0].onended = cleanup;
     };
+    // Samma ton slås an igen (arpeggiatorn): den här rösten tonas bort på 10 ms när den nya börjar, i stället
+    // för att klinga ut ovanpå – som en sträng som knäpps igen. Håller nere antalet röster vid snabb strum.
+    stop.choke = (at) => { if (this.voices.has(voice)) voice.kill(at); };
     // Avbryt en ton som är planerad men inte har börjat än (arpeggiatorns retrigg). Tyst, utan klick.
     stop.cancel = () => {
       const now = ctx.currentTime;

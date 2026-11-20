@@ -123,9 +123,11 @@ function arpPlayStep(time) {
     arp.step++;
     const gap = arpStrumGap(seq.length);
     // Alla toner i slaget slutar samtidigt (som när handen dämpar strängarna)
+    // (rutan blinkar en gång per slag, vid första tonen – inte för varje ton i slaget)
+    const flashed = new Set();
     seq.forEach(({ note, pad }, i) => {
       const t = time + i * gap;
-      arpPlayNote(note, pad, t, Math.max(time + dur, t + 0.05));
+      arpPlayNote(note, pad, t, Math.max(time + dur, t + 0.05), !flashed.has(pad) && flashed.add(pad));
     });
     return;
   }
@@ -142,8 +144,13 @@ function arpPlayStep(time) {
   arpPlayNote(note, pad, time, time + dur);
 }
 
-// En ton i arpeggiot: från time till off (ljudklockans tid)
-function arpPlayNote(note, pad, time, off) {
+// Tonerna som klingar per ljudmotor (motor -> ton -> stoppfunktion): slås samma ton an igen tonas den
+// förra bort när den nya börjar (stop.choke i js/synth.js), i stället för att klinga ut ovanpå. Annars
+// staplas svansarna vid snabb strum – hundratals röster – och ljudet börjar hacka och tappa toner.
+const arpRinging = new WeakMap();
+
+// En ton i arpeggiot: från time till off (ljudklockans tid). flash: rutan blinkar till (förval: ja)
+function arpPlayNote(note, pad, time, off, flash = true) {
   const dur = off - time;
   const timers = [];
   let audioStop = null;
@@ -152,7 +159,14 @@ function arpPlayNote(note, pad, time, off) {
     let stop;
     if (pad.sample) stop = playSample(pad.sample, time, Math.pow(2, (note - pad.note) / 12));
     else if (pad.drum) stop = drumHit(pad.drum, time, 0.9);
-    else stop = padEngine(pad).noteOn(note, 0.8, time);
+    else {
+      const eng = padEngine(pad);
+      stop = eng.noteOn(note, 0.8, time);
+      let ring = arpRinging.get(eng);
+      if (!ring) arpRinging.set(eng, ring = new Map());
+      ring.get(note)?.choke?.(time);
+      ring.set(note, stop);
+    }
     if (pad.arpVib && stop.vibrato) stop.vibrato(pad.arpVib);
     if (pad.arpPos != null && stop.pos) stop.pos(pad.arpPos, posParam(), true);
     stop(off);
@@ -171,10 +185,13 @@ function arpPlayNote(note, pad, time, off) {
     }, Math.max(0, wait - ARP_MIDI_AHEAD * 1000)));
   }
   // OSC och ljusblink på rutan, så nära tonen som möjligt
-  timers.push(setTimeout(() => {
-    oscSend('note', note, Number(ui.velocity.value) || 100);
-    flashPad(pad.el);
-    timers.push(setTimeout(() => oscSend('note', note, 0), dur * 1000));
+  const osc = ui.outOsc.checked;
+  if (osc || flash) timers.push(setTimeout(() => {
+    if (osc) {
+      oscSend('note', note, Number(ui.velocity.value) || 100);
+      timers.push(setTimeout(() => oscSend('note', note, 0), dur * 1000));
+    }
+    if (flash) flashPad(pad.el);
   }, wait));
 
   // Planerad men inte hörd än: kan strykas vid retrigg

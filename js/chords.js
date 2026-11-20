@@ -63,13 +63,57 @@ function voice(notes, v) {
   return notes;
 }
 
+// Slumpad voicing (Inställningar → Ackord): varje anslag läggs ackordet på ett nytt sätt, men basen är
+// alltid samma ton. Treklangen (grundton, ters, kvint – eller sus/dim/aug) i grundläge, 1:a eller 2:a
+// omvändning, och varje färgton (sjuan, sexan, nian …) antingen nedflyttad inne i ackordet (närmast
+// ovanför ackordets lägsta ton) eller ovanpå hela läget. Samma läge två gånger i rad undviks.
+// Ackordet hålls runt samma tonläge: börjar läget en kvint eller mer ovanför grundtonen läggs det en oktav
+// lägre, om det fortfarande ryms ovanför basen (bass = bastonen, som aldrig flyttas).
+const lastRandomVoicing = new WeakMap(); // ackord -> nyckel för förra läget
+function voiceRandom(c, base, bass) {
+  const iv = CHORD_INTERVALS[c.type];
+  const triad = iv.slice(0, 3);
+  const colors = iv.slice(3);
+  const pick = () => {
+    const inv = Math.floor(Math.random() * Math.min(3, triad.length));
+    const inside = colors.map(() => Math.random() < 0.5);
+    return { inv, inside, key: `${inv}:${inside.map(Number).join('')}` };
+  };
+  let v = pick();
+  // (förra läget igen: ett nytt försök – ger fler olika lägen i följd, men bara om det finns fler)
+  if (v.key === lastRandomVoicing.get(c) && (triad.length > 1 || colors.length)) v = pick();
+  if (v.key === lastRandomVoicing.get(c)) v = pick();
+  lastRandomVoicing.set(c, v.key);
+  const notes = triad.map((i) => base + i);
+  for (let k = 0; k < v.inv; k++) { notes[0] += 12; notes.sort((a, b) => a - b); }
+  const low = notes[0];
+  const top = notes[notes.length - 1];
+  colors.forEach((i, k) => {
+    // Inne i ackordet: första oktaven ovanför den lägsta tonen. Ovanpå: första oktaven ovanför den högsta.
+    const floor = v.inside[k] ? low : top;
+    let n = base + (i % 12);
+    while (n <= floor) n += 12;
+    if (notes.includes(n)) n += 12; // (ingen dubblerad ton)
+    notes.push(n);
+  });
+  notes.sort((a, b) => a - b);
+  if (notes[0] - base >= 7 && notes[0] - 12 > bass) return notes.map((n) => n - 12);
+  return notes;
+}
+
 function chordNotes(c) {
   const adv = isAdvanced();
   const base = 12 * (Number(ui.chordOctave.value) + 1 + (adv ? c.shift : 0)) + Number(c.root);
-  let notes = CHORD_INTERVALS[c.type].map((i) => base + i);
-  if (adv) notes = voice(notes, voicingAllowed(c.voicing, c) ? c.voicing : 'root');
-  // Basen: grundtonen (om Bas är på) eller en vald egen baston (alltid), under resten av ackordet
+  const random = ui.chordRandom.checked;
   const slash = slashBass(c);
+  let notes = CHORD_INTERVALS[c.type].map((i) => base + i);
+  if (random) {
+    // Slumpad voicing har alltid basen, och alltid samma bas (den håller ihop ackordet när resten byter läge)
+    const bass = base - 12 + (slash === null ? 0 : slash - Number(c.root));
+    return [bass, ...voiceRandom(c, base, bass)].map(clampNote);
+  }
+  if (adv) notes = voice(notes, voicingAllowed(c.voicing, c) ? c.voicing : 'root');
+  // Basen: grundtonen (om Bas är på) eller en vald egen baston (alltid), under resten av ackordet.
   if (slash !== null || ui.chordBass.checked) {
     let bass = base - 12 + (slash === null ? 0 : slash - Number(c.root));
     while (bass >= notes[0]) bass -= 12;
@@ -170,6 +214,8 @@ function buildChordEditor() {
         sel.append(o);
       });
       sel.value = value;
+      // Slumpad voicing (Inställningar → Ackord) gäller i stället för ackordets egen voicing
+      if (key === 'voicing' && ui.chordRandom.checked) { sel.disabled = true; sel.title = t('Slumpad voicing är på'); }
       sel.addEventListener('change', () => {
         setChord(i, { [key]: parse(sel.value) });
         if (key === 'type') buildChordEditor(); // 3:e omvändning kan bli (o)tillgänglig
@@ -456,11 +502,11 @@ function closeChordPicker() {
 function renderChordPicker() {
   const c = chords[picker.index];
   picker.title.textContent = `Ruta ${picker.index + 1}: ${chordName(c)}`;
-  picker.notes.textContent = chordNotes(c).map(noteName).join(' ');
+  picker.notes.textContent = chordNotes(c).map(noteName).join(' ') + (ui.chordRandom.checked ? ` · ${t('slumpas varje gång')}` : '');
   for (const { key, buttons } of picker.groups) {
     for (const { b, value } of buttons) {
       b.classList.toggle('on', String(value) === String(c[key]));
-      if (key === 'voicing') b.disabled = !voicingAllowed(value, c);
+      if (key === 'voicing') b.disabled = !voicingAllowed(value, c) || ui.chordRandom.checked;
     }
   }
 }
