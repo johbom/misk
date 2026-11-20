@@ -5,7 +5,7 @@ let audioCtx = null;
 // Toner och Ackord har var sin ljudmotor (eget ljud, egna effekter), så att en ackordrunda och en
 // melodi kan låta olika samtidigt. engine = motorn för sidan som visas eller vars ljud man ändrar.
 let engine = null;
-const engines = { notes: null, chords: null };
+const engines = { notes: null, chords: null, xy: null }; // xy: XY-plattans effekter (js/xyfx.js)
 const padEngine = (pad) => (pad && pad.chord ? engines.chords : engines.notes);
 
 function initAudio() {
@@ -34,6 +34,9 @@ function initAudio() {
     e.setVolume(Number(ui.volume.value));
     engines[slot] = e;
   }
+  // XY-plattan: egen effektmotor (samma slag som rutornas, egna inställningar – js/xyfx.js)
+  engines.xy = new SynthEngine(audioCtx, xyFxParams(), master);
+  engines.xy.setVolume(Number(ui.volume.value));
   engine = engines[soundSlot];
   startAudioGuard();
   if (typeof padRestoreSamples === 'function') padRestoreSamples(); // rutornas sparade ljud (js/padrec.js)

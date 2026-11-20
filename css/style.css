@@ -92,6 +92,11 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 #quick-pop > #synth-fx { margin: 0; padding: 0; border: none; min-width: 0; width: min(380px, calc(100vw - 72px)); background: none; }
 #quick-pop > #synth-fx > legend { float: left; padding: 0; margin: 2px 40px 4px 0; font-weight: 600; color: var(--text); }
 #quick-pop > #synth-fx > .knob:first-of-type { clear: both; }
+/* XY:s effekter i snabbrutan (som rutornas): utan förklaringen, som finns under Inställningar */
+#quick-pop > #xy-fx { margin: 0; padding: 0; border: none; min-width: 0; width: min(380px, calc(100vw - 72px)); background: none; }
+#quick-pop > #xy-fx > legend { float: left; padding: 0; margin: 2px 40px 4px 0; font-weight: 600; color: var(--text); }
+#quick-pop > #xy-fx > .knob:first-of-type { clear: both; }
+#quick-pop > #xy-fx > .xy-fx-hint { display: none; }
 /* Arpens inställningar under Arp-knappen (på/av sköts av knappen själv) */
 /* Kompakt: rubrik, reglage och värde på en rad, små knappar, inga förklaringar */
 #quick-pop > :is(#arp-set, #seq-set) {
@@ -251,7 +256,17 @@ button:hover { border-color: var(--accent); }
   color: var(--muted);
 }
 
-.pad.sample { border-color: var(--accent); }
+.pad.sample { border-color: #ff6b5e; box-shadow: inset 0 0 0 1px rgba(255, 107, 94, 0.45); }
+/* Rutans ljud (inspelning eller ljudfil): märke i hörnet och vågformen längst ned (js/notes.js) */
+.pad .pad-sample-badge { position: absolute; top: 7px; right: 7px; width: 14px; height: 14px; color: #8fb0ff; pointer-events: none; }
+.pad .pad-sample-badge.rec { color: #ff5a4e; filter: drop-shadow(0 0 4px rgba(255, 90, 78, 0.7)); }
+/* (längden står överst, vågformen där MIDI-numret annars står) */
+.pad .pad-wave { position: absolute; left: 12%; width: 76%; bottom: 9px; height: 18px; fill: #ff8a80; opacity: 0.7; pointer-events: none; }
+.pad-grid[data-formation="grid"] .pad.sample small { bottom: auto; top: 7px; }
+.pad-grid:not([data-formation="grid"]) .pad .pad-wave { left: 28%; width: 44%; bottom: 13%; height: 11%; max-height: 14px; }
+.pad-grid:not([data-formation="grid"]) .pad .pad-sample-badge { top: 13%; right: 15%; width: 11px; height: 11px; }
+.pad-grid[data-formation="strings"] .pad .pad-wave { display: none; }
+html.high-contrast .pad .pad-wave { fill: #fff; opacity: 0.8; }
 
 .pad.active {
   background: linear-gradient(160deg, var(--hit), #ff7a45);
@@ -637,10 +652,8 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
 @media (orientation: landscape) {
   html.fixed-screen header { padding-top: 6px; }
   html.fixed-screen #play-bar { flex-wrap: nowrap; padding: 6px 14px 0; gap: 12px; }
-  html.fixed-screen #play-bar > .vol-label,
-  html.fixed-screen #play-bar > .xy-reverb-bar { flex: 0 1 220px; min-width: 0; }
-  html.fixed-screen #play-bar > .vol-label input[type="range"],
-  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 80px; width: 100%; }
+  html.fixed-screen #play-bar > .vol-label { flex: 0 1 220px; min-width: 0; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"] { min-width: 80px; width: 100%; }
   html.fixed-screen .pad-grid { padding-top: 8px; padding-bottom: 10px; }
   html.fixed-screen #xy-pad { margin-top: 8px; margin-bottom: 10px; }
   html.fixed-screen footer { display: none; }
@@ -654,8 +667,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
 /* Stående surfplatta, XY med Skala på (då syns också Tonart): reglagen utan ord och Skala som ikon,
    så att spelraden ryms på en rad (namnen finns kvar för skärmläsare) */
 @media (orientation: portrait) and (min-width: 601px) and (max-width: 1100px) {
-  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label,
-  html.fixed-screen body[data-tab="xy"] #play-bar > .xy-reverb-bar { font-size: 0; gap: 0; }
+  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label { font-size: 0; gap: 0; }
   html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; flex: none; } /* klangknapparna krymper inte */
   html.fixed-screen #play-bar .xy-sound .seg { flex-wrap: nowrap; }
   html.fixed-screen #play-bar .xy-sound .seg button { font-size: 0.9rem; }
@@ -673,10 +685,8 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #play-bar { flex-wrap: nowrap; gap: 10px; }
   html.fixed-screen #play-bar > .preset-label { flex: 0 1 220px; min-width: 0; }
   html.fixed-screen #play-bar > .preset-label select { width: 100%; }
-  html.fixed-screen #play-bar > .vol-label,
-  html.fixed-screen #play-bar > .xy-reverb-bar { flex: 1 1 120px; min-width: 0; }
-  html.fixed-screen #play-bar > .vol-label input[type="range"],
-  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 70px; width: 100%; }
+  html.fixed-screen #play-bar > .vol-label { flex: 1 1 120px; min-width: 0; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"] { min-width: 70px; width: 100%; }
 }
 /* Mobil liggande (låg skärm): rubrik och spelrad på var sin smal rad, ingen statusrad – höjden går till rutorna */
 @media (orientation: landscape) and (max-height: 500px) {
@@ -692,8 +702,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #play-bar label { min-width: 0; }
   html.fixed-screen #play-bar > .preset-label { flex: 0 1 220px; min-width: 0; }
   html.fixed-screen #play-bar > .preset-label select { width: 100%; }
-  html.fixed-screen #play-bar > .vol-label,
-  html.fixed-screen #play-bar > .xy-reverb-bar { flex: 1 1 90px; min-width: 0; }
+  html.fixed-screen #play-bar > .vol-label { flex: 1 1 90px; min-width: 0; }
   html.fixed-screen #play-bar input[type="range"] { min-width: 0; width: 100%; }
   html.fixed-screen #play-bar .quick-btn,
   html.fixed-screen #play-bar #arp-toggle,
@@ -706,8 +715,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #play-bar .xy-sound .seg { flex-wrap: nowrap; }
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 7px; }
   html.fixed-screen #play-bar .xy-sound .seg button > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  html.fixed-screen #play-bar > .vol-label input[type="range"],
-  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 64px; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"] { min-width: 64px; }
 }
 /* Smal mobil: göm rubriken så flikarna får plats */
 @media (max-width: 480px) {
@@ -725,9 +733,9 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
 /* Smal skärm: Ljud och Volym delar första raden, snabbknapparna och Arp ligger på raden under */
 @media (max-width: 600px) {
   html.fixed-screen #play-bar { flex-wrap: wrap; gap: 6px 10px; }
-  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar { order: 1; flex: 1 1 40%; min-width: 0; }
+  #play-bar > .preset-label, #play-bar > .vol-label { order: 1; flex: 1 1 40%; min-width: 0; }
   #play-bar > .preset-label select { min-width: 0; width: 100%; max-width: none; }
-  #play-bar > .vol-label input[type="range"], #play-bar > .xy-reverb-bar input[type="range"] { min-width: 0; width: 100%; }
+  #play-bar > .vol-label input[type="range"] { min-width: 0; width: 100%; }
   #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #xy-quant-toggle { order: 2; }
 }
 /* Smal och låg (t.ex. iPhone SE liggande): flikarna bara som ikoner, ingen MIDI-status, mindre ljudlista */
@@ -737,7 +745,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #midi-status { display: none; }
   html.fixed-screen #play-bar > .preset-label { flex-basis: 150px; }
   html.fixed-screen #play-bar { gap: 6px; flex-wrap: nowrap; }
-  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .xy-reverb-bar, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #xy-quant-toggle { order: 0; }
+  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #xy-quant-toggle { order: 0; }
   /* XY: ordet "Klang" göms (knapparna har namnen i title och listan heter Klang för skärmläsare) */
   html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; flex: none; } /* klangknapparna krymper inte in under reglagen */
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 4px; font-size: 0.9rem; }
@@ -746,10 +754,8 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #xy-quant-toggle span,
   html.fixed-screen body[data-tab="xy"] #quick-key span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   html.fixed-screen #xy-quant-toggle { padding-left: 9px; padding-right: 9px; }
-  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label,
-  html.fixed-screen body[data-tab="xy"] #play-bar > .xy-reverb-bar { font-size: 0; gap: 0; flex: 1 1 60px; min-width: 0; }
-  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label input[type="range"],
-  html.fixed-screen body[data-tab="xy"] #play-bar > .xy-reverb-bar input[type="range"] { min-width: 46px; }
+  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label { font-size: 0; gap: 0; flex: 1 1 60px; min-width: 0; }
+  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label input[type="range"] { min-width: 46px; }
 }
 
 /* Mobil liggande (minst 700 px bred): flikarna och spelraden delar EN rad högst upp, bara ikoner –
@@ -775,19 +781,16 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #play-bar #arp-toggle,
   html.fixed-screen #play-bar #seq-toggle,
   html.fixed-screen #play-bar #xy-quant-toggle { padding-left: 9px; padding-right: 9px; }
-  /* Volym (och Reverb på XY): bara reglaget */
-  html.fixed-screen #play-bar > .vol-label,
-  html.fixed-screen #play-bar > .xy-reverb-bar { font-size: 0; gap: 0; flex: 0 1 110px; }
-  html.fixed-screen #play-bar > .vol-label input[type="range"],
-  html.fixed-screen #play-bar > .xy-reverb-bar input[type="range"] { min-width: 60px; }
+  /* Volym: bara reglaget */
+  html.fixed-screen #play-bar > .vol-label { font-size: 0; gap: 0; flex: 0 1 110px; }
+  html.fixed-screen #play-bar > .vol-label input[type="range"] { min-width: 60px; }
   html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; flex: none; } /* klangknapparna krymper inte in under reglagen */
   html.fixed-screen #play-bar .xy-sound .seg button { font-size: 0.9rem; padding: 3px 4px; }
   html.fixed-screen #play-bar .xy-sound .seg-icon { width: 18px; height: 18px; }
   /* XY med Skala på: Tonart visar bara grundtonen här (hela tonarten finns i namnet och i rutan) */
   html.fixed-screen body[data-tab="xy"] #quick-key span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   html.fixed-screen body[data-tab="xy"] #play-bar { gap: 4px; }
-  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label input[type="range"],
-  html.fixed-screen body[data-tab="xy"] #play-bar > .xy-reverb-bar input[type="range"] { min-width: 52px; }
+  html.fixed-screen body[data-tab="xy"] #play-bar > .vol-label input[type="range"] { min-width: 52px; }
 }
 
 /* Ring: sektorer runt ett tomt hål där muspekaren kan vila */
@@ -1989,11 +1992,11 @@ body[data-level="simple"] .lib-tweak { display: none !important; }
    - Stora −/+-knappar: XY-klangerna får smalare knappar så att de ryms på telefonen.
    - Liggande mobil med större storlek (Stor/Extra stor): rubriken och spelraden på var sin rad. */
 html.fixed-screen body #play-bar { flex-wrap: wrap; row-gap: 6px; }
-html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-reverb-bar, .xy-sound) { min-width: min-content; }
-html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-reverb-bar) input[type="range"] { min-width: 56px; }
+html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-sound) { min-width: min-content; }
+html.fixed-screen body[data-tab] #play-bar > :is(.vol-label) input[type="range"] { min-width: 56px; }
 /* Surfplatta: bredden räknas från det minsta reglaget får vara, så att raden bara bryts när det verkligen inte ryms */
 @media (min-width: 601px) {
-  html.fixed-screen body[data-tab] #play-bar > :is(.vol-label, .xy-reverb-bar) { flex: 1 1 0; max-width: 260px; }
+  html.fixed-screen body[data-tab] #play-bar > :is(.vol-label) { flex: 1 1 0; max-width: 260px; }
 }
 /* Stående surfplatta: Guide och Om bara som ikoner (namnen finns kvar för skärmläsare), så att flikraden ryms */
 @media (orientation: portrait) and (min-width: 601px) and (max-width: 900px) {

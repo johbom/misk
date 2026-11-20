@@ -79,8 +79,41 @@ function renderNotePad(pad) {
     pad.el.removeAttribute('title');
   }
   pad.el.innerHTML = `${icon || pad.label()}<small>${
-    pad.sample ? pad.sampleName : `MIDI ${pad.note}`
-  }</small>`;
+    pad.sample ? `${padSampleSecs(pad)} s` : `MIDI ${pad.note}`
+  }</small>${pad.sample ? padSampleMarks(pad) : ''}`;
+  // En ruta med inspelning/ljudfil: det hörs också för skärmläsare och syns som verktygstips
+  if (pad.sample) {
+    const what = `${pad.label()}: ${pad.sampleName} (${padSampleSecs(pad)} s)`;
+    pad.el.setAttribute('aria-label', what);
+    pad.el.title = what;
+  }
+}
+
+const padSampleSecs = (pad) => { const v = pad.sample.duration.toFixed(1); return LANG === 'en' ? v : v.replace('.', ','); };
+
+// Rutans ljud syns: en röd prick (inspelning) eller en not (ljudfil) i hörnet och vågformen längst ned
+function padSampleMarks(pad) {
+  if (pad.samplePeaksOf !== pad.sample) {
+    const d = pad.sample.getChannelData(0);
+    const cols = 40;
+    const per = d.length / cols;
+    const peaks = [];
+    let top = 1e-6;
+    for (let c = 0; c < cols; c++) {
+      let m = 0;
+      for (let i = Math.floor(c * per), end = Math.min(d.length, Math.floor((c + 1) * per)); i < end; i += 4) m = Math.max(m, Math.abs(d[i]));
+      peaks.push(m);
+      top = Math.max(top, m);
+    }
+    pad.samplePeaks = peaks.map((m) => Math.max(0.06, m / top));
+    pad.samplePeaksOf = pad.sample;
+  }
+  const bars = pad.samplePeaks.map((m, c) => `<rect x="${c + 0.15}" y="${(10 - m * 10).toFixed(2)}" width="0.7" height="${(m * 20).toFixed(2)}"/>`).join('');
+  const rec = pad.sampleName === t('Inspelning');
+  const badge = rec
+    ? '<svg class="pad-sample-badge rec" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7" fill="currentColor"/></svg>'
+    : '<svg class="pad-sample-badge" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M9 17.5a3 3 0 1 1-2-2.83V5l11-2v11.5a3 3 0 1 1-2-2.83V6.4l-7 1.27z"/></svg>';
+  return `${badge}<svg class="pad-wave" viewBox="0 0 40 20" preserveAspectRatio="none" aria-hidden="true">${bars}</svg>`;
 }
 
 async function onDropSample(e, pad) {

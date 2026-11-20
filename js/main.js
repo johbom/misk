@@ -25,6 +25,7 @@ setupVibrato();
 setupPosition();
 setupOsc();
 setupXY();
+setupXyFx();
 setupXyRec();
 setupPadRec();
 setupArp();

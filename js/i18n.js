@@ -662,6 +662,8 @@ const EN = {
   'Hastighet': 'Rate',
   'Effekter': 'Effects',
   'Stäng effekterna': 'Close the effects',
+  'Effekter för XY': 'Effects for XY',
+  'Effekter för XY (drive, chorus, delay och reverb)': 'Effects for XY (drive, chorus, delay and reverb)',
   'Tonarten används på XY när Skala är på. Omfånget gäller alltid.': 'On XY the key is used when Scale is on. The range always applies.',
   'Effekter för ljudet (samma som under Ljud → Skruva själv)': 'Effects for the sound (same as under Sound → Tweak it yourself)',
   'Delaytid': 'Delay time',
@@ -924,7 +926,8 @@ const EN_HTML = {
     The <strong>sound engine’s own</strong> options follow the chosen engine, e.g. wavetable position (Wavetable),
     modulation depth (FM), vowel (Voice) or breath pressure (Winds).
     MIDI sends the same: CC74 (filter), CC11 (volume), CC1 (vibrato), CC2 and CC71 (the engine’s own) or pitch bend.`,
-  'xy-hint': 'The right edge is C7. Moving up opens the filter. Sine, Triangle and Warm also get FM upwards (more overtones), and Sine vibrato too. Tone and reverb can also be set on the XY page. Reverb under <em>Sound</em> only applies to the pads.',
+  'xy-fx-hint': 'The same effects as the pads’ sound, but separate for the XY pad. The effects under <em>Sound</em> only apply to the pads.',
+  'xy-hint': 'The right edge is C7. Moving up opens the filter. Sine, Triangle and Warm also get FM upwards (more overtones), and Sine vibrato too. Tone and effects can also be set on the XY page.',
   'access-hint': 'Choose a profile and fine-tune below. Everything is saved in <em>My presets</em>.',
   'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds.',
   'switch-learn-msg': 'Press <strong>Learn</strong> and then the switch or key to use.',

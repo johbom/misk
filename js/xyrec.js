@@ -106,9 +106,9 @@ function xyGrainStart(id, nx, ny) {
   const buf = xyRecBuffer();
   if (!buf) { log(t('Spela in något först med ● Spela in.')); return; }
   const ctx = audioCtx;
-  engines.notes.wake();
+  engines.xy.wake();
   const holder = { released: 0, kill() {} }; // motorn somnar inte medan pekaren spelar
-  engines.notes.voices.add(holder);
+  engines.xy.voices.add(holder);
   if (xyRec.worklet === ctx) {
     // I ljudtråden: inspelningen skickas bara första gången (sedan delar noderna på den)
     const send = xyRec.sentId !== xyRec.id || xyRec.sentCtx !== ctx;
@@ -150,7 +150,7 @@ function xyGrainStop(id) {
   const v = xyGrains.get(id);
   if (!v) return;
   xyGrains.delete(id);
-  engines.notes.voices.delete(v.holder);
+  engines.xy.voices.delete(v.holder);
   if (v.node) {
     v.node.port.postMessage({ stop: true }); // tonas ut i ljudtråden, sedan är noden klar
     setTimeout(() => { try { v.node.disconnect(); } catch {} }, 400);

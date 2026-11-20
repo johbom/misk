@@ -72,6 +72,7 @@ const ui = {
   xySound: $('xy-sound'),
   xyQuantize: $('xy-quantize'),
   xyReverb: $('xy-reverb'),
+  xyFxParams: $('xy-fx-params'),
   dwell: $('dwell'),
   releaseDelay: $('release-delay'),
   lockout: $('lockout'),
