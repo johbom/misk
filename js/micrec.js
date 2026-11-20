@@ -6,42 +6,91 @@
 // normaliserat (toppen till 0,9) och med korta uttoningar – eller onDone(null, sr, felmeddelande).
 // Sparas i webbläsaren med micSave/micLoad/micDelete (IndexedDB, databasen hoverPads, tabellen rec).
 
-const mic = { on: false, stream: null, src: null, node: null, mute: null, chunks: [], timer: 0, tick: 0, started: 0, max: 10, onDone: null, onTick: null };
+const mic = { on: false, pending: false, stream: null, src: null, node: null, mute: null, stopCap: null, chunks: [], timer: 0, tick: 0, started: 0, max: 10, onDone: null, onTick: null };
 const micActive = () => mic.on;
 const micLeft = () => Math.max(0, Math.ceil(mic.max - (performance.now() - mic.started) / 1000));
+const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+// Öppna mikrofonen. Först utan webbläsarens ljudbehandling (ekosläckning m.m. förstör instrumentljud);
+// går det inte, en gång till med webbläsarens vanliga inställningar.
+async function micOpen() {
+  try {
+    return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+  } catch (err) {
+    if (['NotAllowedError', 'SecurityError', 'PermissionDeniedError'].includes(err?.name)) throw err;
+    return navigator.mediaDevices.getUserMedia({ audio: true });
+  }
+}
+
+// Vad gick fel? (felkoden står inom parentes, så att den går att säga vidare)
+function micErrorText(err) {
+  const name = err?.name || 'Error';
+  let msg;
+  if (['NotAllowedError', 'SecurityError', 'PermissionDeniedError'].includes(name)) {
+    msg = isIos()
+      ? 'Mikrofonen är inte tillåten för sidan. Tryck på aA i adressfältet → Webbplatsinställningar → Mikrofon → Fråga eller Tillåt, och ladda om sidan. Kolla också Inställningar → Safari → Mikrofon (Chrome och andra appar: Inställningar → Integritet och säkerhet → Mikrofon).'
+      : 'Mikrofonen är inte tillåten för sidan. Tillåt den med ikonen i adressfältet (webbplatsinställningar) och ladda om sidan.';
+  } else if (['NotFoundError', 'DevicesNotFoundError', 'OverconstrainedError'].includes(name)) {
+    msg = 'Ingen mikrofon hittades.';
+  } else if (['NotReadableError', 'TrackStartError', 'AbortError'].includes(name)) {
+    msg = 'Mikrofonen används av något annat just nu (till exempel ett samtal eller en annan app). Stäng det och försök igen.';
+  } else {
+    msg = 'Mikrofonen gick inte att öppna. Tillåt mikrofonen för sidan och försök igen.';
+  }
+  return `${t(msg)} (${name})`;
+}
+
+// Ta emot ljudet från mikrofonen: i ljudtråden (AudioWorklet) eller, om den inte går att använda,
+// med den äldre ScriptProcessor. Ger { node, stop }.
+async function micCapture() {
+  if (audioCtx.audioWorklet && typeof AudioWorkletNode === 'function') {
+    try {
+      if (!audioCtx.pmModule) audioCtx.pmModule = audioCtx.audioWorklet.addModule(PM_WORKLET_URL);
+      try { await audioCtx.pmModule; } catch (e) { audioCtx.pmModule = null; throw e; } // (nästa gång: försök igen)
+      const node = new AudioWorkletNode(audioCtx, 'rec-capture', { numberOfOutputs: 1, outputChannelCount: [1] });
+      node.port.onmessage = (e) => {
+        if (e.data === 'done') { micFinish(); return; }
+        mic.chunks.push(e.data);
+      };
+      return { node, stop: () => node.port.postMessage('stop') };
+    } catch { /* reserv nedan */ }
+  }
+  if (!audioCtx.createScriptProcessor) return null;
+  const node = audioCtx.createScriptProcessor(4096, 1, 1);
+  let on = true;
+  node.onaudioprocess = (e) => { if (on) mic.chunks.push(e.inputBuffer.getChannelData(0).slice()); };
+  return { node, stop: () => { on = false; setTimeout(micFinish, 0); } };
+}
 
 async function micStart({ max = 10, onTick = null, onDone }) {
-  if (mic.on) return false;
-  if (!navigator.mediaDevices?.getUserMedia) { log(t('Den här webbläsaren kan inte spela in från mikrofonen.')); return false; }
+  if (mic.on || mic.pending) return false;
+  if (!navigator.mediaDevices?.getUserMedia) {
+    log(t(window.isSecureContext === false ? 'Mikrofonen fungerar bara när sidan öppnas med https.' : 'Den här webbläsaren kan inte spela in från mikrofonen.'));
+    return false;
+  }
   if (!audioCtx) { try { initAudio(); } catch {} }
   if (!audioCtx) return false;
-  if (audioCtx.state !== 'running') audioCtx.resume();
+  if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
   let stream;
   try {
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
-  } catch {
-    log(t('Mikrofonen gick inte att öppna. Tillåt mikrofonen för sidan och försök igen.'));
+    stream = await micOpen();
+  } catch (err) {
+    log(micErrorText(err));
     return false;
   }
-  // Ljudtrådens modul (laddas annars först när ett ljud behöver den)
-  if (!audioCtx.pmModule) audioCtx.pmModule = audioCtx.audioWorklet.addModule(PM_WORKLET_URL);
-  try { await audioCtx.pmModule; } catch {
+  const cap = await micCapture();
+  if (!cap) {
     stream.getTracks().forEach((tr) => tr.stop());
-    log(t('Mikrofonen gick inte att öppna. Tillåt mikrofonen för sidan och försök igen.'));
+    log(t('Den här webbläsaren kan inte spela in från mikrofonen.'));
     return false;
   }
-  Object.assign(mic, { on: true, stream, chunks: [], max, onDone, onTick, started: performance.now() });
+  Object.assign(mic, { on: true, pending: true, stream, chunks: [], max, onDone, onTick, started: performance.now(), node: cap.node, stopCap: cap.stop });
   mic.src = audioCtx.createMediaStreamSource(stream);
-  mic.node = new AudioWorkletNode(audioCtx, 'rec-capture', { numberOfOutputs: 1, outputChannelCount: [1] });
-  mic.node.port.onmessage = (e) => {
-    if (e.data === 'done') { micFinish(); return; }
-    mic.chunks.push(e.data);
-  };
   mic.mute = audioCtx.createGain();
   mic.mute.gain.value = 0; // (noden måste vara kopplad för att räknas, men ska inte höras)
   mic.src.connect(mic.node).connect(mic.mute).connect(audioCtx.destination);
   // iPhone kan pausa ljudet när mikrofonen öppnas: väck det igen (annars kommer inget ljud in)
-  if (audioCtx.state !== 'running') audioCtx.resume();
+  if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {});
   mic.timer = setTimeout(micStop, max * 1000);
   mic.tick = setInterval(() => mic.onTick?.(micLeft()), 250);
   mic.onTick?.(micLeft());
@@ -53,23 +102,28 @@ function micStop() {
   mic.on = false;
   clearTimeout(mic.timer);
   clearInterval(mic.tick);
-  mic.node?.port.postMessage('stop'); // sista blocket kommer, sedan 'done'
+  mic.stopCap?.(); // sista blocket kommer, sedan micFinish
   mic.stream?.getTracks().forEach((tr) => tr.stop()); // stäng mikrofonen direkt
   mic.onTick?.(0);
-  setTimeout(() => { if (audioCtx.state !== 'running') audioCtx.resume(); }, 300); // (iPhone: ljudet tillbaka)
+  setTimeout(micFinish, 800); // (om ljudet var pausat kommer inget svar från ljudtråden)
+  setTimeout(() => { if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {}); }, 300); // (iPhone: ljudet tillbaka)
 }
 
 function micFinish() {
+  if (!mic.pending || mic.on) return;
+  mic.pending = false;
   try { mic.src?.disconnect(); mic.node?.disconnect(); mic.mute?.disconnect(); } catch {}
-  mic.src = mic.node = mic.mute = mic.stream = null;
+  if (mic.node) mic.node.onaudioprocess = null;
+  mic.src = mic.node = mic.mute = mic.stream = mic.stopCap = null;
   const sr = audioCtx.sampleRate;
   const n = mic.chunks.reduce((a, c) => a + c.length, 0);
+  const done = mic.onDone;
+  mic.onDone = null;
+  if (!n) { mic.chunks = []; done?.(null, sr, t('Inget ljud kom in från mikrofonen (ljudet var pausat). Försök igen.')); return; }
   const raw = new Float32Array(Math.min(n, Math.round(mic.max * sr)));
   let o = 0;
   for (const c of mic.chunks) { if (o >= raw.length) break; raw.set(c.subarray(0, raw.length - o), o); o += c.length; }
   mic.chunks = [];
-  const done = mic.onDone;
-  mic.onDone = null;
   const res = micClean(raw, sr);
   if (typeof res === 'string') done?.(null, sr, res);
   else done?.(res, sr);
