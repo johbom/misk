@@ -27,11 +27,12 @@ Om-rutan har också en **ansvarsfriskrivning**: appen är gratis och tillhandah�
 Om-rutan har ett avsnitt **Integritet och GDPR** (på engelska *Privacy and GDPR*). Fakta som gäller för appen:
 
 - **Ingen statistik eller spårning:** inga cookies, ingen besöksstatistik, inga annonser och inga skript eller typsnitt från andra företag. Det finns inget konto, och appen skickar inget om hur den används.
-- **Lagring på enheten:** inställningar, presets, egna ackord, språk och senast öppna flik ligger i `localStorage`. Nycklarna börjar med `hoverPads`, och därtill finns `midiOut`. Appens filer ligger i service workerns cache. Inget lämnar enheten.
+- **Lagring på enheten:** inställningar, presets, egna ackord, språk och senast öppna flik ligger i `localStorage`. Nycklarna börjar med `hoverPads`, och därtill finns `midiOut`. Inspelningar och rutornas ljudfiler ligger i IndexedDB (databasen `hoverPads`, tabellen `rec`). Appens filer ligger i service workerns cache. Inget lämnar enheten.
 - **Webbhotell:** GitHub Pages ser besökarens IP-adress och sparar den i loggar av säkerhetsskäl, enligt GitHubs integritetspolicy. Ägaren av webbplatsen får inte se loggarna.
-- **Annat:** varken mikrofon eller kamera används. Web MIDI frågar om lov först.
-- **Att tänka på:** inga personuppgifter samlas in, så det behövs ingen cookie-ruta och inget samtycke. Det man själv skriver in, till exempel presetnamn, sparas däremot lokalt. På delade enheter bör man därför undvika namn och känsliga uppgifter.
-- **Radera sparade uppgifter:** en knapp i Om-rutan tar bort alla `hoverPads…`-nycklar och `midiOut` efter en bekräftelse, och startar sedan om appen i samma språk. Cachen med appens filer ligger kvar, så appen fungerar fortfarande utan internet. Vill man ta bort allt, även filerna, rensar man webbplatsdata i webbläsaren.
+- **Mikrofon:** används bara för egna inspelningar (● Spela in på Toner och XY), efter webbläsarens fråga om lov. Den är på bara medan inspelningen pågår (högst 10 s) och stängs direkt; ingen lyssning i bakgrunden. Inspelningen sparas bara på enheten, skickas ingenstans och följer inte med i presets eller exporterade presetfiler. Den finns kvar tills man tar bort den (✕ Ta bort, en ny inspelning eller Radera sparade uppgifter).
+- **Annat:** kameran används inte. Web MIDI frågar om lov först.
+- **Att tänka på:** inga personuppgifter samlas in, så det behövs ingen cookie-ruta och inget samtycke. Det man själv skriver in, till exempel presetnamn, och det man spelar in sparas däremot lokalt. På delade enheter bör man därför undvika namn och känsliga uppgifter. En röstinspelning kan räknas som en personuppgift: spela bara in den som vet om det och vill, och ta bort inspelningar som inte behövs.
+- **Radera sparade uppgifter:** en knapp i Om-rutan tar bort alla `hoverPads…`-nycklar, `midiOut` och databasen med inspelningar efter en bekräftelse, och startar sedan om appen i samma språk. Cachen med appens filer ligger kvar, så appen fungerar fortfarande utan internet. Vill man ta bort allt, även filerna, rensar man webbplatsdata i webbläsaren.
 
 Överst i Om-rutan finns en **QR-kod** till `https://johbom.github.io/misk/`. Den är en fast fil, `icons/qr-app.svg`, så den fungerar utan internet och utan någon QR-tjänst. Den skapas med `tools/make_qr.py`, som kräver `pip install segno`.
 

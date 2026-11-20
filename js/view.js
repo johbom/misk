@@ -49,13 +49,15 @@ function setupAbout() {
   });
   // Radera allt appen sparat i localStorage (inställningar, presets, ackord, flikar, språk).
   // Cachen med appens filer får ligga kvar, så att appen fortfarande fungerar utan internet.
-  $('about-erase').addEventListener('click', () => {
-    if (!confirm(t('Radera alla inställningar, presets och egna ackord på den här enheten? Det går inte att ångra.'))) return;
+  $('about-erase').addEventListener('click', async () => {
+    if (!confirm(t('Radera alla inställningar, presets, egna ackord och inspelningar på den här enheten? Det går inte att ångra.'))) return;
+    if (micActive()) micStop();
     try {
       Object.keys(localStorage)
         .filter((k) => k.startsWith('hoverPads') || k === 'midiOut')
         .forEach((k) => localStorage.removeItem(k));
     } catch { /* ingen lagring att radera */ }
+    await micEraseAll(); // inspelningarna och rutornas ljudfiler (js/micrec.js)
     location.replace(`${location.pathname}?lang=${LANG}`); // behåll språket som visas nu
   });
 }

@@ -546,7 +546,7 @@ const EN = {
   'Tips': 'Tip',
   'Integritet och GDPR': 'Privacy and GDPR',
   'Radera sparade uppgifter': 'Erase stored data',
-  'Radera alla inställningar, presets och egna ackord på den här enheten? Det går inte att ångra.': 'Erase all settings, presets and your own chords on this device? This cannot be undone.',
+  'Radera alla inställningar, presets, egna ackord och inspelningar på den här enheten? Det går inte att ångra.': 'Erase all settings, presets, your own chords and recordings on this device? This cannot be undone.',
   'Öppna Hover Pads på en annan enhet': 'Open Hover Pads on another device',
   'Skanna QR-koden med kameran i en mobil eller surfplatta.': 'Scan the QR code with the camera on a phone or tablet.',
   'QR-kod till johbom.github.io/misk': 'QR code for johbom.github.io/misk',
@@ -963,22 +963,32 @@ const EN_HTML = {
     and no scripts or fonts from other companies. There is no account and no sign-in, and the app sends nothing about how it
     is used – neither to TFH nor to anyone else.`,
   'about-privacy-list': `<li><strong>Stored on the device:</strong> settings, presets, your own chords, the chosen language and
-    the last open tab are kept in the browser's local storage on the device you are using. The app's files are kept in the
-    browser's cache so that it works without internet. None of this leaves the device.</li>
+    the last open tab are kept in the browser's local storage on the device you are using. Recordings and sound files you have
+    put on the pads are kept in the browser's database on the same device. The app's files are kept in the browser's cache so
+    that it works without internet. None of this leaves the device.</li>
     <li><strong>Hosting:</strong> the app is served from GitHub Pages. As with any website, the server sees the device's IP
     address when the files are fetched, and GitHub keeps it in logs for a while for security reasons, under GitHub's privacy
     statement. TFH has no access to those logs. An installed app only contacts the server to fetch updates.</li>
-    <li><strong>Microphone and camera</strong> are not used. Eye gaze is handled by the device's own eye-gaze system, like an
+    <li><strong>Microphone – only for your own recordings on the device:</strong> the microphone is only used when you yourself
+    press <em>Record</em> (on Notes or XY). The first time, the browser asks for permission, and you can say no or withdraw it
+    in the browser's settings – the rest of the app still works. The microphone is only on while recording (at most 10
+    seconds) and is closed straight afterwards; the app never listens in the background. The phone or browser shows when the
+    microphone is on. The recording stays on the device: it is not uploaded or sent to TFH or anyone else, and it is not
+    included in presets or exported preset files. It stays until you remove it (<em>✕ Delete</em> on Notes, a new recording,
+    or <em>Erase stored data</em> below).</li>
+    <li><strong>The camera</strong> is not used. Eye gaze is handled by the device's own eye-gaze system, like an
     ordinary mouse pointer – the app only sees where the pointer is and does not store it.</li>
     <li><strong>MIDI:</strong> if you connect a MIDI instrument, the browser asks for permission first. The notes only go to
     your own connected devices.</li>
     <li><strong>Links</strong> to specialneedstoys.com and other websites lead to pages with their own terms and their own statistics.</li>`,
   'about-gdpr': `<strong>Good to know:</strong> The app collects no personal data, so it needs no cookie banner and no consent,
-    and TFH holds no data about you to disclose or erase. What you type in yourselves, such as preset names, is however
-    stored on the device. If several people share a device, avoid full names and sensitive information in preset names, and
-    treat exported preset files like any other document.`,
-  'about-erase': `The button erases everything Hover Pads has stored on this device: settings, presets, your own chords and the
-    selected tabs. The app then restarts as on the first visit. If you want to keep your presets, export them first under
+    and TFH holds no data about you to disclose or erase. What you type in yourselves, such as preset names, and what you record
+    are however stored on the device. If several people share a device, avoid full names and sensitive
+    information in preset names, and treat exported preset files like any other document. A recording of someone's voice can
+    count as personal data, even if it only exists on the device: only record people who know about it and agree, and remove
+    recordings that are no longer needed – otherwise others using the device can hear them.`,
+  'about-erase': `The button erases everything Hover Pads has stored on this device: settings, presets, your own chords, the
+    selected tabs, recordings and sound files on the pads. The app then restarts as on the first visit. If you want to keep your presets, export them first under
     Settings → My presets. The app's own files stay, so that it still works without internet.`,
   'about-erase-browser': `You can also clear the site data for the page in the browser's settings, which also removes the app's
     files. On iPhone and iPad: remove the app from the Home Screen.`,

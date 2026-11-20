@@ -177,12 +177,34 @@ function micClean(data, sr) {
 }
 
 // ---------- Spara i webbläsaren (IndexedDB) ----------
+// (en enda öppen anslutning, så att databasen går att radera – se micEraseAll)
+let micDbOpen = null;
 function micDb() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('hoverPads', 1);
-    req.onupgradeneeded = () => req.result.createObjectStore('rec');
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+  if (!micDbOpen) {
+    micDbOpen = new Promise((resolve, reject) => {
+      const req = indexedDB.open('hoverPads', 1);
+      req.onupgradeneeded = () => req.result.createObjectStore('rec');
+      req.onsuccess = () => {
+        req.result.onversionchange = () => { req.result.close(); micDbOpen = null; };
+        resolve(req.result);
+      };
+      req.onerror = () => reject(req.error);
+    });
+    micDbOpen.catch(() => { micDbOpen = null; });
+  }
+  return micDbOpen;
+}
+
+// Radera alla inspelningar och rutornas ljudfiler (Om → Radera sparade uppgifter)
+async function micEraseAll() {
+  try { if (micDbOpen) (await micDbOpen).close(); } catch {}
+  micDbOpen = null;
+  await new Promise((resolve) => {
+    try {
+      const req = indexedDB.deleteDatabase('hoverPads');
+      req.onsuccess = req.onerror = req.onblocked = () => resolve();
+    } catch { resolve(); }
+    setTimeout(resolve, 1500);
   });
 }
 async function micSave(key, value) {
