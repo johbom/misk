@@ -5,6 +5,8 @@
 // Den sparas i webbläsaren (IndexedDB) och XY byter till klangen "Inspelning".
 //
 // Granulärt: varje pekare spelar korta, överlappande korn (90 ms, ett nytt var 30:e ms) ur inspelningen.
+// Kornen räknas i ljudtråden (rec-grain i js/pm-worklet.js: mjuka fönster och exakt tid, inget knaster);
+// finns ingen ljudtråd görs de med vanliga ljudnoder.
 //  X = var i inspelningen kornen tas (vänster = början, höger = slutet)
 //  Y = tonhöjd, en oktav ned (nederkant) till en oktav upp (överkant); mitten = som inspelat.
 //      Med Skala på hoppar tonhöjden i halvtoner.
@@ -18,7 +20,7 @@ const GRAIN_EVERY = 0.03; // tid mellan kornen (tre överlappar)
 const GRAIN_JITTER = 0.015; // slumpad förskjutning i inspelningen (s)
 const GRAIN_LEVEL = 0.55;
 
-const xyRec = { buf: null, pending: null, peaks: null };
+const xyRec = { buf: null, pending: null, peaks: null, id: 0, sentId: -1, sentCtx: null, worklet: null };
 const xyGrains = new Map(); // pointerId -> { nx, ny, next, amp }
 let xyGrainTimer = 0;
 
@@ -57,7 +59,9 @@ function xyRecSet(data, sr) {
   if (!ctx) { xyRec.pending = { data, sr }; return; } // ljudet är inte startat än: skapas vid första behov
   xyRec.buf = ctx.createBuffer(1, data.length, sr);
   xyRec.buf.copyToChannel(data, 0);
+  xyRec.id++; // (ny inspelning: skickas till ljudtråden nästa gång)
   xyRec.peaks = null; // vågformen ritas om
+  xyGrainPrepare();
   xyRecSync();
   xyDraw();
 }
@@ -90,17 +94,45 @@ async function xyRecLoad() {
 }
 
 // ---------- Granulär uppspelning ----------
+// Ljudtrådens modul laddas när det finns en inspelning (så att första kornet kommer direkt)
+function xyGrainPrepare() {
+  const ctx = audioCtx;
+  if (!ctx?.audioWorklet || typeof AudioWorkletNode !== 'function' || xyRec.worklet === ctx) return;
+  if (!ctx.pmModule) ctx.pmModule = ctx.audioWorklet.addModule(PM_WORKLET_URL);
+  ctx.pmModule.then(() => { xyRec.worklet = ctx; }, () => {});
+}
+
 function xyGrainStart(id, nx, ny) {
   const buf = xyRecBuffer();
   if (!buf) { log(t('Spela in något först med ● Spela in.')); return; }
   const ctx = audioCtx;
   engines.notes.wake();
+  const holder = { released: 0, kill() {} }; // motorn somnar inte medan pekaren spelar
+  engines.notes.voices.add(holder);
+  if (xyRec.worklet === ctx) {
+    // I ljudtråden: inspelningen skickas bara första gången (sedan delar noderna på den)
+    const send = xyRec.sentId !== xyRec.id || xyRec.sentCtx !== ctx;
+    try {
+      const node = new AudioWorkletNode(ctx, 'rec-grain', {
+        numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2],
+        processorOptions: {
+          id: xyRec.id, data: send ? buf.getChannelData(0) : null, sr: buf.sampleRate,
+          grain: GRAIN_S, every: GRAIN_EVERY, jitter: GRAIN_JITTER, level: GRAIN_LEVEL, pan: 0.35,
+          nx, semis: xyGrainSemis(ny),
+        },
+      });
+      xyRec.sentId = xyRec.id;
+      xyRec.sentCtx = ctx;
+      node.connect(xyBus());
+      xyGrains.set(id, { nx, ny, node, holder });
+      return;
+    } catch { /* reserv nedan */ }
+  }
+  xyGrainPrepare();
   const amp = ctx.createGain();
   amp.gain.value = 0;
   amp.gain.setTargetAtTime(1, ctx.currentTime, 0.01);
   amp.connect(xyBus());
-  const holder = { released: 0, kill() {} }; // motorn somnar inte medan pekaren spelar
-  engines.notes.voices.add(holder);
   xyGrains.set(id, { nx, ny, next: ctx.currentTime + NOTE_LOOKAHEAD, amp, holder });
   if (!xyGrainTimer) xyGrainTimer = setInterval(xyGrainTick, 20);
   xyGrainTick();
@@ -108,7 +140,10 @@ function xyGrainStart(id, nx, ny) {
 
 function xyGrainMove(id, nx, ny) {
   const v = xyGrains.get(id);
-  if (v) { v.nx = nx; v.ny = ny; }
+  if (!v) return;
+  v.nx = nx;
+  v.ny = ny;
+  v.node?.port.postMessage({ nx, semis: xyGrainSemis(ny) });
 }
 
 function xyGrainStop(id) {
@@ -116,11 +151,16 @@ function xyGrainStop(id) {
   if (!v) return;
   xyGrains.delete(id);
   engines.notes.voices.delete(v.holder);
+  if (v.node) {
+    v.node.port.postMessage({ stop: true }); // tonas ut i ljudtråden, sedan är noden klar
+    setTimeout(() => { try { v.node.disconnect(); } catch {} }, 400);
+    return;
+  }
   const now = audioCtx.currentTime;
   v.amp.gain.cancelScheduledValues(now);
   v.amp.gain.setTargetAtTime(0, now, 0.02);
   setTimeout(() => { try { v.amp.disconnect(); } catch {} }, (GRAIN_S + 0.3) * 1000);
-  if (!xyGrains.size) { clearInterval(xyGrainTimer); xyGrainTimer = 0; }
+  if (![...xyGrains.values()].some((g) => g.amp)) { clearInterval(xyGrainTimer); xyGrainTimer = 0; }
 }
 
 const xyGrainStopAll = () => [...xyGrains.keys()].forEach(xyGrainStop);
@@ -137,6 +177,7 @@ function xyGrainTick() {
   if (!ctx || !buf) return;
   const now = ctx.currentTime;
   for (const v of xyGrains.values()) {
+    if (v.node) continue; // (räknas i ljudtråden)
     if (v.next < now) v.next = now + 0.005; // (efter en paus i webbläsaren: börja om nu)
     while (v.next < now + 0.08) {
       const rate = Math.pow(2, xyGrainSemis(v.ny) / 12);
@@ -224,6 +265,7 @@ function setupXyRec() {
   ui.xySound.addEventListener('change', () => {
     xyStopAll();
     if (xyRecOn() && !xyRec.buf && !xyRec.pending) log(t('Spela in något först med ● Spela in.'));
+    if (xyRecOn() && audioCtx) { xyRecBuffer(); xyGrainPrepare(); }
   });
   xyRecSync();
   xyRecLoad();

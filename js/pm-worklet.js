@@ -1224,3 +1224,83 @@ class RecCapture extends AudioWorkletProcessor {
   }
 }
 registerProcessor('rec-capture', RecCapture);
+
+// rec-grain – XY:s inspelning spelad granulärt (js/xyrec.js), en nod per finger/pekare.
+// Kornen räknas sampel för sampel i ljudtråden: mjuka Hann-fönster (inga hörn i kurvan som knastrar),
+// exakt tid mellan kornen (inga glapp när sidan har mycket att göra) och mjuk interpolering i ljudet.
+// Inspelningen skickas en gång (processorOptions.data) och delas sedan av alla noder (REC_GRAIN_DATA).
+// port: { nx, semis } = ny plats och tonhöjd, { stop: true } = tona ut och sluta.
+const REC_GRAIN_DATA = { id: -1, data: null, sr: 48000 };
+class RecGrain extends AudioWorkletProcessor {
+  constructor(opts) {
+    super();
+    const o = opts.processorOptions || {};
+    if (o.data) { REC_GRAIN_DATA.id = o.id; REC_GRAIN_DATA.data = o.data; REC_GRAIN_DATA.sr = o.sr; }
+    this.ok = REC_GRAIN_DATA.id === o.id && !!REC_GRAIN_DATA.data;
+    this.data = REC_GRAIN_DATA.data;
+    this.srcRate = REC_GRAIN_DATA.sr / sampleRate;
+    this.len = Math.max(16, Math.round(o.grain * sampleRate)); // kornets längd (utsampel)
+    this.hop = Math.max(1, Math.round(o.every * sampleRate));
+    this.jitter = o.jitter * REC_GRAIN_DATA.sr; // slumpad plats (källsampel)
+    this.level = o.level;
+    this.pan = o.pan;
+    this.nx = o.nx;
+    this.semis = o.semis;
+    this.win = new Float32Array(this.len);
+    for (let i = 0; i < this.len; i++) this.win[i] = 0.5 - 0.5 * Math.cos((2 * Math.PI * i) / (this.len - 1));
+    this.grains = [];
+    this.wait = 0;
+    this.gain = 0;
+    this.target = 1;
+    this.att = 1 - Math.exp(-1 / (0.01 * sampleRate));
+    this.rel = 1 - Math.exp(-1 / (0.03 * sampleRate));
+    this.port.onmessage = (e) => {
+      const d = e.data;
+      if (d.stop) { this.target = 0; return; }
+      if (d.nx !== undefined) this.nx = d.nx;
+      if (d.semis !== undefined) this.semis = d.semis;
+    };
+  }
+
+  spawn() {
+    const n = this.data.length;
+    const rate = Math.pow(2, this.semis / 12) * this.srcRate;
+    const span = this.len * rate; // så mycket av inspelningen kornet läser
+    const max = Math.max(0, n - span - 2);
+    const pos = Math.max(0, Math.min(max, this.nx * n - span / 2 + (Math.random() * 2 - 1) * this.jitter));
+    const a = ((Math.random() * 2 - 1) * this.pan + 1) * Math.PI / 4; // lika effekt: mitten = 0,707 per sida
+    this.grains.push({ pos, rate, i: 0, l: Math.cos(a), r: Math.sin(a) });
+  }
+
+  process(inputs, outputs) {
+    const out = outputs[0];
+    const L = out[0];
+    const R = out[1] || out[0];
+    if (!this.ok) return false;
+    const d = this.data;
+    const win = this.win;
+    const len = this.len;
+    for (let s = 0; s < L.length; s++) {
+      if (this.target > 0 && --this.wait <= 0) { this.spawn(); this.wait = this.hop; }
+      this.gain += (this.target - this.gain) * (this.target > this.gain ? this.att : this.rel);
+      let l = 0;
+      let r = 0;
+      for (let k = 0; k < this.grains.length; k++) {
+        const g = this.grains[k];
+        const x = g.pos + g.i * g.rate;
+        const j = x | 0;
+        const v = (d[j] + (d[j + 1] - d[j]) * (x - j)) * win[g.i];
+        l += v * g.l;
+        r += v * g.r;
+        g.i++;
+      }
+      if (this.grains.length && this.grains[0].i >= len) this.grains = this.grains.filter((g) => g.i < len);
+      const k = this.gain * this.level;
+      L[s] = l * k;
+      if (R !== L) R[s] = r * k;
+    }
+    // Uttonad och inga korn kvar: noden är klar
+    return !(this.target === 0 && this.gain < 1e-4);
+  }
+}
+registerProcessor('rec-grain', RecGrain);
