@@ -13,7 +13,24 @@ const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.p
 
 // Öppna mikrofonen. Först utan webbläsarens ljudbehandling (ekosläckning m.m. förstör instrumentljud);
 // går det inte, en gång till med webbläsarens vanliga inställningar.
+// iPhone: appen ställer ljudet på "bara uppspelning" (js/audio.js, så att det hörs även med ljudet avstängt
+// på sidoknappen). Då vägrar iOS att öppna mikrofonen ("Audiosession category is not compatible with audio
+// capture"), så medan inspelningen pågår är det "uppspelning och inspelning" – sedan tillbaka.
+function micSession(rec) {
+  try { if (navigator.audioSession) navigator.audioSession.type = rec ? 'play-and-record' : 'playback'; } catch {}
+}
+
 async function micOpen() {
+  micSession(true);
+  try {
+    return await micOpenStream();
+  } catch (err) {
+    micSession(false);
+    throw err;
+  }
+}
+
+async function micOpenStream() {
   try {
     return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
   } catch (err) {
@@ -83,6 +100,7 @@ async function micStart({ max = 10, onTick = null, onDone }) {
   const cap = await micCapture();
   if (!cap) {
     stream.getTracks().forEach((tr) => tr.stop());
+    micSession(false);
     log(t('Den här webbläsaren kan inte spela in från mikrofonen.'));
     return false;
   }
@@ -106,6 +124,7 @@ function micStop() {
   clearInterval(mic.tick);
   mic.stopCap?.(); // sista blocket kommer, sedan micFinish
   mic.stream?.getTracks().forEach((tr) => tr.stop()); // stäng mikrofonen direkt
+  micSession(false); // (iPhone: tillbaka till bara uppspelning)
   mic.onTick?.(0);
   setTimeout(micFinish, 800); // (om ljudet var pausat kommer inget svar från ljudtråden)
   setTimeout(() => { if (audioCtx.state !== 'running') audioCtx.resume().catch(() => {}); }, 300); // (iPhone: ljudet tillbaka)
