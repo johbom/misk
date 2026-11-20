@@ -26,7 +26,6 @@ async function micOpen() {
 const isStandalone = () => navigator.standalone === true || matchMedia?.('(display-mode: standalone)').matches;
 function micErrorText(err) {
   const name = err?.name || 'Error';
-  const why = err?.message ? `${name}: ${err.message}` : name;
   let msg;
   if (['NotAllowedError', 'SecurityError', 'PermissionDeniedError'].includes(name)) {
     if (isIos() && isStandalone()) msg = 'Mikrofonen är inte tillåten för appen. Öppna Inställningar → Appar → Safari → Mikrofon → Fråga eller Tillåt. Stäng sedan appen helt (svep bort den) och öppna den igen.';
@@ -39,7 +38,8 @@ function micErrorText(err) {
   } else {
     msg = 'Mikrofonen startade inte. Ladda om sidan och försök igen.';
   }
-  return `${t(msg)} (${why})`;
+  // Felkoden först (den syns även om raden kapas), webbläsarens förklaring sist
+  return `${name}: ${t(msg)}${err?.message ? ` (${err.message})` : ''}`;
 }
 
 // Ta emot ljudet från mikrofonen: i ljudtråden (AudioWorklet) eller, om den inte går att använda,
@@ -77,7 +77,7 @@ async function micStart({ max = 10, onTick = null, onDone }) {
   try {
     stream = await micOpen();
   } catch (err) {
-    log(micErrorText(err));
+    log(micErrorText(err), 'error');
     return false;
   }
   const cap = await micCapture();

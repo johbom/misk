@@ -126,8 +126,9 @@ const ui = {
 const FIXED_SCREEN = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 1
   || new URLSearchParams(location.search).has('fast');
 
-function log(msg) {
+// kind 'error' = ett fel som måste gå att läsa i sin helhet (radbryts även på mobilen, style.css)
+function log(msg, kind) {
   ui.log.textContent = msg;
   // ▶ ♪ ■ = det som spelas just nu; döljs under Inställningar (style.css)
-  ui.log.dataset.kind = /^[▶♪■]/.test(msg) ? 'play' : 'info';
+  ui.log.dataset.kind = kind || (/^[▶♪■]/.test(msg) ? 'play' : 'info');
 }

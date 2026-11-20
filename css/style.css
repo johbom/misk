@@ -624,6 +624,8 @@ html.fixed-screen #settings {
 }
 html.fixed-screen footer { padding: 0 14px calc(6px + env(safe-area-inset-bottom)); font-size: 0.72rem; }
 html.fixed-screen footer p { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Fel (t.ex. mikrofonen) ska gå att läsa hela – högst fyra rader */
+html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; line-clamp: 4; color: #ff9a90; }
 
 /* Mobil på bredden (liggande): tonerna i två rader om åtta */
 @media (orientation: landscape) and (max-height: 520px) {
