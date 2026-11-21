@@ -139,7 +139,7 @@ function wizStopPreview() {
 // Spelar en följd ackord (listor med toner), ett i taget
 function wizPlay(seq, dur = 0.6) {
   if (!engine || !audioCtx) return;
-  if (audioCtx.state !== 'running') audioCtx.resume();
+  wakeAudio();
   wizStopPreview();
   const t0 = audioCtx.currentTime + 0.05;
   seq.forEach((notes, i) => {
@@ -176,7 +176,7 @@ function wizPreviewSound() {
 // Trumset: en kort takt (bastrumma, hihat, virvel …)
 function wizPreviewDrums(kit) {
   if (!audioCtx) return;
-  if (audioCtx.state !== 'running') audioCtx.resume();
+  wakeAudio();
   const t0 = audioCtx.currentTime + 0.05;
   const step = 0.16;
   [0, 2, 1, 2, 0, 0, 1, 3].forEach((i, k) => drumHit(drumPiece(kit, i), t0 + k * step));
@@ -185,7 +185,7 @@ function wizPreviewDrums(kit) {
 // XY: en kort glidning med vald klang, nerifrån och upp på ytan (filtret öppnas)
 function wizPreviewXY() {
   if (!audioCtx) return;
-  if (audioCtx.state !== 'running') audioCtx.resume();
+  wakeAudio();
   wizStopPreview();
   const t = audioCtx.currentTime + 0.05;
   const v = xyMakeVoice(220, 0.3, t);

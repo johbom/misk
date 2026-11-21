@@ -829,7 +829,7 @@ function setupAccess() {
     .forEach((k) => ui[k].addEventListener('input', refreshAccess));
   // Ljudet kan ha pausats (t.ex. om Start valdes med blicken): väck det vid första riktiga tryck
   ['pointerdown', 'keydown'].forEach((ev) => window.addEventListener(ev, () => {
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    wakeAudio();
   }, true));
   refreshAccess();
 }

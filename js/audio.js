@@ -8,6 +8,13 @@ let engine = null;
 const engines = { notes: null, chords: null, xy: null }; // xy: XY-plattans effekter (js/xyfx.js)
 const padEngine = (pad) => (pad && pad.chord ? engines.chords : engines.notes);
 
+// Väck ljudet om det är pausat. Safari kan också stå i "interrupted" (samtal, Siri, en annan app tog
+// ljudet) – då hjälper samma sak. resume() kan misslyckas (inget tryck än): det försöks igen vid nästa.
+function wakeAudio() {
+  if (!audioCtx || audioCtx.state === 'running' || audioCtx.state === 'closed') return;
+  try { audioCtx.resume().catch(() => {}); } catch {}
+}
+
 function initAudio() {
   // iPhone: spela även när ljudlös-knappen är på (Safari 16.4+)
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
@@ -20,7 +27,7 @@ function initAudio() {
     silent.buffer = audioCtx.createBuffer(1, 1, audioCtx.sampleRate);
     silent.connect(audioCtx.destination);
     silent.start(0);
-    if (audioCtx.state !== 'running') audioCtx.resume();
+    wakeAudio();
   } catch {}
   const master = AUDIO_DIAG.has('nomaster') ? audioCtx.destination : makeMasterBus(audioCtx);
   if (AUDIO_DIAG.size) log(`Felsökning av ljudet: ${[...AUDIO_DIAG].join(', ')}`);

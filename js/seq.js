@@ -121,13 +121,12 @@ function loadSeq() {
 // Toner och Ackord har var sin slinga med egen ▶, men samma takt: en ackordrunda och ett trumkomp kan gå
 // samtidigt. Slingorna fortsätter när man byter sida, så man kan spela till dem – på den andra sidan,
 // på XY eller på samma sida (det man spelar skrivs bara in med Spela in, eller i ett steg man valt).
-const seqPlaying = (page) => seq.play[page];
 const seqAny = () => seq.play.notes || seq.play.chords;
 const SEQ_PAGE_NAME = { notes: 'Toner', chords: 'Ackord' };
 
 function seqStart(page = seqPage()) {
   if (seq.play[page] || !audioCtx) return; // (ljudet startas av startrutan)
-  if (audioCtx.state !== 'running') audioCtx.resume();
+  wakeAudio();
   // Under uppspelning skrivs inget in steg för steg (bara med Spela in, eller om man själv väljer ett steg)
   if (page === seqPage()) seq.sel = -1;
   const c = seq.clk[page];
@@ -436,7 +435,7 @@ function seqHoldSetup(b, i) {
         log(t(`Steg ${i + 1}: läge ${Math.round(v * 100)} %`));
         // Hör hur det blev (om slingan inte redan spelar)
         if (audioCtx && !seq.play[page]) {
-          if (audioCtx.state !== 'running') audioCtx.resume();
+          wakeAudio();
           seqPlayStep(page, i, audioCtx.currentTime + 0.03);
         }
       }

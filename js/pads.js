@@ -127,7 +127,7 @@ function setupTouch() {
   document.addEventListener('pointerdown', (e) => {
     if (e.pointerType === 'mouse' || !inPlayArea(e.target) || scanning()) return;
     // iOS kan ha pausat ljudet (skärmlås, samtal) – väck det vid beröring
-    if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
+    wakeAudio();
     try { e.target.releasePointerCapture(e.pointerId); } catch {}
     fingers.set(e.pointerId, null);
     moveFinger(e.pointerId, padAt(e.clientX, e.clientY));

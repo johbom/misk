@@ -23,6 +23,10 @@ const arpStrum = () => ui.arpPattern.value === 'strum' || ui.arpPattern.value ==
 const ARP_STRUM_GAP = 0.03; // s mellan tonerna i ett slag (kortare om slaget är kort)
 // Tid mellan tonerna i ett slag med n toner: hela slaget ryms i drygt halva steget
 const arpStrumGap = (n) => Math.min(ARP_STRUM_GAP, (arpStepDur() * 0.6) / Math.max(1, n - 1));
+// Nivå per ton i ett strum-slag med n toner: upp till tre toner som vanliga arpeggiotoner (0,8), fler
+// svagare – som när ett ackord spelas på en ruta – så att ett slag över tre oktaver inte blir mångdubbelt
+// starkare än ackordet och trycker limitern i botten (pumpar och förvränger).
+const arpStrumLevel = (n) => 0.8 * Math.min(1, 1.7 / Math.sqrt(Math.max(1, n)));
 const arpGateDur = () => arpStepDur() * Math.min(1, Math.max(0.05, Number(ui.arpGate.value) / 100));
 
 // En ruta börjar låta: lägg till dess toner
@@ -125,9 +129,10 @@ function arpPlayStep(time) {
     // Alla toner i slaget slutar samtidigt (som när handen dämpar strängarna)
     // (rutan blinkar en gång per slag, vid första tonen – inte för varje ton i slaget)
     const flashed = new Set();
+    const level = arpStrumLevel(seq.length);
     seq.forEach(({ note, pad }, i) => {
       const t = time + i * gap;
-      arpPlayNote(note, pad, t, Math.max(time + dur, t + 0.05), !flashed.has(pad) && flashed.add(pad));
+      arpPlayNote(note, pad, t, Math.max(time + dur, t + 0.05), !flashed.has(pad) && flashed.add(pad), level);
     });
     return;
   }
@@ -149,8 +154,8 @@ function arpPlayStep(time) {
 // staplas svansarna vid snabb strum – hundratals röster – och ljudet börjar hacka och tappa toner.
 const arpRinging = new WeakMap();
 
-// En ton i arpeggiot: från time till off (ljudklockans tid). flash: rutan blinkar till (förval: ja)
-function arpPlayNote(note, pad, time, off, flash = true) {
+// En ton i arpeggiot: från time till off (ljudklockans tid). flash: rutan blinkar till (förval: ja), level: nivå
+function arpPlayNote(note, pad, time, off, flash = true, level = 0.8) {
   const dur = off - time;
   const timers = [];
   let audioStop = null;
@@ -161,7 +166,7 @@ function arpPlayNote(note, pad, time, off, flash = true) {
     else if (pad.drum) stop = drumHit(pad.drum, time, 0.9);
     else {
       const eng = padEngine(pad);
-      stop = eng.noteOn(note, 0.8, time);
+      stop = eng.noteOn(note, level, time);
       let ring = arpRinging.get(eng);
       if (!ring) arpRinging.set(eng, ring = new Map());
       ring.get(note)?.choke?.(time);

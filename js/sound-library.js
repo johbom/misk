@@ -178,10 +178,18 @@ PRESET_CATEGORIES.forEach((c) => { c.group = 'Oscillatorer'; });
 // Platt lista: { group, cat, name, params } – params är kompletta (defaults + kategori + ljud)
 // Basljuden klingar en oktav under rutornas toner (som en basgitarr), så de inte hamnar i mellanregistret
 const BASS_CATEGORIES = new Set(['Bas', 'Strängbas', 'FM-bas', 'Vågbas']);
+// Hörselvägd nivåjustering (js/lib-levels.js): ljudets Nivå gånger justeringen
+function libTrim(name, params) {
+  const f = LIB_TRIM[name];
+  if (f) params.vol = Math.min(4, Math.max(0.1, Math.round((params.vol ?? 1) * f * 100) / 100));
+  return params;
+}
+// De inbyggda snabbvalen (js/synth.js) får samma justering – innan biblioteksljud läggs till bland dem
+Object.entries(SYNTH_PRESETS).forEach(([name, p]) => libTrim(name, p));
 const PRESET_LIBRARY = PRESET_CATEGORIES.flatMap(({ name: cat, group, base, presets }) =>
   Object.entries(presets).map(([name, p]) => ({
     group, cat, name,
-    params: { ...SYNTH_DEFAULTS, ...(BASS_CATEGORIES.has(cat) ? { octave: -1 } : {}), ...base, ...p },
+    params: libTrim(name, { ...SYNTH_DEFAULTS, ...(BASS_CATEGORIES.has(cat) ? { octave: -1 } : {}), ...base, ...p }),
   }))
 );
 const PRESET_GROUPS = [...new Set(PRESET_CATEGORIES.map((c) => c.group))];

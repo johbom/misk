@@ -151,9 +151,11 @@ function stopAllSound() {
 }
 document.addEventListener('visibilitychange', () => {
   if (document.hidden) stopAllSound();
-  else if (audioCtx && audioCtx.state !== 'running') audioCtx.resume();
+  else wakeAudio();
 });
 window.addEventListener('pagehide', stopAllSound);
+// Tillbaka efter ett avbrott (samtal, Siri, en annan app) eller från webbläsarens cache: väck ljudet
+['focus', 'pageshow'].forEach((ev) => window.addEventListener(ev, () => { if (!document.hidden) wakeAudio(); }));
 
 // Appen startade: allt laddades. (Felhanteraren i index.html laddar om en gång om en fil saknades;
 // spärren släpps när appen gått bra en stund, så att det kan hjälpa igen en annan gång.)
