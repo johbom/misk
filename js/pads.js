@@ -148,6 +148,7 @@ function setupTouch() {
 function trigger(pad) {
   if (!audioCtx) return; // inte startat än
   if (picker.open) return; // tyst medan högerklicksmenyn är öppen
+  if (seqFollow(pad)) return; // Följ tonen: rutan flyttar slingan på Toner i skalan i stället (js/seq.js)
   seqInput(pad); // stegsequencern: skriv in rutan i markerat steg (js/seq.js)
   const mode = ui.playMode.value;
   if (mode === 'latch') {

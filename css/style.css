@@ -119,6 +119,8 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 html.steppers #quick-pop > :is(#arp-set, #seq-set) .seg button { min-height: 40px; min-width: 40px; }
 /* Sequencern i snabbrutan: "Gå vidare" syns (utan förklaring), på/av sköts av Sekv-knappen */
 #quick-pop > #seq-set > label.check.seq-keep { display: flex; }
+/* Följ tonen: rutan som slingan på Toner följer just nu */
+.pad.seq-key { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); }
 #quick-pop > #seq-set > label.check.seq-keep small { display: none; }
 .quick-close {
   position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; padding: 0;

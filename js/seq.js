@@ -44,6 +44,8 @@ const seq = {
   rec: false, // spela in medan sequencern går
   edit: null, // { pad, entry }: senast inskrivna rutan, vars läge följer pekaren medan den låter
   pending: [], // planerade toner som kan strykas när sequencern stoppas
+  tr: 0, // Följ tonen: hur många steg i skalan slingan på Toner är flyttad
+  key: null, // rutan som slingan följer just nu
 };
 
 const seqOn = () => ui.seqOn.checked;
@@ -157,6 +159,7 @@ function seqStop(page = seqPage()) {
   if (!seq.play[page]) return;
   seq.play[page] = false;
   if (page === seqPage()) seq.rec = false; // stopp avslutar också inspelningen
+  if (page === 'notes') seqFollowReset(); // (nästa start: mönstret som det skrevs)
   const now = audioCtx.currentTime;
   seq.pending = seq.pending.filter((e) => {
     if (e.page !== page) return true;
@@ -211,7 +214,8 @@ function seqTick() {
 
 function seqPlayStep(page, i, time) {
   const pads = seqPadsOf(page);
-  const list = seq.pat[page][i].map((e) => ({ pad: pads[e.p], x: e.x })).filter((e) => e.pad);
+  const tr = page === 'notes' ? seqTransposeNow() : 0;
+  const list = seq.pat[page][i].map((e) => ({ pad: tr ? seqShifted(e.p + tr) : pads[e.p], x: e.x })).filter((e) => e.pad);
   const off = time + seqGateDur(page);
   // Flera rutor i samma steg: lite svagare var, som när man spelar flera rutor samtidigt
   const count = list.reduce((n, e) => n + (e.pad.drum ? 1 : e.pad.notes().length), 0);
@@ -244,7 +248,7 @@ function seqPlayPad(pad, time, off, level, x, page) {
   // OSC och ljusblink på rutan, så nära tonen som möjligt
   timers.push(setTimeout(() => {
     notes.forEach((n) => oscSend('note', n, Number(ui.velocity.value) || 100));
-    flashPad(pad.el);
+    if (pad.el) flashPad(pad.el); // (en ton utanför rutorna, Följ tonen: ingen ruta att blinka)
     timers.push(setTimeout(() => notes.forEach((n) => oscSend('note', n, 0)), (off - time) * 1000));
   }, wait));
   seq.pending.push({
@@ -255,6 +259,64 @@ function seqPlayPad(pad, time, off, level, x, page) {
       stops.forEach((s) => s.cancel?.());
     },
   });
+}
+
+// ---------- Följ tonen (sidan Toner) ----------
+// Med Följ tonen på (Inställningar → Stegsequencer) och slingan på Toner igång: en ruta man spelar låter
+// inte själv, utan flyttar mönstret i skalan så att det börjar på den tonen. Mönstrets första ton (lägsta
+// rutan i första ifyllda steget) är referensen: spelar man den rutan går mönstret som det skrevs, två rutor
+// högre = två steg högre i skalan. Det gäller tills man spelar en annan ruta eller stoppar slingan.
+// Medan man skriver in (markerat steg eller Spela in) och med trumset gäller det inte.
+const seqFollowOn = () => ui.seqFollow.checked && !drumKitOn();
+
+// Tonen på ruta k, även utanför rutorna (skalan fortsätter uppåt och nedåt)
+function seqScaleNote(k) {
+  const scale = SCALES[ui.scale.value] || SCALES.major;
+  const base = 12 * (Number(ui.octave.value) + 1) + Number(ui.root.value);
+  const o = Math.floor(k / scale.length);
+  return clampNote(base + 12 * o + scale[k - o * scale.length]);
+}
+
+// Ruta k i det flyttade mönstret: rutan om den finns, annars en ton utan ruta
+function seqShifted(k) {
+  if (k >= 0 && k < notePads.length) return notePads[k];
+  const note = seqScaleNote(k);
+  return { el: null, sample: null, drum: null, note, notes: () => [note], label: () => noteName(note) };
+}
+
+// Mönstrets första ton (rutans index), eller -1 om mönstret är tomt
+function seqFirstNote() {
+  for (const st of seq.pat.notes.slice(0, seqSteps('notes'))) {
+    if (st.length) return Math.min(...st.map((e) => e.p));
+  }
+  return -1;
+}
+
+const seqTransposeNow = () => (seqFollowOn() ? seq.tr : 0);
+
+function seqSetKey(pad) {
+  seq.key?.el.classList.remove('seq-key');
+  seq.key = pad;
+  pad?.el.classList.add('seq-key');
+}
+
+function seqFollowReset() {
+  seq.tr = 0;
+  seqSetKey(null);
+}
+
+// Anropas av trigger() (js/pads.js) först: true = rutan flyttade mönstret och ska inte spela själv
+function seqFollow(pad) {
+  if (!seqFollowOn() || !seqOn() || seqPage() !== 'notes' || !seq.play.notes) return false;
+  if (seq.rec || (seq.sel >= 0 && seq.sel < seqSteps('notes'))) return false; // (skriver in)
+  const k = notePads.indexOf(pad);
+  const ref = seqFirstNote();
+  if (k < 0 || ref < 0) return false;
+  seq.tr = k - ref;
+  seqSetKey(pad);
+  log(t(`Slingan följer ${noteName(pad.note)}`) + (seq.tr ? ` (${seq.tr > 0 ? '+' : '−'}${Math.abs(seq.tr)})` : ''));
+  renderSeq();
+  return true;
 }
 
 // ---------- Skriva in (anropas av trigger() i js/pads.js när en ruta spelas) ----------
@@ -338,7 +400,9 @@ function seqPosMove(pad, x) {
 // ---------- Raden med stegen ----------
 function stepText(page, i) {
   const pads = seqPadsOf(page);
-  return seq.pat[page][i].map((e) => pads[e.p]).filter(Boolean).map((p) => t(p.label()));
+  // Följ tonen: stegen visar tonerna som hörs (det flyttade mönstret)
+  const tr = page === 'notes' ? seqTransposeNow() : 0;
+  return seq.pat[page][i].map((e) => (tr ? seqShifted(e.p + tr) : pads[e.p])).filter(Boolean).map((p) => t(p.label()));
 }
 
 // ---------- Håll in ett steg: ändra läget på rutan ----------
@@ -533,6 +597,7 @@ function renderSeq() {
     : selFilled ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}. Tryck på steget igen för att tömma det.`
     : seq.sel >= 0 ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}.`
     : playing && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg. Paus tystar steget som spelas.'
+    : playing && page === 'notes' && seqFollowOn() ? (seq.key ? `Slingan följer ${noteName(seq.key.note)}. Spela en annan ruta för att flytta den.` : 'Spela en ruta så flyttas slingan dit i skalan.')
     : playing ? 'Paus tystar steget som spelas. Välj ett steg, eller Spela in, för att skriva in rutor.'
     : 'Välj ett steg och spela en ruta eller Paus för att skriva in den.');
 }
@@ -603,6 +668,7 @@ function setupSeq() {
     if (seq.sel >= seqSteps()) seq.sel = -1;
     renderSeq();
   }));
+  ui.seqFollow.addEventListener('change', () => { seqFollowReset(); renderSeq(); });
   [ui.seqBpm, ui.arpBpm].forEach((el) => el.addEventListener('input', () => syncSeqBpm(el)));
   ui.seqBpm.addEventListener('change', () => ui.arpBpm.dispatchEvent(new Event('change'))); // sparas med arpens tempo
   syncSeqBpm(ui.arpBpm);
