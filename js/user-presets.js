@@ -49,6 +49,7 @@ function applySnapshot(data) {
   // (presets från innan Slumpad voicing fanns: av)
   if (data.settings && !('chordRandom' in data.settings)) ui.chordRandom.checked = false;
   if (data.settings && !('seqFollow' in data.settings)) ui.seqFollow.checked = false;
+  if (data.settings && !('seqHold' in data.settings)) ui.seqHold.checked = true;
   if (typeof seqFollowReset === 'function') seqFollowReset();
   migrateNotesKind(data.settings || {});
   migrateSpace(data.settings || {});

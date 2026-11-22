@@ -68,6 +68,7 @@ const ui = {
   seqGate: $('seq-gate'),
   seqAskClear: $('seq-ask-clear'),
   seqFollow: $('seq-follow'),
+  seqHold: $('seq-hold'),
   shortcutKeys: $('shortcut-keys'),
   seqAdvance: $('seq-advance'),
   xySound: $('xy-sound'),

@@ -46,6 +46,7 @@ const seq = {
   pending: [], // planerade toner som kan strykas när sequencern stoppas
   tr: 0, // Följ tonen: hur många steg i skalan slingan på Toner är flyttad
   key: null, // rutan som slingan följer just nu
+  held: [], // Följ tonen med Hold av: rutor som hålls (den senaste bestämmer)
 };
 
 const seqOn = () => ui.seqOn.checked;
@@ -261,10 +262,12 @@ function seqPlayPad(pad, time, off, level, x, page) {
 }
 
 // ---------- Följ tonen (sidan Toner) ----------
-// Med Följ tonen på (Inställningar → Stegsequencer) och slingan på Toner igång: en ruta man spelar låter
-// inte själv, utan flyttar mönstret i skalan så att det börjar på den tonen. Mönstrets första ton (lägsta
-// rutan i första ifyllda steget) är referensen: spelar man den rutan går mönstret som det skrevs, två rutor
-// högre = två steg högre i skalan. Det gäller tills man spelar en annan ruta eller stoppar slingan.
+// Med Följ tonen på (Inställningar → Stegsequencer): en ruta man spelar på Toner låter inte själv, utan
+// startar slingan (om den inte redan går) och flyttar mönstret i skalan så att det börjar på den tonen.
+// Mönstrets första ton (lägsta rutan i första ifyllda steget) är referensen: spelar man den rutan går
+// mönstret som det skrevs, två rutor högre = två steg högre i skalan.
+//  - Hold på: slingan fortsätter när man släpper rutan. En annan ruta flyttar den, samma ruta igen stoppar.
+//  - Hold av: slingan spelar bara medan man håller en ruta (flera rutor: den senaste gäller).
 // Medan man skriver in (markerat steg eller Spela in) och med trumset gäller det inte.
 const seqFollowOn = () => ui.seqFollow.checked && !drumKitOn();
 
@@ -301,21 +304,48 @@ function seqSetKey(pad) {
 
 function seqFollowReset() {
   seq.tr = 0;
+  seq.held = [];
   seqSetKey(null);
 }
 
-// Anropas av trigger() (js/pads.js) först: true = rutan flyttade mönstret och ska inte spela själv
-function seqFollow(pad) {
-  if (!seqFollowOn() || !seqOn() || seqPage() !== 'notes' || !seq.play.notes) return false;
-  if (seq.rec || (seq.sel >= 0 && seq.sel < seqSteps('notes'))) return false; // (skriver in)
-  const k = notePads.indexOf(pad);
-  const ref = seqFirstNote();
-  if (k < 0 || ref < 0) return false;
-  seq.tr = k - ref;
+// Flytta slingan till ruta pad
+function seqFollowTo(pad) {
+  seq.tr = notePads.indexOf(pad) - seqFirstNote();
   seqSetKey(pad);
   log(t(`Slingan följer ${noteName(pad.note)}`) + (seq.tr ? ` (${seq.tr > 0 ? '+' : '−'}${Math.abs(seq.tr)})` : ''));
-  renderSeq();
+}
+
+// Sidan Toner, Följ tonen och något att följa – och man skriver inte in
+const seqFollowReady = () => seqFollowOn() && seqOn() && seqPage() === 'notes' && seqFirstNote() >= 0
+  && !seq.rec && !(seq.sel >= 0 && seq.sel < seqSteps('notes'));
+
+// Anropas av trigger() (js/pads.js) först: true = rutan styr slingan och ska inte spela själv
+function seqFollow(pad) {
+  if (!notePads.includes(pad) || !seqFollowReady()) return false;
+  if (ui.seqHold.checked) {
+    // Samma ruta igen: klicka ut tonen – slingan stannar
+    if (seq.play.notes && seq.key === pad) { seqStop('notes'); return true; }
+  } else {
+    // Rutan styr slingan så länge den hålls (släpps i seqFollowUp, även i andra spelsätt än Håll)
+    pad.el.classList.add('active');
+    pad.followHeld = true;
+    pad.release = () => seqFollowUp(pad);
+    seq.held = [...seq.held.filter((p) => p !== pad), pad];
+  }
+  seqFollowTo(pad);
+  if (!seq.play.notes) seqStart('notes');
+  else renderSeq();
   return true;
+}
+
+// Hold av: en ruta som styrde slingan släpps
+function seqFollowUp(pad) {
+  pad.followHeld = false;
+  seq.held = seq.held.filter((p) => p !== pad);
+  if (seq.key !== pad || !seq.play.notes) return;
+  const next = seq.held.at(-1);
+  if (next) { seqFollowTo(next); renderSeq(); }
+  else seqStop('notes');
 }
 
 // ---------- Skriva in (anropas av trigger() i js/pads.js när en ruta spelas) ----------
@@ -596,7 +626,10 @@ function renderSeq() {
     : selFilled ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}. Tryck på steget igen för att tömma det.`
     : seq.sel >= 0 ? `Spela en ruta eller Paus så hamnar den i steg ${seq.sel + 1}.`
     : playing && seq.rec ? 'Spela in: det du spelar hamnar på närmaste steg. Paus tystar steget som spelas.'
-    : playing && page === 'notes' && seqFollowOn() ? (seq.key ? `Slingan följer ${noteName(seq.key.note)}. Spela en annan ruta för att flytta den.` : 'Spela en ruta så flyttas slingan dit i skalan.')
+    : playing && page === 'notes' && seqFollowOn() ? (!seq.key ? 'Spela en ruta så flyttas slingan dit i skalan.'
+      : ui.seqHold.checked ? `Slingan följer ${noteName(seq.key.note)}. Spela en annan ruta för att flytta den, eller samma igen för att stoppa.`
+      : `Slingan följer ${noteName(seq.key.note)} medan du håller rutan.`)
+    : page === 'notes' && seqFollowReady() ? 'Spela en ruta så startar slingan från den tonen.'
     : playing ? 'Paus tystar steget som spelas. Välj ett steg, eller Spela in, för att skriva in rutor.'
     : 'Välj ett steg och spela en ruta eller Paus för att skriva in den.');
 }
@@ -668,6 +701,7 @@ function setupSeq() {
     renderSeq();
   }));
   ui.seqFollow.addEventListener('change', () => { seqFollowReset(); renderSeq(); });
+  ui.seqHold.addEventListener('change', () => renderSeq());
   [ui.seqBpm, ui.arpBpm].forEach((el) => el.addEventListener('input', () => syncSeqBpm(el)));
   ui.seqBpm.addEventListener('change', () => ui.arpBpm.dispatchEvent(new Event('change'))); // sparas med arpens tempo
   syncSeqBpm(ui.arpBpm);

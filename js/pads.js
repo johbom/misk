@@ -45,7 +45,7 @@ function leavePad(pad, src, pressed = false) {
   const done = () => {
     h.leave = 0;
     cancelDwell(pad);
-    if (ui.playMode.value === 'hold') release(pad);
+    if (ui.playMode.value === 'hold' || pad.followHeld) release(pad); // (Följ tonen med Hold av: alltid)
   };
   if (grace) h.leave = setTimeout(done, grace);
   else done();
