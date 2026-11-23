@@ -8,7 +8,7 @@
 // förvalet). Motorn skapas i initAudio (engines.xy, js/audio.js) och XY:s buss spelar in i den (js/xy.js).
 
 const XY_FX_DEFS = SYNTH_PARAMS.slice(SYNTH_PARAMS.findIndex((d) => d.group === 'Effekter'));
-const XY_FX_DEFAULTS = { drive: 0, chorus: 0, delayMix: 0, delaySync: 'off', delayTime: 0.3, delayFeedback: 0.3, reverbSize: 2.8, postFilter: 'off', postFreq: 1000, postQ: 0.7 };
+const XY_FX_DEFAULTS = { drive: 0, chorus: 0, delayMix: 0, delaySync: 'off', delayTime: 0.3, delayFeedback: 0.3, reverbSize: 2.8, postFilter: 'off', postFreq: 1000, postQ: 0.7, postPos: 'after' };
 const XY_REVERB_SCALE = 1 / 1.2; // (motorn förstärker reverben 1,2 gånger – så låter XY som förut)
 const xyFxInputs = {}; // key -> { row, input, output, def }
 

@@ -210,10 +210,11 @@ const SYNTH_PARAMS = [
   { key: 'delayFeedback', label: 'Feedback', min: 0, max: 0.9, step: 0.01, fmt: pct },
   { key: 'reverbMix', label: 'Reverb', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'reverbSize', label: 'Rumsstorlek', min: 0.3, max: 10, log: true, fmt: sec },
-  // Post-filter: sist i kedjan, efter alla effekter (filtrerar också eko och reverb)
+  // Post-filter: sist i kedjan (filtrerar också eko och reverb) eller före delay och reverb
   { key: 'postFilter', label: 'Post-filter', options: [['off', 'Av'], ['lowpass', 'Lågpass'], ['highpass', 'Högpass'], ['bandpass', 'Bandpass']] },
   { key: 'postFreq', label: 'Frekvens', min: 20, max: 20000, log: true, fmt: hz },
   { key: 'postQ', label: 'Q', min: 0.1, max: 20, log: true, fmt: (v) => v.toFixed(1) },
+  { key: 'postPos', label: 'Placering', options: [['after', 'Efter delay och reverb'], ['before', 'Före delay och reverb']] },
 ];
 
 // Reglage som inte gör något i vissa lägen gråas ut.
@@ -272,6 +273,7 @@ const SYNTH_DISABLED_WHEN = {
   reverbSize: (p) => p.reverbMix === 0,
   postFreq: (p) => !p.postFilter || p.postFilter === 'off',
   postQ: (p) => !p.postFilter || p.postFilter === 'off',
+  postPos: (p) => !p.postFilter || p.postFilter === 'off',
 };
 
 // Delaytiden i sekunder: fri, eller synkad till tempot (taktslag per eko × sekunder per taktslag)
@@ -303,7 +305,7 @@ const SYNTH_DEFAULTS = {
   attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25, vol: 1,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
   drive: 0, chorus: 0, delayMix: 0, delaySync: 'off', delayTime: 0.3, delayFeedback: 0.3, reverbMix: 0.1, reverbSize: 2,
-  postFilter: 'off', postFreq: 1000, postQ: 0.7,
+  postFilter: 'off', postFreq: 1000, postQ: 0.7, postPos: 'after',
 };
 
 // Varje preset ändrar bara det som skiljer sig från SYNTH_DEFAULTS.
@@ -439,6 +441,39 @@ const WT_GAIN = 1.4; // en modulator på full nivå = moduleringsindex 6 (mycket
 const VWG_GAIN = { voice: 5.4, wind: 5.7, grain: 4.5 }; // Röst, Blås, Granulär (uppmätt mot oscillatorljuden)
 // Läge på rutan: motorns två klangkontroller i en ljudtrådsnod
 const nodeCtls = (node) => [node.parameters.get('ctl'), node.parameters.get('ctl2')];
+// Ljudtrådsnoder för röster återanvänds (pm-worklet.js: registerPooled). Safari/WebKit blir
+// långsammare för varje sådan nod som skapas, även efter att den släppts – med sequencer eller ackord
+// i ett par minuter hann ljudtråden till slut inte med (hack). En nod vars ton är slut läggs i en pool
+// per ljudklocka och typ, och nästa ton av samma typ tar den därifrån med nya inställningar.
+const WORKLET_POOL_MAX = 48; // per typ: fler än så behövs inte samtidigt (röstaket är 32)
+function workletNode(ctx, name, channels, opts) {
+  const key = `${name}:${channels}`;
+  const pool = ctx.workletPool || (ctx.workletPool = new Map());
+  const node = pool.get(key)?.pop();
+  if (node) {
+    node.port.postMessage({ reset: opts });
+    return node;
+  }
+  const n = new AudioWorkletNode(ctx, name, {
+    numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [channels], processorOptions: { ...opts, pooled: true },
+  });
+  n.poolKey = key;
+  return n;
+}
+// Tonen är slut: koppla loss noden, nollställ dess parametrar och lägg den i poolen
+const endNode = (node) => {
+  try { node.disconnect(); } catch {}
+  if (!node.poolKey || !node.context?.workletPool) { try { node.port.close(); } catch {} return; }
+  node.parameters.forEach((prm) => {
+    try { prm.cancelScheduledValues(0); prm.value = prm.defaultValue; } catch {}
+  });
+  const pool = node.context.workletPool;
+  const list = pool.get(node.poolKey) || [];
+  pool.set(node.poolKey, list);
+  if (list.length < WORKLET_POOL_MAX) list.push(node);
+  else try { node.port.close(); } catch {}
+};
+
 // Strängmodellen (AudioWorklet). Samma ?v= som den här filen, så att nya versioner hämtas.
 const PM_WORKLET_URL = `js/pm-worklet.js${document.currentScript ? new URL(document.currentScript.src).search : ''}`;
 
@@ -503,6 +538,8 @@ class SynthEngine {
       this.chorusDepth.push(depth);
     }
     this.chorusMix.connect(this.bus);
+    // Efter bus: post-filtret när det ligger före delay och reverb (kopplas i updateEffects)
+    this.busOut = ctx.createGain();
 
     // Delay med mörkare repetitioner (lågpass i återkopplingen)
     this.delay = ctx.createDelay(4); // (synkad 1/2 i långsamt tempo blir lång)
@@ -510,7 +547,7 @@ class SynthEngine {
     const fbTone = ctx.createBiquadFilter();
     fbTone.frequency.value = 3500;
     this.delayMix = ctx.createGain();
-    if (!AUDIO_DIAG.has('nodelay')) this.bus.connect(this.delay);
+    if (!AUDIO_DIAG.has('nodelay')) this.busOut.connect(this.delay);
     this.delay.connect(fbTone).connect(this.delayFb).connect(this.delay);
     this.delay.connect(this.delayMix);
 
@@ -518,19 +555,19 @@ class SynthEngine {
     this.convolver = ctx.createConvolver();
     this.reverbMix = ctx.createGain();
     if (!AUDIO_DIAG.has('norev')) {
-      this.bus.connect(this.convolver);
+      this.busOut.connect(this.convolver);
       this.delayMix.connect(this.convolver); // ekon får också reverb
     }
     this.convolver.connect(this.reverbMix);
 
     // Ut: volym -> kompressor (håller nere toppar när många toner spelas)
     this.volume = ctx.createGain();
-    // Post-filter (lågpass, högpass eller bandpass) efter alla effekter; Av: förbi filtret
+    // Post-filter (lågpass, högpass eller bandpass): efter alla effekter, eller före delay och reverb
+    // (efter drive och chorus). Av: förbi filtret. Kopplas i updateEffects.
     this.postIn = ctx.createGain();
     this.postFilter = ctx.createBiquadFilter();
-    this.postFilter.connect(this.volume);
-    this.postOn = undefined; // kopplas i updateEffects (null = Av, förbi filtret)
-    this.bus.connect(this.postIn);
+    this.postOn = undefined; // (null = Av, annars plats och typ)
+    this.busOut.connect(this.postIn);
     this.delayMix.connect(this.postIn);
     this.reverbMix.connect(this.postIn);
     // Tidskonstanterna är lugna med flit: en kompressor eller limiter som reagerar snabbt (1–5 ms in,
@@ -715,11 +752,16 @@ class SynthEngine {
     // Post-filter. Webbläsarens låg- och högpass tar Q i dB (resonanstoppen), bandpass som vanligt Q:
     // räkna om, så att reglaget betyder samma sak för alla tre (0,7 = rakt, högre = tydlig topp).
     const postType = ['lowpass', 'highpass', 'bandpass'].includes(p.postFilter) ? p.postFilter : null;
-    if (this.postOn !== postType) {
-      try { this.postIn.disconnect(); } catch {}
-      this.postIn.connect(postType ? this.postFilter : this.volume);
+    const before = !!postType && p.postPos === 'before';
+    const postKey = postType ? `${before ? 'before' : 'after'}:${postType}` : null;
+    if (this.postOn !== postKey) {
+      [this.bus, this.postIn, this.postFilter].forEach((n) => { try { n.disconnect(); } catch {} });
+      if (before) this.bus.connect(this.postFilter).connect(this.busOut); // före delay och reverb
+      else this.bus.connect(this.busOut);
+      if (postType && !before) this.postIn.connect(this.postFilter).connect(this.volume); // sist
+      else this.postIn.connect(this.volume);
       if (postType) this.postFilter.type = postType;
-      this.postOn = postType;
+      this.postOn = postKey;
     }
     if (postType) {
       const f = Math.min(ctx.sampleRate / 2 - 100, Math.max(20, Number(p.postFreq) || 1000));
@@ -779,12 +821,8 @@ class SynthEngine {
     if (p.model === 'fm') { this.addFmVoice(p, freq, t, out, detunes, onRelease, onEnd, level, ctls); return; }
     if (p.model === 'wt') { this.addWtVoice(p, freq, t, out, detunes, onRelease, onEnd, ctls); return; }
     if (p.model === 'string' && this.pmReady) {
-      const node = new AudioWorkletNode(ctx, 'pm-string', {
-        numberOfInputs: 0,
-        numberOfOutputs: 1,
-        outputChannelCount: [1],
-        processorOptions: { start: t, decay: p.pmDecay, bright: p.pmBright, pos: p.pmPos, exciter: p.pmExciter },
-      });
+      const node = workletNode(ctx, 'pm-string', 1,
+        { start: t, decay: p.pmDecay, bright: p.pmBright, pos: p.pmPos, exciter: p.pmExciter });
       node.parameters.get('frequency').value = freq;
       detunes.push(node.parameters.get('detune'));
       ctls.push(nodeCtls(node));
@@ -793,7 +831,7 @@ class SynthEngine {
       g.gain.value = STRING_GAIN[p.pmExciter] || 1;
       node.connect(g).connect(out);
       onRelease.push((r, end) => node.port.postMessage({ release: r, end }));
-      onEnd.push(() => node.disconnect());
+      onEnd.push(() => endNode(node));
       return;
     }
     // Resonanskropp (också reserv för strängen om ljudtråden inte hunnit laddas)
@@ -807,26 +845,21 @@ class SynthEngine {
       * (k === 0 ? 1 : 0.3 + 0.7 * p.pmBright);
     const t60 = (ratio) => Math.max(0.03, p.pmDecay * Math.pow(ratio, -body.damp));
     if (this.pmReady) {
-      const node = new AudioWorkletNode(ctx, 'pm-modal', {
-        numberOfInputs: 0,
-        numberOfOutputs: 1,
-        outputChannelCount: [1],
-        processorOptions: {
-          start: t,
-          ratios: body.ratios,
-          // Normaliserat med summan, så att kroppar med många deltoner inte blir starkare
-          amps: body.ratios.map((_, k) => (weight(k) / body.ratios.reduce((sum, __, j) => sum + weight(j), 0)) * 2.25),
-          t60s: body.ratios.map(t60),
-          pulseLen: len,
-          noise: 0.25 * p.pmBright,
-        },
+      const node = workletNode(ctx, 'pm-modal', 1, {
+        start: t,
+        ratios: body.ratios,
+        // Normaliserat med summan, så att kroppar med många deltoner inte blir starkare
+        amps: body.ratios.map((_, k) => (weight(k) / body.ratios.reduce((sum, __, j) => sum + weight(j), 0)) * 2.25),
+        t60s: body.ratios.map(t60),
+        pulseLen: len,
+        noise: 0.25 * p.pmBright,
       });
       node.parameters.get('frequency').value = freq;
       detunes.push(node.parameters.get('detune'));
       ctls.push(nodeCtls(node));
       node.connect(out);
       onRelease.push((r, end) => node.port.postMessage({ end }));
-      onEnd.push(() => node.disconnect());
+      onEnd.push(() => endNode(node));
       return;
     }
     // Reserv med inbyggda filter (bara de första ögonblicken innan ljudtråden laddats)
@@ -888,21 +921,16 @@ class SynthEngine {
       return;
     }
     const keyScale = Math.min(1.25, Math.max(0.35, Math.sqrt(330 / freq)));
-    const node = new AudioWorkletNode(ctx, 'fm4', {
-      numberOfInputs: 0,
-      numberOfOutputs: 1,
-      outputChannelCount: [1],
-      processorOptions: {
-        start: t, ops, mods: algo.mods, car: algo.car, fb: p.fmFb, detune: p.fmDetune,
-        index: FM_MOD_SCALE * keyScale * (0.7 + 0.3 * Math.min(1, level)),
-      },
+    const node = workletNode(ctx, 'fm4', 1, {
+      start: t, ops, mods: algo.mods, car: algo.car, fb: p.fmFb, detune: p.fmDetune,
+      index: FM_MOD_SCALE * keyScale * (0.7 + 0.3 * Math.min(1, level)),
     });
     node.parameters.get('frequency').value = freq;
     detunes.push(node.parameters.get('detune'));
     ctls.push(nodeCtls(node));
     node.connect(out);
     onRelease.push((r, end) => node.port.postMessage({ end }));
-    onEnd.push(() => node.disconnect());
+    onEnd.push(() => endNode(node));
   }
 
   // Vågtabellmotorn (pm-worklet.js, 'wavetable'): stereo, med unisonrösterna spridda åt sidorna
@@ -919,14 +947,9 @@ class SynthEngine {
       onRelease.push((r, end) => o.stop(end));
       return;
     }
-    const node = new AudioWorkletNode(ctx, 'wavetable', {
-      numberOfInputs: 0,
-      numberOfOutputs: 1,
-      outputChannelCount: [2],
-      processorOptions: {
-        start: t, table: p.wtTable, pos: p.wtPos, env: p.wtEnv, envTime: p.wtEnvTime,
-        move: p.wtMove, moveRate: p.wtMoveRate, unison: p.wtUnison, spread: p.wtSpread,
-      },
+    const node = workletNode(ctx, 'wavetable', 2, {
+      start: t, table: p.wtTable, pos: p.wtPos, env: p.wtEnv, envTime: p.wtEnvTime,
+      move: p.wtMove, moveRate: p.wtMoveRate, unison: p.wtUnison, spread: p.wtSpread,
     });
     node.parameters.get('frequency').value = freq;
     detunes.push(node.parameters.get('detune'));
@@ -935,7 +958,7 @@ class SynthEngine {
     g.gain.value = WT_GAIN;
     node.connect(g).connect(out);
     onRelease.push((r, end) => node.port.postMessage({ end }));
-    onEnd.push(() => node.disconnect());
+    onEnd.push(() => endNode(node));
   }
 
   // Röst, Blås och Granulär (pm-worklet.js: 'voice', 'wind', 'grain'). ctls: motorns klangkontroll
@@ -968,12 +991,7 @@ class SynthEngine {
       }),
     }[p.model]();
     const stereo = p.model !== 'wind';
-    const node = new AudioWorkletNode(ctx, p.model, {
-      numberOfInputs: 0,
-      numberOfOutputs: 1,
-      outputChannelCount: [stereo ? 2 : 1],
-      processorOptions: { start: t, ...opts },
-    });
+    const node = workletNode(ctx, p.model, stereo ? 2 : 1, { start: t, ...opts });
     node.parameters.get('frequency').value = freq;
     detunes.push(node.parameters.get('detune'));
     ctls.push(nodeCtls(node));
@@ -981,7 +999,7 @@ class SynthEngine {
     g.gain.value = VWG_GAIN[p.model] || 1;
     node.connect(g).connect(out);
     onRelease.push((r, end) => node.port.postMessage({ release: r, end }));
-    onEnd.push(() => node.disconnect());
+    onEnd.push(() => endNode(node));
   }
 
   // Granulär: bygg ljudkällan i förväg, så att första tonen inte hackar
@@ -1024,6 +1042,7 @@ class SynthEngine {
     const onRelease = []; // (r) => … när tonen släpps
     const onEnd = []; // städning när rösten tystnat
     const ctls = []; // [klang 1, klang 2] per ljudtrådsnod – motorns egna kontroller för Läge på rutan
+    const feeds = []; // noder som styr tonhöjden (LFO, vibrato, läge): kopplas loss när rösten är slut
     let osc2Ctl = null; // Oscillatorer: oscillator 2:s nivå eller FM-djup (klang 2)
 
     // Rösten byggs med så få noder som möjligt: Safari hackar när många noder skapas och kopplas på en
@@ -1166,6 +1185,7 @@ class SynthEngine {
         depth.gain.value = p.lfoDepth * 100; // upp till en halvton
         carriers.forEach((c) => depth.connect(c.detune));
         detunes.forEach((d) => depth.connect(d));
+        feeds.push(depth);
       } else if (p.lfoTarget === 'filter') {
         depth.gain.value = p.lfoDepth * 3600; // upp till tre oktaver
         depth.connect(filter.detune);
@@ -1185,6 +1205,7 @@ class SynthEngine {
       this.vibLfo.connect(vib);
       [...carriers, ...pitched].forEach((o) => vib.connect(o.detune));
       detunes.forEach((d) => vib.connect(d));
+      feeds.push(vib);
     }
     // Läge på rutan: böjning (cent) och eget vibratodjup
     let posBend = null;
@@ -1202,6 +1223,7 @@ class SynthEngine {
     if (posPitch) {
       [...carriers, ...pitched].forEach((o) => posPitch.connect(o.detune));
       detunes.forEach((d) => posPitch.connect(d));
+      feeds.push(posPitch);
     }
 
     sources.forEach((s) => s.start(t));
@@ -1213,6 +1235,8 @@ class SynthEngine {
       cleaned = true;
       this.voices.delete(voice);
       try { amp.disconnect(); } catch {}
+      // (ljudtrådsnoderna återanvänds: inget från den här rösten får sitta kvar på deras parametrar)
+      feeds.forEach((n) => { try { n.disconnect(); } catch {} });
       onEnd.forEach((f) => { try { f(); } catch {} });
       if (vib) try { this.vibLfo.disconnect(vib); } catch {}
       if (posVib) try { this.vibLfo.disconnect(posVib); } catch {}

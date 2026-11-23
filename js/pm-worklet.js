@@ -17,7 +17,51 @@
 //   bow    – stråke: svagt brus matas in hela tiden medan tonen hålls, så att den klingar kvar
 // Anslagspunkten (pos) tar bort de deltoner som har nod där man knäpper (nära stallet = tunnare klang).
 
-class PmString extends AudioWorkletProcessor {
+// ---------- Återanvända noder ----------
+// Webbläsaren (särskilt Safari/WebKit) blir långsammare för varje ljudtrådsnod som skapas – även när
+// tonen är slut och noden släppts. Med sequencer eller ackord i ett par minuter blev ljudtråden så tung
+// att det började hacka. Därför återanvänds noderna (js/synth.js: workletNode): varje motor nedan är en
+// vanlig klass (Core), och registerPooled lägger ett skal runt den. Skalet räknar med motorn tills tonen
+// är slut och är sedan tyst och väntar, i stället för att dö; meddelandet { reset } ger det en ny ton
+// med nya inställningar (en ny motor) när noden används igen.
+class Core {
+  constructor() { this.port = { onmessage: null, postMessage() {} }; }
+}
+
+function registerPooled(name, Impl) {
+  registerProcessor(name, class extends AudioWorkletProcessor {
+    static get parameterDescriptors() { return Impl.parameterDescriptors || []; }
+    constructor(options) {
+      super();
+      const o = (options && options.processorOptions) || {};
+      this.pooled = !!o.pooled;
+      this.make(o);
+      this.port.onmessage = (e) => {
+        const d = e.data;
+        if (d && d.reset) { this.make(d.reset); return; }
+        const own = this.inner && this.inner.port.onmessage;
+        if (own) own({ data: d });
+      };
+    }
+    make(o) {
+      this.inner = new Impl({ processorOptions: o });
+      this.done = false;
+    }
+    process(inputs, outputs, parameters) {
+      if (!this.done) {
+        if (this.inner.process(inputs, outputs, parameters)) return true;
+        if (!this.pooled) return false;
+        this.done = true;
+        this.inner = null; // (släpp motorns minne)
+      }
+      // Klar: tyst tills noden används igen
+      for (const out of outputs) for (const ch of out) ch.fill(0);
+      return true;
+    }
+  });
+}
+
+class PmString extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 8000, automationRate: 'k-rate' },
@@ -152,12 +196,12 @@ class PmString extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('pm-string', PmString);
+registerPooled('pm-string', PmString);
 
 // Resonanskropp: varje delton är en tvåpolig resonator  y = 2r·cos(w)·y1 − r²·y2 + x.
 // r ger klingtiden (T60) och w frekvensen; insignalen skalas med sin(w) så att varje delton ringer
 // med exakt sin styrka. Anslaget är en kort puls – hårdare klubba = kortare puls = ljusare klang.
-class PmModal extends AudioWorkletProcessor {
+class PmModal extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
@@ -189,6 +233,12 @@ class PmModal extends AudioWorkletProcessor {
     const n = this.ratios.length;
     this.y1 = new Float64Array(n);
     this.y2 = new Float64Array(n);
+    // Koefficienter per block: listorna återanvänds (nytt minne i varje block blir skräp som ljudtråden
+    // till slut måste städa – det hörs som hack efter en stund)
+    this.c1 = new Float64Array(n);
+    this.c2 = new Float64Array(n);
+    this.gin = new Float64Array(n);
+    this.wout = new Float64Array(n);
     this.n = 0;
     this.quiet = 0;
     this.end = Infinity;
@@ -202,10 +252,7 @@ class PmModal extends AudioWorkletProcessor {
     if (t0 > this.end) return false;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
     const m = this.ratios.length;
-    const c1 = new Float64Array(m);
-    const c2 = new Float64Array(m);
-    const gin = new Float64Array(m);
-    const wout = new Float64Array(m);
+    const { c1, c2, gin, wout } = this;
     const bx = parameters.ctl[0];
     const dx = parameters.ctl2[0];
     // Dämpning: 0 = kvävd (5 % av klingtiden) … 0,5 = som ljudet är … 1 = 50 % längre
@@ -214,7 +261,7 @@ class PmModal extends AudioWorkletProcessor {
       // Ljushet: 0 = bara grundtonen … 0,5 = som ljudet är … 1 = de höga deltonerna förstärkta
       wout[k] = bx < 0 || k === 0 ? 1 : Math.min(3, Math.pow(2 * bx, 1 + 0.5 * k));
       const w = (2 * Math.PI * f0 * this.ratios[k]) / sampleRate;
-      if (w >= Math.PI * 0.95) continue; // över halva samplingsfrekvensen: hoppa över
+      if (w >= Math.PI * 0.95) { c1[k] = 0; c2[k] = 0; gin[k] = 0; continue; } // över halva samplingsfrekvensen: tyst
       const r = Math.exp(-6.91 / (this.t60s[k] * t60k * sampleRate));
       c1[k] = 2 * r * Math.cos(w);
       c2[k] = r * r;
@@ -245,14 +292,14 @@ class PmModal extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('pm-modal', PmModal);
+registerPooled('pm-modal', PmModal);
 
 // FM-motorn: fyra sinusoperatorer (fasmodulering, som klassiska FM-syntar).
 // Varje operator har ett förhållande till grundtonen, en nivå och en egen kurva (attack, decay,
 // sustain). Bärarna hörs; modulatorerna ändrar i stället bärarnas klang – ju högre nivå, desto fler
 // övertoner. Operator 4 kan återkoppla till sig själv (ger sågtandslik klang, vid högt värde brus).
 // Allt räknas sampel för sampel, så att återkopplingen och snabba kurvor blir exakta.
-class Fm4 extends AudioWorkletProcessor {
+class Fm4 extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
@@ -288,6 +335,8 @@ class Fm4 extends AudioWorkletProcessor {
     this.attackStep = this.ops.map((op) => 1 / Math.max(1, (op.attack || 0.001) * sampleRate));
     this.decayK = this.ops.map((op) => Math.exp(-3 / Math.max(1, (op.decay || 0.01) * sampleRate)));
     this.out = new Float64Array(4);
+    this.inc = new Float64Array(4); // (återanvänds i varje block)
+    this.live = new Uint8Array(4);
     this.fb1 = 0;
     this.fb2 = 0;
     this.end = Infinity;
@@ -301,12 +350,11 @@ class Fm4 extends AudioWorkletProcessor {
     const t0 = currentTime;
     if (t0 > this.end) return false;
     const f0 = parameters.frequency[0] * Math.pow(2, parameters.detune[0] / 1200);
-    const inc = new Float64Array(4);
-    const live = [true, true, true, true];
+    const { inc, live } = this;
     for (let k = 0; k < 4; k++) {
       const f = f0 * this.ops[k].ratio * this.detf[k];
       inc[k] = f / sampleRate;
-      if (f > sampleRate * 0.45) live[k] = false; // över halva samplingsfrekvensen: tyst
+      live[k] = f > sampleRate * 0.45 ? 0 : 1; // över halva samplingsfrekvensen: tyst
     }
     const TWO_PI = 2 * Math.PI;
     const { ops, mods, isCar, env, stage, phase } = this;
@@ -352,7 +400,7 @@ class Fm4 extends AudioWorkletProcessor {
   }
 }
 
-registerProcessor('fm4', Fm4);
+registerPooled('fm4', Fm4);
 
 // ---------- Vågtabell ----------
 // En oscillator som glider mellan åtta vågformer (en "tabell"). Positionen styrs av ett startläge,
@@ -482,7 +530,7 @@ function wtTable(name, maxH) {
   return frames;
 }
 
-class Wavetable extends AudioWorkletProcessor {
+class Wavetable extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
@@ -547,7 +595,9 @@ class Wavetable extends AudioWorkletProcessor {
     while (maxH * 2 <= Math.min(256, fit)) maxH *= 2;
     if (maxH !== this.maxH) { this.maxH = maxH; this.frames = wtTable(this.name, maxH); }
     const frames = this.frames;
-    const incs = this.voices.map((v) => (f0 * Math.pow(2, (v.x * spread) / 1200)) / sampleRate);
+    if (!this.incs) this.incs = new Float64Array(this.voices.length); // (återanvänds i varje block)
+    const incs = this.incs;
+    for (let k = 0; k < this.voices.length; k++) incs[k] = (f0 * Math.pow(2, (this.voices[k].x * spread) / 1200)) / sampleRate;
     for (let i = 0; i < L.length; i++) {
       if (t0 + i / sampleRate < this.start) { L[i] = 0; R[i] = 0; continue; }
       // Position i tabellen (räknas om var 16:e sampel räcker, men det är billigt nog per sampel)
@@ -581,7 +631,7 @@ class Wavetable extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('wavetable', Wavetable);
+registerPooled('wavetable', Wavetable);
 
 // ======================================================================================
 // ---------- Röst (formantsyntes) ----------
@@ -624,7 +674,7 @@ const VOICE_FORMANTS = {
 };
 
 // Formanterna för vokalläget x (0 = u … 1 = i), skalade (s) uppåt eller nedåt
-function voiceFormants(type, x, s = 1) {
+function voiceFormants(type, x, s = 1, out = []) {
   const T = VOICE_FORMANTS[type === 'child' ? 'soprano' : type] || VOICE_FORMANTS.alto;
   const scale = (type === 'child' ? 1.18 : 1) * s;
   const y = Math.min(1, Math.max(0, x)) * 4;
@@ -632,14 +682,14 @@ function voiceFormants(type, x, s = 1) {
   const fr = y - i;
   const A = T[VOWELS[i]];
   const B = T[VOWELS[i + 1]];
-  const out = [];
+  // (out: en lista att skriva i – ljudtråden återanvänder sin, så att inget nytt minne skapas per block)
   for (let k = 0; k < 5; k++) {
-    out.push({
-      f: Math.exp(Math.log(A[0][k]) + (Math.log(B[0][k]) - Math.log(A[0][k])) * fr) * scale,
-      g: Math.pow(10, (A[1][k] + (B[1][k] - A[1][k]) * fr) / 20),
-      bw: (A[2][k] + (B[2][k] - A[2][k]) * fr) * Math.sqrt(scale),
-    });
+    const fm = out[k] || (out[k] = { f: 0, g: 0, bw: 0 });
+    fm.f = Math.exp(Math.log(A[0][k]) + (Math.log(B[0][k]) - Math.log(A[0][k])) * fr) * scale;
+    fm.g = Math.pow(10, (A[1][k] + (B[1][k] - A[1][k]) * fr) / 20);
+    fm.bw = (A[2][k] + (B[2][k] - A[2][k]) * fr) * Math.sqrt(scale);
   }
+  out.length = 5;
   return out;
 }
 
@@ -696,6 +746,13 @@ class VoiceSynth {
     this.level = 0.11 / Math.sqrt(n);
   }
 
+  // Formanterna (fem + bröstklang) för vokalläget x in i en filterbank
+  setBank(bank, x, s, f0) {
+    const fms = voiceFormants(this.type, x, s, this.fms || (this.fms = []));
+    for (let k = 0; k < 5; k++) bpSet(bank[k], fms[k].f, fms[k].bw, fms[k].g);
+    bpSet(bank[5], Math.max(140, f0 * 1.1), Math.max(80, f0 * 0.8), 0.45);
+  }
+
   // Ett block: f0 i Hz, ctl = vokal (0–1) från Läge på rutan, eller < 0 = som ljudet är
   render(L, R, start, n, f0, ctl = -1, ctl2 = -1) {
     const sr = sampleRate;
@@ -706,18 +763,15 @@ class VoiceSynth {
     this.movePhase += (this.moveRate * n) / sr;
     let x = ctl >= 0 ? ctl : this.vowel + this.move * 0.5 * Math.sin(2 * Math.PI * this.movePhase);
     x = Math.min(1, Math.max(0, x));
-    const setBank = (bank, s) => {
-      voiceFormants(this.type, x, s).forEach((fm, k) => bpSet(bank[k], fm.f, fm.bw, fm.g));
-      bpSet(bank[5], Math.max(140, f0 * 1.1), Math.max(80, f0 * 0.8), 0.45);
-    };
-    setBank(this.bankL, this.stereo ? 0.985 : 1);
-    if (this.stereo) setBank(this.bankR, 1.015);
+    this.setBank(this.bankL, x, this.stereo ? 0.985 : 1, f0);
+    if (this.stereo) this.setBank(this.bankR, x, 1.015, f0);
     // Antal övertoner som ryms under halva samplingsfrekvensen (udda tal: Dirichletkärnan)
-    this.voices.forEach((v) => {
+    for (let k = 0; k < this.voices.length; k++) {
+      const v = this.voices[k];
       const P = sr / (f0 * Math.pow(2, v.cents / 1200));
       v.M = Math.max(1, 2 * Math.floor((P * 0.9) / 2) + 1);
       if (Math.random() < n / sr * 12) v.jitTo = (Math.random() - 0.5) * 14; // små ojämnheter (cent)
-    });
+    }
     const vibOn = this.vib * 32 * Math.min(1, Math.max(0, (this.elapsed - 0.2) / 0.4));
     // Höga toner har färre övertoner i formanterna och blir svagare – jämnas ut (uppmätt)
     const level = this.level * Math.pow(f0 / 261.6, 0.32);
@@ -756,7 +810,7 @@ class VoiceSynth {
   }
 }
 
-class Voice extends AudioWorkletProcessor {
+class Voice extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 220, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
@@ -789,7 +843,7 @@ class Voice extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('voice', Voice);
+registerPooled('voice', Voice);
 
 // ---------- Blås ----------
 //   reed  – klarinett, fysisk modell (vågledare som i Synthesis ToolKit): ett rörblad som öppnar
@@ -800,7 +854,7 @@ registerProcessor('voice', Voice);
 //           "tju" av luft innan tonen tagit sig (tonen byggs upp lite långsammare än luften).
 // Blåstrycket styr styrka och klang, andningen hur mycket luft som hörs.
 const WIND_BUF = 8192;
-class Wind extends AudioWorkletProcessor {
+class Wind extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 440, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
@@ -927,7 +981,7 @@ class Wind extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('wind', Wind);
+registerPooled('wind', Wind);
 
 // ---------- Granulär ----------
 // Ljudet byggs av många korta korn (10–500 ms) som läses ur en ljudkälla, var och en med mjuk
@@ -1099,7 +1153,7 @@ function grainSource(name) {
   return out;
 }
 
-class Grain extends AudioWorkletProcessor {
+class Grain extends Core {
   static get parameterDescriptors() {
     return [
       { name: 'frequency', defaultValue: 261.6, minValue: 10, maxValue: 20000, automationRate: 'k-rate' },
@@ -1125,6 +1179,7 @@ class Grain extends AudioWorkletProcessor {
     this.jitter = o.jitter || 0;
     this.width = o.width ?? 0.7;
     this.grains = [];
+    this.pool = []; // använda korn, för återanvändning
     this.next = 0;
     this.elapsed = 0;
     // Nivån: ju fler korn som ligger på varandra, desto svagare vart och ett
@@ -1159,13 +1214,14 @@ class Grain extends AudioWorkletProcessor {
         p += (Math.random() - 0.5) * this.spread;
         p -= Math.floor(p);
         const pan = (Math.random() * 2 - 1) * this.width;
-        this.grains.push({
-          x: p * n,
-          inc: rate * Math.pow(2, ((Math.random() * 2 - 1) * this.jitter) / 1200),
-          age: 0,
-          gl: Math.cos(((pan + 1) * Math.PI) / 4),
-          gr: Math.sin(((pan + 1) * Math.PI) / 4),
-        });
+        // (kornen återanvänds: inget nytt minne per korn, som ljudtråden annars till slut måste städa)
+        const g = this.pool.pop() || {};
+        g.x = p * n;
+        g.inc = rate * Math.pow(2, ((Math.random() * 2 - 1) * this.jitter) / 1200);
+        g.age = 0;
+        g.gl = Math.cos(((pan + 1) * Math.PI) / 4);
+        g.gr = Math.sin(((pan + 1) * Math.PI) / 4);
+        this.grains.push(g);
         this.next = (sr / density) * (0.6 + Math.random() * 0.8);
       }
       let l = 0;
@@ -1183,7 +1239,12 @@ class Grain extends AudioWorkletProcessor {
         r += s * g.gr;
         g.x += g.inc;
         if (g.x >= n) g.x -= n;
-        if (++g.age >= glen) this.grains.splice(k, 1);
+        if (++g.age >= glen) {
+          // Klart: sista kornet flyttas hit (det är redan räknat i det här samplet)
+          const last = this.grains.pop();
+          if (k < this.grains.length) this.grains[k] = last;
+          this.pool.push(g);
+        }
       }
       L[i] = l * level;
       R[i] = r * level;
@@ -1191,7 +1252,7 @@ class Grain extends AudioWorkletProcessor {
     return true;
   }
 }
-registerProcessor('grain', Grain);
+registerPooled('grain', Grain);
 
 // Inspelning från mikrofonen (XY: js/xyrec.js): samlar ljudet i block och skickar dem till huvudtråden
 class RecCapture extends AudioWorkletProcessor {
@@ -1294,7 +1355,7 @@ class RecGrain extends AudioWorkletProcessor {
         r += v * g.r;
         g.i++;
       }
-      if (this.grains.length && this.grains[0].i >= len) this.grains = this.grains.filter((g) => g.i < len);
+      while (this.grains.length && this.grains[0].i >= len) this.grains.shift(); // (äldst först)
       const k = this.gain * this.level;
       L[s] = l * k;
       if (R !== L) R[s] = r * k;

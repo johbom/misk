@@ -680,6 +680,9 @@ const EN = {
   'Rumsstorlek': 'Room size',
   'Post-filter': 'Post filter',
   'Frekvens': 'Frequency',
+  'Placering': 'Position',
+  'Efter delay och reverb': 'After delay and reverb',
+  'Före delay och reverb': 'Before delay and reverb',
 
   // ---------- Trumset och ljudeffekter ----------
   'Trumset och ljudeffekter': 'Drum kits and sound effects',
