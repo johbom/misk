@@ -6,6 +6,7 @@ let audioCtx = null;
 // melodi kan låta olika samtidigt. engine = motorn för sidan som visas eller vars ljud man ändrar.
 let engine = null;
 const engines = { notes: null, chords: null, xy: null }; // xy: XY-plattans effekter (js/xyfx.js)
+let audioMaster = null; // slutmixen (efter den: högtalarna)
 const padEngine = (pad) => (pad && pad.chord ? engines.chords : engines.notes);
 
 // Väck ljudet om det är pausat. Safari kan också stå i "interrupted" (samtal, Siri, en annan app tog
@@ -30,6 +31,7 @@ function initAudio() {
     wakeAudio();
   } catch {}
   const master = AUDIO_DIAG.has('nomaster') ? audioCtx.destination : makeMasterBus(audioCtx);
+  audioMaster = master;
   if (AUDIO_DIAG.size) log(`Felsökning av ljudet: ${[...AUDIO_DIAG].join(', ')}`);
   for (const slot of ['notes', 'chords']) {
     if (slot === 'chords' && AUDIO_DIAG.has('one')) { engines.chords = engines.notes; continue; } // en motor, som förr
@@ -45,6 +47,7 @@ function initAudio() {
   engines.xy = new SynthEngine(audioCtx, xyFxParams(), master);
   engines.xy.setVolume(Number(ui.volume.value));
   engine = engines[soundSlot];
+  if (typeof fxPadRoute === 'function') fxPadRoute(); // effektplattan (js/fxpad.js)
   startAudioGuard();
   if (typeof padRestoreSamples === 'function') padRestoreSamples(); // rutornas sparade ljud (js/padrec.js)
 }

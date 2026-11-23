@@ -1,4 +1,4 @@
-// Presetbibliotek: 560 färdiga ljud – 100 per ljudmotor (10 kategorier med 10 ljud var) och 20 var för Röst, Blås och Granulär.
+// Presetbibliotek: 565 färdiga ljud – 100 per ljudmotor (10 kategorier med 10 ljud var), 20 var för Röst, Blås och Granulär och 5 för Vocoder.
 // Här finns oscillatormotorns 100; de andra motorernas ljud ligger i egna filer (se nedan).
 // Väljer man ett av dem laddas inställningarna in i "Eget", så kan man fortsätta skruva därifrån.
 // Varje kategori har en bas; varje ljud ändrar bara det som skiljer sig (ovanpå SYNTH_DEFAULTS).
@@ -169,10 +169,23 @@ const PRESET_CATEGORIES = [
 // Ett bibliotek per motor, i samma ordning som motorvalet: Oscillatorer (kategorierna ovan),
 // Sträng och Resonans (js/pm-library.js), FM (js/fm-library.js), Wavetable (js/wt-library.js) samt
 // Röst, Blås och Granulär (js/vwg-library.js).
+// Vocoder: tonerna (två vågformer och brus) formas av mikrofonen eller line-in – tala eller sjung medan du spelar
+const VOCODER_CATEGORIES = [{
+  name: 'Vocoder',
+  base: { model: 'vocoder', osc1Wave: 'sawtooth', attack: 0.01, decay: 0.1, sustain: 1, release: 0.15, cutoff: 18000, reverbMix: 0.15 },
+  presets: {
+    'Vocoder': { osc2Wave: 'square', osc2Level: 0.5, noise: 0.04 },
+    'Robotröst': { osc1Wave: 'square', osc2Wave: 'square', osc2Semi: -12, osc2Level: 0.6, vocBands: 12, vocRelease: 0.004, release: 0.08, reverbMix: 0.1 },
+    'Vocoderkör': { unison: 5, spread: 18, osc2Wave: 'sawtooth', osc2Semi: 12, osc2Level: 0.3, attack: 0.15, release: 0.8, vocBands: 20, chorus: 0.5, reverbMix: 0.4, reverbSize: 3.5 },
+    'Viskvocoder': { osc1Level: 0.3, noise: 0.8, vocSib: 0.6, release: 0.3, reverbMix: 0.25 },
+    'Mörk vocoder': { osc2Wave: 'sawtooth', osc2Semi: -12, osc2Level: 0.6, vocShift: -5, cutoff: 4000, release: 0.25 },
+  },
+}];
+
 PRESET_CATEGORIES.forEach((c) => { c.group = 'Oscillatorer'; });
 [
   ['Sträng', STRING_CATEGORIES], ['Resonans', MODAL_CATEGORIES], ['FM', FM_CATEGORIES], ['Wavetable', WT_CATEGORIES],
-  ['Röst', VOICE_CATEGORIES], ['Blås', WIND_CATEGORIES], ['Granulär', GRAIN_CATEGORIES],
+  ['Röst', VOICE_CATEGORIES], ['Blås', WIND_CATEGORIES], ['Granulär', GRAIN_CATEGORIES], ['Vocoder', VOCODER_CATEGORIES],
 ].forEach(([group, cats]) => cats.forEach((c) => PRESET_CATEGORIES.push({ ...c, group })));
 
 // Platt lista: { group, cat, name, params } – params är kompletta (defaults + kategori + ljud)
@@ -205,6 +218,7 @@ const QUICK_SOUNDS = [
   ['Röst', ['Blandad kör', 'Altsolo', 'Nynnande', 'Vokalglid', 'Rymdkör']],
   ['Blås', ['Tvärflöjt', 'Panflöjt', 'Ocarina', 'Konsertklarinett', 'Shakuhachi']],
   ['Granulär', ['Körmoln', 'Stråkmoln', 'Regn', 'Bäck', 'Fågelsång']],
+  ['Vocoder', ['Vocoder', 'Robotröst', 'Vocoderkör', 'Viskvocoder', 'Mörk vocoder']],
 ];
 QUICK_SOUNDS.forEach(([, names]) => names.forEach((name) => {
   if (!(name in SYNTH_PRESETS)) SYNTH_PRESETS[name] = { ...PRESET_LIBRARY.find((e) => e.name === name).params };

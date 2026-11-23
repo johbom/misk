@@ -14,7 +14,7 @@ function setupQuick() {
   $('fx-toggle').addEventListener('click', () => toggleQuick('fx')); // ljudets effekter (bara i den avancerade versionen)
   // Klick utanför eller Esc stänger
   document.addEventListener('pointerdown', (e) => {
-    if (quick.open && !e.target.closest('#quick-pop, .quick-btn, #arp-toggle, #seq-toggle, #seq-settings')) closeQuick();
+    if (quick.open && !e.target.closest('#quick-pop, .quick-btn, #arp-toggle, #seq-toggle, #fxpad-toggle, #seq-settings')) closeQuick();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeQuick(); });
   [ui.formation, ui.root, ui.scale].forEach((el) => el.addEventListener('change', syncQuick));
@@ -40,11 +40,12 @@ function syncQuick() {
 const QUICK_SETS = {
   arp: { btn: 'arp-toggle', set: 'arp-set', name: 'Arpeggiator', close: 'Stäng arpens inställningar', title: 'Stäng (arpen fortsätter)' },
   seq: { btn: 'seq-toggle', set: 'seq-set', name: 'Stegsequencer', close: 'Stäng sequencerns inställningar', title: 'Stäng (sequencern fortsätter)' },
+  fxpad: { btn: 'fxpad-toggle', set: 'fxpad-set', name: 'Effektplatta', close: 'Stäng effektplattan', title: 'Stäng (effekterna ligger kvar)' },
   fx: { btn: 'fx-toggle', set: 'synth-fx', name: 'Effekter', close: 'Stäng effekterna', title: 'Stäng' },
   xyfx: { btn: 'xy-fx-toggle', set: 'xy-fx', name: 'Effekter för XY', close: 'Stäng effekterna', title: 'Stäng' },
 };
 const quickBtn = (kind) => $(QUICK_SETS[kind]?.btn || `quick-${kind}`);
-const quickBtns = () => document.querySelectorAll('.quick-btn, #arp-toggle, #seq-toggle');
+const quickBtns = () => document.querySelectorAll('.quick-btn, #arp-toggle, #seq-toggle, #fxpad-toggle');
 
 function toggleQuick(kind) {
   if (quick.open === kind) { closeQuick(); return; }

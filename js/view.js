@@ -334,6 +334,12 @@ function applyAppLevel() {
     ui.seqOn.dispatchEvent(new Event('change'));
     if (quick.open === 'seq') closeQuick();
   }
+  // Effektplattan och line-in finns bara i den avancerade versionen (ljudet går då förbi plattan)
+  if (typeof fxPadSync === 'function') {
+    if (simple && ui.lineIn.checked) { ui.lineIn.checked = false; ui.lineIn.dispatchEvent(new Event('change')); }
+    if (simple && quick.open === 'fxpad') closeQuick();
+    fxPadSync();
+  }
   if (!simple) return;
   if (quick.open === 'fx') closeQuick(); // Effekter-knappen finns bara i den avancerade versionen
   // Voicing-läget för ackorden visas inte i den enkla versionen

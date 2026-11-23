@@ -30,6 +30,7 @@ setupXyRec();
 setupPadRec();
 setupArp();
 setupSeq();
+setupFxPad();
 setupUserPresets();
 setupPwa();
 setupAbout();

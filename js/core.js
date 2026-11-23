@@ -62,6 +62,12 @@ const ui = {
   arpGate: $('arp-gate'),
   arpRetrig: $('arp-retrig'),
   seqOn: $('seq-on'),
+  fxpadOn: $('fxpad-on'), // effektplattan (js/fxpad.js)
+  fxpadX: $('fxpad-x'),
+  fxpadY: $('fxpad-y'),
+  fxpadHold: $('fxpad-hold'),
+  lineIn: $('line-in'),
+  lineInLevel: $('line-in-level'),
   seqSteps: $('seq-steps-count'),
   seqRate: $('seq-rate'),
   seqBpm: $('seq-bpm'), // samma tempo som arpeggiatorn (sparas inte för sig)

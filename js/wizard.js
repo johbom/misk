@@ -362,10 +362,10 @@ function renderWizard() {
         <div class="wiz-sounds wiz-kits" role="radiogroup" aria-label="Ljudeffekter">${kits(true)}</div>
         ${wizHead('h4', tabIconInner('notes'), 'Toner')}` : '';
       const cur = d.sound === null && !d.drumKit ? `<p class="wiz-hint">Nu: ${$('sound-now-name')?.textContent || 'eget ljud'}. Välj ett nytt eller gå vidare för att behålla det.</p>` : '';
-      html = `${drums}${cur}${QUICK_SOUNDS.map(([engineName, names]) => `${wizHead('h5', WIZ_ENGINE_ICONS[engineName], engineName, 'wiz-engine')}
+      html = `${drums}${cur}${QUICK_SOUNDS.filter(([g]) => g !== 'Vocoder').map(([engineName, names]) => `${wizHead('h5', WIZ_ENGINE_ICONS[engineName], engineName, 'wiz-engine')}
         <div class="wiz-sounds" role="radiogroup" aria-label="Ljud: ${engineName}">${
         names.map((n) => wizOption('sound', n, n, !d.drumKit && d.sound === n)).join('')}</div>`).join('')}
-        <p class="wiz-hint">Tryck för att lyssna. Alla 560 ljud finns under Inställningar → Ljud.</p>`;
+        <p class="wiz-hint">Tryck för att lyssna. Alla 565 ljud finns under Inställningar → Ljud.</p>`;
     }
   } else if (step === 'xyfeel') {
     title = 'Omfång och reverb';

@@ -69,7 +69,7 @@ const SETTINGS_ICONS = {
 // Symboler som redan finns på sidan (menyn och spelraden)
 const ICONS_FROM_PAGE = {
   notes: '#tabs [data-tab="notes"] svg', chords: '#tabs [data-tab="chords"] svg', xy: '#tabs [data-tab="xy"] svg',
-  arp: '#arp-toggle svg', seq: '#seq-toggle svg',
+  arp: '#arp-toggle svg', seq: '#seq-toggle svg', fxpad: '#fxpad-toggle svg',
 };
 function settingsIcon(name) {
   if (ICONS_FROM_PAGE[name]) {

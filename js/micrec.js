@@ -17,6 +17,7 @@ const isIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.p
 // på sidoknappen). Då vägrar iOS att öppna mikrofonen ("Audiosession category is not compatible with audio
 // capture"), så medan inspelningen pågår är det "uppspelning och inspelning" – sedan tillbaka.
 function micSession(rec) {
+  if (!rec && typeof liveInActive === 'function' && liveInActive()) return; // ljud in (vocoder, line-in) är öppet
   try { if (navigator.audioSession) navigator.audioSession.type = rec ? 'play-and-record' : 'playback'; } catch {}
 }
 

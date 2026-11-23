@@ -122,7 +122,7 @@ const FM_OP_PARAMS = [1, 2, 3, 4].flatMap((k) => [
 ]);
 
 const SYNTH_PARAMS = [
-  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Wavetable'], ['voice', 'Röst'], ['wind', 'Blås'], ['grain', 'Granulär']] },
+  { group: 'Motor', key: 'model', label: 'Motor', options: [['osc', 'Oscillatorer'], ['string', 'Sträng'], ['modal', 'Resonans'], ['fm', 'FM'], ['wt', 'Wavetable'], ['voice', 'Röst'], ['wind', 'Blås'], ['grain', 'Granulär'], ['vocoder', 'Vocoder']] },
   // Ljudets eget oktavläge (basljuden ligger en oktav ned). Rutornas toner och MIDI ändras inte.
   { key: 'octave', label: 'Oktav', min: -2, max: 2, step: 1, fmt: (v) => (v ? `${v > 0 ? '+' : '−'}${Math.abs(v)} okt` : 'Som rutan') },
   { key: 'pmExciter', label: 'Anslag', options: [['pluck', 'Knäppt'], ['hammer', 'Slagen'], ['bow', 'Stråke']] },
@@ -169,6 +169,13 @@ const SYNTH_PARAMS = [
   { key: 'grainDensity', label: 'Täthet', min: 2, max: 120, log: true, fmt: (v) => `${Math.round(v)} korn/s` },
   { key: 'grainJitter', label: 'Tonslump', min: 0, max: 100, step: 1, fmt: (v) => `${v} cent` },
   { key: 'grainWidth', label: 'Stereobredd', min: 0, max: 1, step: 0.01, fmt: pct },
+
+  // Vocoder: tonerna (Oscillator 1 och 2 och brus = bärvågen) formas av mikrofonen/line-in
+  { group: 'Vocoder', key: 'vocBands', label: 'Band', min: 8, max: 32, step: 4, fmt: (v) => `${v} band` },
+  { key: 'vocMic', label: 'Mikrofonnivå', min: 0.25, max: 8, log: true, fmt: (v) => `${Math.round(v * 100)} %` },
+  { key: 'vocRelease', label: 'Release', min: 0.002, max: 0.2, log: true, fmt: sec },
+  { key: 'vocShift', label: 'Formant', min: -12, max: 12, step: 1, fmt: signed('halvt.') },
+  { key: 'vocSib', label: 'Sibilans', min: 0, max: 1, step: 0.01, fmt: pct },
 
   { group: 'Oscillator 1', key: 'osc1Wave', label: 'Vågform', options: WAVES },
   { key: 'osc1Level', label: 'Nivå', min: 0, max: 1, step: 0.01, fmt: pct },
@@ -218,7 +225,8 @@ const SYNTH_PARAMS = [
 ];
 
 // Reglage som inte gör något i vissa lägen gråas ut.
-const notOsc = (p) => p.model && p.model !== 'osc';
+// (Vocodern spelar med oscillatorerna: de är dess bärvåg)
+const notOsc = (p) => p.model && p.model !== 'osc' && p.model !== 'vocoder';
 const notPm = (p) => p.model !== 'string' && p.model !== 'modal';
 const notFm = (p) => p.model !== 'fm';
 const notWt = (p) => p.model !== 'wt';
@@ -238,6 +246,7 @@ const SYNTH_HIDDEN_WHEN = {
   ...Object.fromEntries(['wtTable', 'wtPos', 'wtEnv', 'wtEnvTime', 'wtMove', 'wtMoveRate', 'wtUnison', 'wtSpread'].map((k) => [k, notWt])),
   ...Object.fromEntries(['voiceType', 'voiceVowel', 'voiceMove', 'voiceMoveRate', 'voiceBreath', 'voiceVib', 'voiceChoir', 'voiceSpread'].map((k) => [k, notVoice])),
   ...Object.fromEntries(['windKind', 'windPressure', 'windNoise', 'windBright', 'windVib', 'windAttack'].map((k) => [k, notWind])),
+  ...Object.fromEntries(['vocBands', 'vocMic', 'vocRelease', 'vocShift', 'vocSib'].map((k) => [k, (p) => p.model !== 'vocoder'])),
   ...Object.fromEntries(['grainSource', 'grainPos', 'grainScan', 'grainSpread', 'grainSize', 'grainDensity', 'grainJitter', 'grainWidth'].map((k) => [k, notGrain])),
 };
 const SYNTH_DISABLED_WHEN = {
@@ -301,6 +310,7 @@ const SYNTH_DEFAULTS = {
   voiceType: 'alto', voiceVowel: 0.5, voiceMove: 0, voiceMoveRate: 0.3, voiceBreath: 0.15, voiceVib: 0.4, voiceChoir: 1, voiceSpread: 12,
   windKind: 'flute', windPressure: 0.5, windNoise: 0.3, windBright: 0.5, windVib: 0.3, windAttack: 0.06,
   grainSource: 'choir', grainPos: 0.5, grainScan: 0, grainSpread: 0.15, grainSize: 0.12, grainDensity: 30, grainJitter: 8, grainWidth: 0.7,
+  vocBands: 16, vocMic: 1, vocRelease: 0.008, vocShift: 0, vocSib: 0.3,
   filterType: 'lowpass', cutoff: 18000, q: 0.7, fEnv: 0, fAttack: 0.01, fDecay: 0.3, fSustain: 1,
   attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25, vol: 1,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
@@ -499,9 +509,24 @@ const voiceBudget = { cap: MAX_VOICES };
 // (reverb, chorus, delay …), tills nästa ton väcker den.
 const ENGINE_SLEEP_AFTER = 2;
 
+// Vocoderns frekvensområde och nivå (VOC_GAIN uppmätt: med brus på ca −23 dBFS i mikrofonen låter en ton
+// ungefär lika starkt som samma ton utan vocoder – inom 1,5 dB för 8–32 band)
+const VOC_LO = 110;
+const VOC_HI = 7600;
+const VOC_GAIN = 220;
+let vocRect = null;
+function vocRectCurve() {
+  if (vocRect) return vocRect;
+  vocRect = new Float32Array(1025);
+  for (let i = 0; i < vocRect.length; i++) vocRect[i] = Math.abs(i / 512 - 1);
+  return vocRect;
+}
+
 class SynthEngine {
-  // out: dit motorn spelar (slutmixen med gemensam limiter, js/audio.js); annars direkt till högtalarna
-  constructor(ctx, params, out = ctx.destination) {
+  // out: dit motorn spelar (slutmixen med gemensam limiter, js/audio.js); annars direkt till högtalarna.
+  // opts.dynamics = false: ingen egen kompressor och toppbegränsare (effektplattan, js/fxpad.js: ljudet
+  // som kommer in har redan gått genom motorernas).
+  constructor(ctx, params, out = ctx.destination, opts = {}) {
     this.ctx = ctx;
     this.p = { ...params };
     this.waveCache = {};
@@ -591,7 +616,8 @@ class SynthEngine {
     // låter lika starkt som förut
     const makeup = ctx.createGain();
     makeup.gain.value = 0.95;
-    if (AUDIO_DIAG.has('nocomp')) this.volume.connect(makeup).connect(out);
+    if (opts.dynamics === false) { makeup.gain.value = 1; this.volume.connect(makeup).connect(out); }
+    else if (AUDIO_DIAG.has('nocomp')) this.volume.connect(makeup).connect(out);
     else this.volume.connect(comp).connect(limiter).connect(makeup).connect(out);
     Object.assign(this, { comp, limiter, makeup }); // (för mätning och felsökning)
 
@@ -650,6 +676,16 @@ class SynthEngine {
     this.volume.gain.setTargetAtTime(v, this.ctx.currentTime, 0.02);
   }
 
+  // Spela till en annan plats (effektplattan eller slutmixen, js/fxpad.js)
+  setOut(node) {
+    if (node === this.out) return;
+    if (this.awake) {
+      try { this.makeup.disconnect(this.out); } catch {}
+      this.makeup.connect(node);
+    }
+    this.out = node;
+  }
+
   // Väck motorn (anropas av varje ton, och av trumset, ljudfiler och XY som spelar genom den)
   wake() {
     this.lastWake = this.ctx.currentTime;
@@ -663,6 +699,7 @@ class SynthEngine {
   // Somna om inga röster finns, inget spelats på ett tag och det är helt tyst (även reverbens svans)
   checkSleep() {
     if (!this.awake || this.ctx.state !== 'running') return;
+    if (this.keepAwake) { this.quiet = 0; return; } // (effektplattan medan den är på)
     if (this.voices.size || this.ctx.currentTime - this.lastWake < ENGINE_SLEEP_AFTER) { this.quiet = 0; return; }
     this.meter.getFloatTimeDomainData(this.meterBuf);
     let peak = 0;
@@ -713,6 +750,7 @@ class SynthEngine {
     if (p.model === 'grain') this.warmGrain(p.grainSource);
     const t = ctx.currentTime;
     const smooth = (param, v) => param.setTargetAtTime(v, t, 0.03);
+    this.vocoderSync();
 
     // Drive: tanh-kurva. Kurvan förstärker svaga signaler ungefär k gånger,
     // så nivån sänks efteråt för att drive ska ge mer distorsion, inte bara mer volym.
@@ -1024,6 +1062,122 @@ class SynthEngine {
     } catch {}
   }
 
+  // ---------- Vocoder ----------
+  // Bärvågen (tonerna) och mikrofonen delas i lika många frekvensband. I varje band följer en
+  // kuvertföljare mikrofonens styrka (likriktning + lågpass) och styr bärvågens volym i samma band.
+  // Allt med inbyggda noder. Sibilans: mikrofonens högsta frekvenser (s, t, k) blandas in direkt,
+  // men bara medan tonerna låter (bärvågens egen kuvertföljare öppnar dem).
+  vocoderBank() {
+    if (this.voc) return this.voc;
+    const { ctx } = this;
+    const carrier = ctx.createGain();
+    const mod = ctx.createGain(); // mikrofonen/line-in (gånger Mikrofonnivå)
+    const out = ctx.createGain();
+    const sibHp = ctx.createBiquadFilter();
+    sibHp.type = 'highpass';
+    sibHp.frequency.value = 6000;
+    sibHp.Q.value = 0.7;
+    const sibVca = ctx.createGain();
+    sibVca.gain.value = 0;
+    const sibLevel = ctx.createGain();
+    mod.connect(sibHp).connect(sibVca).connect(sibLevel).connect(out);
+    // Bärvågens kuvert öppnar sibilansen
+    const cRect = ctx.createWaveShaper();
+    cRect.curve = vocRectCurve();
+    const cLp = ctx.createBiquadFilter();
+    cLp.type = 'lowpass';
+    cLp.frequency.value = 20;
+    cLp.Q.value = 0.5;
+    const cAmt = ctx.createGain();
+    cAmt.gain.value = 6;
+    carrier.connect(cRect).connect(cLp).connect(cAmt).connect(sibVca.gain);
+    this.voc = { carrier, mod, out, sibLevel, bands: [], n: 0, mic: null, live: false };
+    return this.voc;
+  }
+
+  // Banden byggs om när antalet ändras; övrigt ställs om direkt. Mikrofonen öppnas när ljudet är en
+  // vocoder och stängs när man byter ljud (js/livein.js).
+  vocoderSync() {
+    const { ctx, p } = this;
+    const on = p.model === 'vocoder';
+    if (!on && !this.voc) return;
+    const v = this.vocoderBank();
+    if (on !== v.live) {
+      v.live = on;
+      if (on) {
+        v.out.connect(this.input);
+        if (typeof liveInAcquire === 'function') {
+          liveInAcquire(this).then((src) => {
+            if (!src) return;
+            if (!this.voc.live) { liveInRelease(this); return; }
+            v.mic = src;
+            src.connect(v.mod);
+          });
+        }
+      } else {
+        try { v.out.disconnect(); } catch {}
+        if (v.mic) { try { v.mic.disconnect(v.mod); } catch {} v.mic = null; }
+        if (typeof liveInRelease === 'function') liveInRelease(this);
+      }
+    }
+    if (!on) return;
+    const n = Math.min(32, Math.max(4, Math.round(Number(p.vocBands) || 16)));
+    if (n !== v.n) this.vocoderBuild(n);
+    const t = ctx.currentTime;
+    const shift = Math.pow(2, (Number(p.vocShift) || 0) / 12);
+    const fc = 1 / (2 * Math.PI * Math.min(0.2, Math.max(0.002, Number(p.vocRelease) || 0.008)));
+    const top = ctx.sampleRate * 0.45;
+    v.bands.forEach((b) => {
+      b.cf.forEach((f) => f.frequency.setTargetAtTime(Math.min(top, b.f * shift), t, 0.03));
+      b.lp.forEach((f) => f.frequency.setTargetAtTime(fc, t, 0.03));
+    });
+    v.mod.gain.setTargetAtTime(Math.min(8, Math.max(0.25, Number(p.vocMic) || 1)), t, 0.03);
+    v.sibLevel.gain.setTargetAtTime((Number(p.vocSib) || 0) * 0.5, t, 0.03);
+  }
+
+  vocoderBuild(n) {
+    const { ctx } = this;
+    const v = this.voc;
+    v.bands.forEach((b) => b.nodes.forEach((x) => { try { x.disconnect(); } catch {} }));
+    const lo = VOC_LO, hi = VOC_HI;
+    const bw = Math.log2(hi / lo) / n; // oktaver per band
+    const r = Math.pow(2, bw);
+    const q = Math.sqrt(r) / (r - 1);
+    const curve = vocRectCurve();
+    // Nivån per band: fler band = smalare band = svagare i varje (uppmätt, se README)
+    const k = VOC_GAIN * Math.sqrt(n / 16);
+    v.bands = [];
+    for (let i = 0; i < n; i++) {
+      const f = lo * Math.pow(hi / lo, (i + 0.5) / n);
+      const bp = (freq) => {
+        const b = ctx.createBiquadFilter();
+        b.type = 'bandpass';
+        b.frequency.value = freq;
+        b.Q.value = q;
+        return b;
+      };
+      const mf = [bp(f), bp(f)];
+      const cf = [bp(f), bp(f)];
+      const rect = ctx.createWaveShaper();
+      rect.curve = curve;
+      const lp = [0, 1].map(() => {
+        const l = ctx.createBiquadFilter();
+        l.type = 'lowpass';
+        l.frequency.value = 20;
+        l.Q.value = 0.5;
+        return l;
+      });
+      const amt = ctx.createGain();
+      amt.gain.value = k;
+      const vca = ctx.createGain();
+      vca.gain.value = 0;
+      v.mod.connect(mf[0]).connect(mf[1]).connect(rect).connect(lp[0]).connect(lp[1]).connect(amt).connect(vca.gain);
+      v.carrier.connect(cf[0]).connect(cf[1]).connect(vca).connect(v.out);
+      v.bands.push({ f, cf, lp, nodes: [...mf, ...cf, rect, ...lp, amt, vca] });
+    }
+    v.n = n;
+  }
+
   // Startar en ton. Returnerar en funktion som släpper den.
   // when (valfritt): ljudklockans tid då tonen ska börja (arpeggiatorn planerar i förväg).
   noteOn(note, level = 1, when = 0) {
@@ -1173,7 +1327,7 @@ class SynthEngine {
     let chain = mixer.connect(filter);
     if (trem) chain = chain.connect(trem);
     if (expr) chain = chain.connect(expr);
-    chain.connect(amp).connect(this.input);
+    chain.connect(amp).connect(p.model === 'vocoder' ? this.vocoderBank().carrier : this.input); // vocoder: bärvågen
 
     // LFO
     if (lfoOn) {
