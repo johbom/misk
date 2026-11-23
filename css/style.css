@@ -117,11 +117,12 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 #quick-pop > :is(#arp-set, #seq-set) .arp-tempo { gap: 8px; align-items: center; }
 #quick-pop > :is(#arp-set, #seq-set) .arp-tap { min-height: 30px; padding: 2px 12px; font-size: 0.85rem; }
 html.steppers #quick-pop > :is(#arp-set, #seq-set) .seg button { min-height: 40px; min-width: 40px; }
-/* Sequencern i snabbrutan: "Gå vidare" syns (utan förklaring), på/av sköts av Sekv-knappen */
-#quick-pop > #seq-set > label.check.seq-keep { display: flex; }
+/* Sequencern i snabbrutan: "Gå vidare" m.fl. syns (utan förklaring), och överst brytaren för på/av */
+#quick-pop > #seq-set > label.check:is(.seq-keep, .seq-power) { display: flex; }
+#quick-pop > #seq-set > label.check.seq-power { align-items: center; font-weight: 600; }
 /* Följ tonen: rutan som slingan på Toner följer just nu */
 .pad.seq-key { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); }
-#quick-pop > #seq-set > label.check.seq-keep small { display: none; }
+#quick-pop > #seq-set > label.check:is(.seq-keep, .seq-power) small { display: none; }
 .quick-close {
   position: absolute; top: 6px; right: 6px; width: 34px; height: 34px; padding: 0;
   border-radius: 50%; font-size: 1rem; line-height: 1; display: grid; place-items: center;
@@ -1170,7 +1171,7 @@ body[data-level="simple"] .sc-row.sc-adv { display: none; }
 .access-set { display: flex; flex-direction: column; align-items: stretch !important; gap: 16px !important; }
 label.check small { display: block; margin-top: 2px; color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
 label.check { align-items: flex-start; gap: 10px; }
-label.check input, #settings input[type="checkbox"] { accent-color: var(--accent); }
+label.check input, :is(#settings, #quick-pop) input[type="checkbox"] { accent-color: var(--accent); }
 label.check input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; }
 .keys { margin: 0; padding-left: 18px; line-height: 1.8; }
 kbd {
@@ -1473,7 +1474,7 @@ label.slider > .desc { grid-area: desc; color: var(--muted); font-size: 0.78rem;
 html.steppers .seg button { min-height: 46px; min-width: 46px; font-size: 1rem; }
 
 /* Brytare i stället för kryssrutor (större träffyta, tydligt på/av) */
-#settings input[type="checkbox"] {
+:is(#settings, #quick-pop) input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
   position: relative;
@@ -1487,7 +1488,7 @@ html.steppers .seg button { min-height: 46px; min-width: 46px; font-size: 1rem; 
   cursor: pointer;
   transition: background 0.15s;
 }
-#settings input[type="checkbox"]::before {
+:is(#settings, #quick-pop) input[type="checkbox"]::before {
   content: '';
   position: absolute;
   top: 2px;
@@ -1498,11 +1499,11 @@ html.steppers .seg button { min-height: 46px; min-width: 46px; font-size: 1rem; 
   background: #c9cde0;
   transition: transform 0.15s;
 }
-#settings input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
-#settings input[type="checkbox"]:checked::before { transform: translateX(18px); background: #fff; }
+:is(#settings, #quick-pop) input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+:is(#settings, #quick-pop) input[type="checkbox"]:checked::before { transform: translateX(18px); background: #fff; }
 label.check input[type="checkbox"] { margin-top: 1px; }
-html.reduce-motion #settings input[type="checkbox"],
-html.reduce-motion #settings input[type="checkbox"]::before { transition: none; }
+html.reduce-motion :is(#settings, #quick-pop) input[type="checkbox"],
+html.reduce-motion :is(#settings, #quick-pop) input[type="checkbox"]::before { transition: none; }
 
 /* − / + alltid vid sifferfält och antal (de inbyggda pilarna är för små) */
 .stepper.spin .step {
@@ -1539,10 +1540,10 @@ html.high-contrast .seg { background: #000; border: 2px solid #fff; }
 html.high-contrast .seg button { color: #fff; border: none !important; }
 /* !important: den allmänna kontrastregeln för knappar väger annars tyngre */
 html.high-contrast .seg button.on { background: #ffd400 !important; color: #000 !important; font-weight: 700; }
-html.high-contrast #settings input[type="checkbox"] { background: #000; border: 2px solid #fff; }
-html.high-contrast #settings input[type="checkbox"]::before { background: #fff; }
-html.high-contrast #settings input[type="checkbox"]:checked { background: #ffd400; border-color: #ffd400; }
-html.high-contrast #settings input[type="checkbox"]:checked::before { background: #000; }
+html.high-contrast :is(#settings, #quick-pop) input[type="checkbox"] { background: #000; border: 2px solid #fff; }
+html.high-contrast :is(#settings, #quick-pop) input[type="checkbox"]::before { background: #fff; }
+html.high-contrast :is(#settings, #quick-pop) input[type="checkbox"]:checked { background: #ffd400; border-color: #ffd400; }
+html.high-contrast :is(#settings, #quick-pop) input[type="checkbox"]:checked::before { background: #000; }
 html.high-contrast button.primary { background: #ffd400 !important; color: #000 !important; }
 html.high-contrast button.danger { border-color: #ff6b6b; color: #ff9b9b; }
 

@@ -667,13 +667,15 @@ function setupSeq() {
   $('seq-toggle').addEventListener('click', () => {
     // På XY syns knappen bara medan en slinga går: där stoppar den slingorna
     if (document.body.dataset.tab === 'xy') { seqStopAll(); return; }
+    // Knappen öppnar och stänger rutan; av med brytaren i rutan. Är sequencern av slås den på när rutan öppnas.
     if (quick.open === 'seq') { closeQuick(); return; }
-    ui.seqOn.checked = !seqOn();
-    ui.seqOn.dispatchEvent(new Event('change'));
-    log(t(`Stegsequencer ${seqOn() ? 'på' : 'av'}`));
-    if (seqOn()) openQuick('seq');
-    else closeQuick();
+    if (!seqOn()) {
+      ui.seqOn.checked = true;
+      ui.seqOn.dispatchEvent(new Event('change'));
+    }
+    openQuick('seq');
   });
+  ui.seqOn.addEventListener('change', () => log(t(`Stegsequencer ${seqOn() ? 'på' : 'av'}`)));
   $('seq-settings').addEventListener('click', () => toggleQuick('seq'));
   $('seq-play').addEventListener('click', () => (seq.play[seqPage()] ? seqStop() : seqStart()));
   $('seq-other').addEventListener('click', () => { const o = seqOther(seqPage()); if (seq.play[o]) seqStop(o); else seqStart(o); });

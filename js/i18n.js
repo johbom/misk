@@ -231,7 +231,7 @@ const EN = {
   'Kontakt': 'Switch',
   'Kontakter': 'Switches',
   'Stegsequencer': 'Step sequencer',
-  'Stegsequencer på/av (inställningar under Instrument)': 'Step sequencer on/off (settings under Instrument)',
+  'Stegsequencer: slå på och öppna inställningarna (av med brytaren i rutan)': 'Step sequencer: turn on and open the settings (off with the switch in the panel)',
   'Stegsequencer på': 'Step sequencer on',
   'Stegsequencer av': 'Step sequencer off',
   'Start': 'Start',
