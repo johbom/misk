@@ -60,8 +60,8 @@ function applySnapshot(data) {
   else { seqCfgFromControls(); saveSeq(); } // äldre: samma steg, notvärde och tonlängd på båda sidorna
 
   // Ackord
-  if (Array.isArray(data.chords) && data.chords.length === MAX_CHORDS) {
-    chords = data.chords.map(normalizeChord);
+  if (isChordList(data.chords)) {
+    chords = fillChords(data.chords);
     saveChords();
   }
 

@@ -15,7 +15,7 @@ const CHORD_SHIFTS = [[-1, 'Oktav −1'], [0, 'Oktav ±0'], [1, 'Oktav +1']];
 const BASS_ROOT = -1;
 const BASS_OPTIONS = [[BASS_ROOT, 'Grundton'], ...CHORD_ROOTS.map((n, r) => [r, n])];
 
-// Alla 8 ackordval sparas, även de som inte syns när antalet är lägre.
+// Alla 10 ackordval sparas, även de som inte syns när antalet är lägre.
 let chords = loadChords();
 
 // Fyller i det som saknas i äldre sparade ackord
@@ -23,12 +23,20 @@ function normalizeChord(c, i) {
   return { voicing: 'root', shift: 0, bass: BASS_ROOT, color: CHORD_PALETTE[i], ...c };
 }
 
+// Sparade listor kan vara kortare (förr fanns bara 8 ackord): resten fylls med standardackorden
+function isChordList(list) {
+  return Array.isArray(list) && list.length >= 1 && list.length <= MAX_CHORDS;
+}
+function fillChords(list) {
+  return [...list, ...DEFAULT_CHORDS.slice(list.length)].map(normalizeChord);
+}
+
 function loadChords() {
   try {
     const saved = JSON.parse(localStorage.getItem('hoverPadsChords'));
-    if (Array.isArray(saved) && saved.length === MAX_CHORDS) return saved.map(normalizeChord);
+    if (isChordList(saved)) return fillChords(saved);
   } catch {}
-  return DEFAULT_CHORDS.map(normalizeChord);
+  return fillChords([]);
 }
 
 const saveChords = () => localStorage.setItem('hoverPadsChords', JSON.stringify(chords));
