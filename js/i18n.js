@@ -673,11 +673,13 @@ const EN = {
   'Effekter': 'Effects',
   'Stäng effekterna': 'Close the effects',
   'Effekter för XY': 'Effects for XY',
-  'Effekter för XY (drive, chorus, delay och reverb)': 'Effects for XY (drive, chorus, delay and reverb)',
+  'Effekter för XY (drive, chorus, delay, reverb och post-filter)': 'Effects for XY (drive, chorus, delay, reverb and post filter)',
   'Tonarten används på XY när Skala är på. Omfånget gäller alltid.': 'On XY the key is used when Scale is on. The range always applies.',
   'Effekter för ljudet (samma som under Ljud → Skruva själv)': 'Effects for the sound (same as under Sound → Tweak it yourself)',
   'Delaytid': 'Delay time',
   'Rumsstorlek': 'Room size',
+  'Post-filter': 'Post filter',
+  'Frekvens': 'Frequency',
 
   // ---------- Trumset och ljudeffekter ----------
   'Trumset och ljudeffekter': 'Drum kits and sound effects',

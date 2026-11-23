@@ -304,6 +304,7 @@ Under **Inställningar → Ljud** kan man skruva själv:
 - **Volymkurva:** attack, decay, sustain, release.
 - **LFO:** vibrato, filter-wah eller tremolo.
 - **Effekter:** drive, chorus, delay och reverb. Delayn kan **synkas till tempot** (*Synk*: 1/2, 1/4 punkterad, 1/4, 1/8 punkterad, 1/8, 1/8 triol, 1/16) – då följer ekot arpens och sequencerns tempo, också när det ändras med reglaget eller Tap, och *Delaytid* gråas ut. *Av* = fri tid i ms som förut.
+- **Post-filter** (sist under Effekter, och i snabbrutan Effekter): *Lågpass*, *Högpass* eller *Bandpass* med *Frekvens* (20 Hz–20 kHz) och *Q* (0,1–20; 0,7 = rakt, högre = tydlig topp vid frekvensen). Det ligger sist i kedjan, efter drive, chorus, delay och reverb, så det filtrerar också ekon och reverb. *Av* från början (då går ljudet förbi filtret helt). Webbläsarens låg- och högpass tar Q i dB, så värdet räknas om – reglaget betyder samma sak för alla tre typerna. Sparas med ljudet (Eget, Mina presets) och finns också bland XY-plattans effekter. Trumseten går inte genom det.
 
 **Fysisk modell:** i stället för att forma vågformer räknar motorn ut hur en riktig sträng eller kropp svänger, så klangen beter sig naturligt över hela registret.
 - *Sträng* – en räknad sträng (Karplus–Strong) som kan **knäppas**, **slås** (som en pianohammare) eller **strykas med stråke** (klingar så länge tonen hålls).

@@ -210,6 +210,10 @@ const SYNTH_PARAMS = [
   { key: 'delayFeedback', label: 'Feedback', min: 0, max: 0.9, step: 0.01, fmt: pct },
   { key: 'reverbMix', label: 'Reverb', min: 0, max: 1, step: 0.01, fmt: pct },
   { key: 'reverbSize', label: 'Rumsstorlek', min: 0.3, max: 10, log: true, fmt: sec },
+  // Post-filter: sist i kedjan, efter alla effekter (filtrerar också eko och reverb)
+  { key: 'postFilter', label: 'Post-filter', options: [['off', 'Av'], ['lowpass', 'Lågpass'], ['highpass', 'Högpass'], ['bandpass', 'Bandpass']] },
+  { key: 'postFreq', label: 'Frekvens', min: 20, max: 20000, log: true, fmt: hz },
+  { key: 'postQ', label: 'Q', min: 0.1, max: 20, log: true, fmt: (v) => v.toFixed(1) },
 ];
 
 // Reglage som inte gör något i vissa lägen gråas ut.
@@ -266,6 +270,8 @@ const SYNTH_DISABLED_WHEN = {
   delayTime: (p) => p.delayMix === 0 || (p.delaySync && p.delaySync !== 'off'), // synkad: tempot bestämmer
   delayFeedback: (p) => p.delayMix === 0,
   reverbSize: (p) => p.reverbMix === 0,
+  postFreq: (p) => !p.postFilter || p.postFilter === 'off',
+  postQ: (p) => !p.postFilter || p.postFilter === 'off',
 };
 
 // Delaytiden i sekunder: fri, eller synkad till tempot (taktslag per eko × sekunder per taktslag)
@@ -297,6 +303,7 @@ const SYNTH_DEFAULTS = {
   attack: 0.01, decay: 0.15, sustain: 0.7, release: 0.25, vol: 1,
   lfoTarget: 'off', lfoRate: 5, lfoDepth: 0,
   drive: 0, chorus: 0, delayMix: 0, delaySync: 'off', delayTime: 0.3, delayFeedback: 0.3, reverbMix: 0.1, reverbSize: 2,
+  postFilter: 'off', postFreq: 1000, postQ: 0.7,
 };
 
 // Varje preset ändrar bara det som skiljer sig från SYNTH_DEFAULTS.
@@ -518,9 +525,14 @@ class SynthEngine {
 
     // Ut: volym -> kompressor (håller nere toppar när många toner spelas)
     this.volume = ctx.createGain();
-    this.bus.connect(this.volume);
-    this.delayMix.connect(this.volume);
-    this.reverbMix.connect(this.volume);
+    // Post-filter (lågpass, högpass eller bandpass) efter alla effekter; Av: förbi filtret
+    this.postIn = ctx.createGain();
+    this.postFilter = ctx.createBiquadFilter();
+    this.postFilter.connect(this.volume);
+    this.postOn = undefined; // kopplas i updateEffects (null = Av, förbi filtret)
+    this.bus.connect(this.postIn);
+    this.delayMix.connect(this.postIn);
+    this.reverbMix.connect(this.postIn);
     // Tidskonstanterna är lugna med flit: en kompressor eller limiter som reagerar snabbt (1–5 ms in,
     // 0,1–0,2 s ut) ändrar nivån inom varje svängning på mörka, ihållande toner – det hörs som lätt
     // distorsion när man håller flera toner (orgel, Jazz-FM, pad), även med Drive av.
@@ -699,6 +711,22 @@ class SynthEngine {
     smooth(this.delayMix.gain, p.delayMix * 0.7);
 
     smooth(this.reverbMix.gain, p.reverbMix * 1.2);
+
+    // Post-filter. Webbläsarens låg- och högpass tar Q i dB (resonanstoppen), bandpass som vanligt Q:
+    // räkna om, så att reglaget betyder samma sak för alla tre (0,7 = rakt, högre = tydlig topp).
+    const postType = ['lowpass', 'highpass', 'bandpass'].includes(p.postFilter) ? p.postFilter : null;
+    if (this.postOn !== postType) {
+      try { this.postIn.disconnect(); } catch {}
+      this.postIn.connect(postType ? this.postFilter : this.volume);
+      if (postType) this.postFilter.type = postType;
+      this.postOn = postType;
+    }
+    if (postType) {
+      const f = Math.min(ctx.sampleRate / 2 - 100, Math.max(20, Number(p.postFreq) || 1000));
+      const q = Math.min(20, Math.max(0.1, Number(p.postQ) || 0.7));
+      smooth(this.postFilter.frequency, f);
+      smooth(this.postFilter.Q, postType === 'bandpass' ? q : 20 * Math.log10(q));
+    }
     if (this.reverbBuiltSize !== p.reverbSize) {
       // Att bygga om reverben tar lite tid – vänta tills reglaget står still.
       clearTimeout(this.reverbTimer);

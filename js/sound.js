@@ -204,6 +204,7 @@ function randomSynth() {
     delayFeedback: Math.min(p.delayFeedback, 0.6),
     reverbMix: Math.min(p.reverbMix, 0.6),
     drive: Math.min(p.drive, 0.6),
+    postFilter: 'off',
     unison: Math.min(p.unison, 5),
     vol: 1,
   });
