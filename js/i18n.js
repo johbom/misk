@@ -128,7 +128,7 @@ const EN = {
   'Visar voicing och oktavläge per ackord': 'Shows voicing and octave position for each chord',
   'Avancerat (voicing)': 'Advanced (voicing)',
   'Färger': 'Colours',
-  '1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos, 9 limegrön, 10 brun': '1 red, 2 yellow, 3 green, 4 blue, 5 orange, 6 purple, 7 pink, 8 turquoise, 9 lime, 10 brown',
+  '1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos, 9 limegrön, 10 brun, 11 indigo, 12 grå': '1 red, 2 yellow, 3 green, 4 blue, 5 orange, 6 purple, 7 pink, 8 turquoise, 9 lime, 10 brown, 11 indigo, 12 grey',
   'Standardfärger': 'Standard colours',
   'Ingen färg': 'No colour',
   'Tonerna spelas en i taget, i takt – med alla spelsätt.': 'The notes are played one at a time, in time – with every playing style.',
@@ -947,7 +947,7 @@ const EN_HTML = {
   'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds, or <strong>resting the pointer</strong> on it for three (eye gaze, head or mouse pointer control).',
   'switch-learn-msg': 'Press <strong>Learn</strong> and then the switch or key to use.',
   'key-learn-msg': 'Pads 1–10 are played with <kbd>1</kbd>–<kbd>9</kbd> and <kbd>0</kbd>. Press a pad here (<strong>Learn</strong>) and then the switch or key that should play it instead.',
-  'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–10. Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>
+  'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–10 (pads 11 and 12 get their own keys under Keys for the pads). Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>
     <li>Other keys for the pads: choose Notes or Chords under <em>Keys for the pads</em>, press the pad and then the switch or key.</li>
     <li>One switch: <kbd>Space</kbd>, <kbd>Enter</kbd>, <kbd>F1</kbd>, <kbd>F2</kbd> or a click on the play area plays the highlighted pad.</li>
     <li>Two switches: switch 1 (<kbd>Space</kbd> or <kbd>F1</kbd>) moves on, switch 2 (<kbd>Enter</kbd>, <kbd>F2</kbd> or a click) plays.</li>

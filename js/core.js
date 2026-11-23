@@ -1,6 +1,6 @@
 // Grunddata som alla delar använder: tonnamn, skalor, ackordtyper, ui-referenser.
 // Hover Pads – spelar ljud (Web Audio) och/eller skickar MIDI (Web MIDI) vid mouseover.
-// Två sidor: "Toner" (en ton per ruta) och "Ackord" (2–10 rutor, valfritt ackord i varje).
+// Två sidor: "Toner" (en ton per ruta) och "Ackord" (2–12 rutor, valfritt ackord i varje).
 
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const CHORD_ROOTS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
@@ -30,12 +30,12 @@ const CHORD_TYPES = [
   ['aug', 'aug', [0, 4, 8]],
 ];
 const CHORD_INTERVALS = Object.fromEntries(CHORD_TYPES.map(([s, , iv]) => [s, iv]));
-const MAX_CHORDS = 10;
-// Standard: C G Am F Dm Em E7 Bb D7 Fm
-const DEFAULT_CHORDS = [[0, ''], [7, ''], [9, 'm'], [5, ''], [2, 'm'], [4, 'm'], [4, '7'], [10, ''], [2, '7'], [5, 'm']]
+const MAX_CHORDS = 12;
+// Standard: C G Am F Dm Em E7 Bb D7 Fm A7 G7
+const DEFAULT_CHORDS = [[0, ''], [7, ''], [9, 'm'], [5, ''], [2, 'm'], [4, 'm'], [4, '7'], [10, ''], [2, '7'], [5, 'm'], [9, '7'], [7, '7']]
   .map(([root, type]) => ({ root, type }));
-// Färdig färgpreset: 1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos, 9 limegrön, 10 brun
-const CHORD_PALETTE = ['#e5484d', '#f5c518', '#3fb950', '#3b82f6', '#f97316', '#a855f7', '#ec4899', '#14b8a6', '#84cc16', '#a16207'];
+// Färdig färgpreset: 1 röd, 2 gul, 3 grön, 4 blå, 5 orange, 6 lila, 7 rosa, 8 turkos, 9 limegrön, 10 brun, 11 indigo, 12 grå
+const CHORD_PALETTE = ['#e5484d', '#f5c518', '#3fb950', '#3b82f6', '#f97316', '#a855f7', '#ec4899', '#14b8a6', '#84cc16', '#a16207', '#6366f1', '#94a3b8'];
 
 const NOTE_COUNT_MIN = 1;
 const NOTE_COUNT_DEFAULT = 12;

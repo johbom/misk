@@ -15,7 +15,7 @@ const CHORD_SHIFTS = [[-1, 'Oktav −1'], [0, 'Oktav ±0'], [1, 'Oktav +1']];
 const BASS_ROOT = -1;
 const BASS_OPTIONS = [[BASS_ROOT, 'Grundton'], ...CHORD_ROOTS.map((n, r) => [r, n])];
 
-// Alla 10 ackordval sparas, även de som inte syns när antalet är lägre.
+// Alla 12 ackordval sparas, även de som inte syns när antalet är lägre.
 let chords = loadChords();
 
 // Fyller i det som saknas i äldre sparade ackord
@@ -23,7 +23,7 @@ function normalizeChord(c, i) {
   return { voicing: 'root', shift: 0, bass: BASS_ROOT, color: CHORD_PALETTE[i], ...c };
 }
 
-// Sparade listor kan vara kortare (förr fanns bara 8 ackord): resten fylls med standardackorden
+// Sparade listor kan vara kortare (förr fanns bara 8 eller 10 ackord): resten fylls med standardackorden
 function isChordList(list) {
   return Array.isArray(list) && list.length >= 1 && list.length <= MAX_CHORDS;
 }
