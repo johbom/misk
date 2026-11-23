@@ -176,7 +176,7 @@ function renderQuick() {
 }
 
 // Antal rutor (Toner) eller ackord (Ackord) direkt i formationsrutan
-const QUICK_COUNTS = { notes: [4, 8, 12, 16], chords: [2, 4, 6, 8, 10, 12] };
+const QUICK_COUNTS = { notes: [4, 8, 12, 16], chords: [2, 4, 6, 8, 10] };
 function quickCountInput() {
   const tab = document.body.dataset.tab;
   return tab === 'chords' ? ui.chordCount : tab === 'notes' ? ui.noteCount : null;
