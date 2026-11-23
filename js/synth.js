@@ -521,22 +521,27 @@ class SynthEngine {
     this.bus.connect(this.volume);
     this.delayMix.connect(this.volume);
     this.reverbMix.connect(this.volume);
+    // Tidskonstanterna är lugna med flit: en kompressor eller limiter som reagerar snabbt (1–5 ms in,
+    // 0,1–0,2 s ut) ändrar nivån inom varje svängning på mörka, ihållande toner – det hörs som lätt
+    // distorsion när man håller flera toner (orgel, Jazz-FM, pad), även med Drive av.
     const comp = ctx.createDynamicsCompressor();
     comp.threshold.value = -12;
     comp.ratio.value = 4;
-    comp.attack.value = 0.005;
-    comp.release.value = 0.2;
+    comp.attack.value = 0.01;
+    comp.release.value = 0.3;
     // Toppbegränsare sist: när många toner klingar samtidigt (snabba ackordbyten, lång release)
-    // får summan aldrig gå över 0 dB – annars klipper ljudkortet hårt och det "blippar".
+    // får summan aldrig gå över 0 dB – annars klipper ljudkortet hårt och det "blippar". Den tar bara
+    // de högsta topparna (−1 dB, mjukt knä); slutmixens tak (js/audio.js) fångar resten.
     const limiter = ctx.createDynamicsCompressor();
-    limiter.threshold.value = -3;
-    limiter.knee.value = 0;
+    limiter.threshold.value = -1;
+    limiter.knee.value = 3;
     limiter.ratio.value = 20;
-    limiter.attack.value = 0.001;
-    limiter.release.value = 0.1;
-    // Kompressorn höjer automatiskt nivån (ca +1,7 dB vid de här värdena) – ta bort det igen
+    limiter.attack.value = 0.003;
+    limiter.release.value = 0.3;
+    // Webbläsaren höjer automatiskt nivån efter kompressorerna – ta bort det igen, så att en ensam ton
+    // låter lika starkt som förut
     const makeup = ctx.createGain();
-    makeup.gain.value = 0.82;
+    makeup.gain.value = 0.95;
     if (AUDIO_DIAG.has('nocomp')) this.volume.connect(makeup).connect(out);
     else this.volume.connect(comp).connect(limiter).connect(makeup).connect(out);
     Object.assign(this, { comp, limiter, makeup }); // (för mätning och felsökning)

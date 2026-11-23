@@ -250,8 +250,8 @@ Med *Exportera alla till fil* får du en JSON-fil med alla dina presets (bra som
 ## Ljudmotor
 
 **Slutmix och skydd mot överstyrning:** allt ljud samlas i en slutmix innan det går till högtalarna. Det gäller båda ljudmotorerna, och via dem trumset, ljudeffekter, ljudfiler och XY.
-- Varje motor har egen kompressor och toppbegränsare.
-- Slutmixen har en gemensam **limiter**: −1 dBFS, ratio 20, attack 1 ms. Den behövs eftersom två motorer som spelar samtidigt annars kan gå över full nivå.
+- Varje motor har egen kompressor (−12 dB, ratio 4, attack 10 ms, release 0,3 s) och toppbegränsare (−1 dB, mjukt knä 3 dB, attack 3 ms, release 0,3 s). Tidskonstanterna är lugna med flit: med snabba värden (1–5 ms in, 0,1–0,2 s ut) ändrades nivån inom varje svängning på mörka, ihållande toner, och flera toner samtidigt (Jazz-FM, orgel, pad) lät lätt distade även med Drive av. Uppmätt med fyra toner Jazz-FM på full volym: distorsionen sjönk från ca −43 dB (toppar −27 dB) till ca −53 dB (toppar −46 dB). En ensam ton låter lika starkt som förut.
+- Slutmixen har en gemensam **limiter**: −1 dBFS, ratio 20, attack 3 ms, release 0,25 s. Den behövs eftersom två motorer som spelar samtidigt annars kan gå över full nivå.
 - Sist kommer ett **mjukt tak** (waveshaper): helt rakt upp till 0,9, sedan en mjuk böj. Utnivån kan aldrig bli högre än 0,968 (−0,28 dBFS), oavsett hur mycket som kommer in.
 - Mätt med två motorer med stora ackord på 30 gånger full volym: toppen blir 0,968 och inget sampel når 0 dB.
 - Vid vanliga nivåer är slutmixen helt neutral: limiterns automatiska nivåhöjning är bortkompenserad, så 0,25 in ger 0,25 ut.

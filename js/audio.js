@@ -92,7 +92,7 @@ function startAudioGuard() {
 // Slutmixen: allt ljud (båda ljudmotorerna, och via dem trumset, ljudfiler och XY) samlas här innan det
 // går till högtalarna. Varje motor har redan egen kompressor och toppbegränsare, men två motorer som
 // spelar samtidigt kan tillsammans gå över full nivå. Därför:
-//  1. en gemensam limiter (−1 dBFS, snabb attack) som tar ner summan, och
+//  1. en gemensam limiter (−1 dBFS) som tar ner summan, och
 //  2. ett mjukt tak sist (waveshaper): helt rakt upp till 0,9 och sedan en mjuk böj som aldrig når 1,0 –
 //     så att inget någonsin klipper i ljudkortet, inte ens de första millisekunderna innan limitern hunnit
 //     reagera. Vid normala nivåer påverkar ingen av dem ljudet.
@@ -103,8 +103,8 @@ function makeMasterBus(ctx) {
   limiter.threshold.value = -1;
   limiter.knee.value = 0;
   limiter.ratio.value = 20;
-  limiter.attack.value = 0.001;
-  limiter.release.value = 0.12;
+  limiter.attack.value = 0.003; // (lugnt, som motorernas: snabbare ger distorsion på ihållande toner)
+  limiter.release.value = 0.25;
   const ceiling = ctx.createWaveShaper();
   const n = 4096;
   const curve = new Float32Array(n);
