@@ -236,13 +236,15 @@ function setupArp() {
   // Slås arpen på visas dess inställningar under knappen; slås den av stängs de.
   // Är inställningarna öppna stänger knappen bara dem (arpen fortsätter) – nästa tryck slår av.
   $('arp-toggle').addEventListener('click', () => {
+    // Knappen öppnar och stänger rutan; av med brytaren i rutan. Är arpen av slås den på när rutan öppnas.
     if (quick.open === 'arp') { closeQuick(); return; }
-    ui.arpOn.checked = !ui.arpOn.checked;
-    ui.arpOn.dispatchEvent(new Event('change'));
-    log(`Arpeggiator ${arpOn() ? 'på' : 'av'}`);
-    if (arpOn()) openQuick('arp');
-    else closeQuick();
+    if (!arpOn()) {
+      ui.arpOn.checked = true;
+      ui.arpOn.dispatchEvent(new Event('change'));
+    }
+    openQuick('arp');
   });
+  ui.arpOn.addEventListener('change', () => log(t(`Arpeggiator ${arpOn() ? 'på' : 'av'}`)));
   sync();
   setupTapTempo();
   // Byte av mönster börjar om från första tonen

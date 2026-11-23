@@ -97,7 +97,7 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 #quick-pop > #xy-fx > legend { float: left; padding: 0; margin: 2px 40px 4px 0; font-weight: 600; color: var(--text); }
 #quick-pop > #xy-fx > .knob:first-of-type { clear: both; }
 #quick-pop > #xy-fx > .xy-fx-hint { display: none; }
-/* Arpens inställningar under Arp-knappen (på/av sköts av knappen själv) */
+/* Arpens och sequencerns inställningar under knappen (på/av med brytaren överst) */
 /* Kompakt: rubrik, reglage och värde på en rad, små knappar, inga förklaringar */
 #quick-pop > :is(#arp-set, #seq-set) {
   margin: 0; padding: 0; border: none; min-width: 0; width: min(440px, calc(100vw - 72px));
@@ -118,8 +118,9 @@ body.drums[data-tab="notes"] #quick-key { display: none; } /* trumset har ingen 
 #quick-pop > :is(#arp-set, #seq-set) .arp-tap { min-height: 30px; padding: 2px 12px; font-size: 0.85rem; }
 html.steppers #quick-pop > :is(#arp-set, #seq-set) .seg button { min-height: 40px; min-width: 40px; }
 /* Sequencern i snabbrutan: "Gå vidare" m.fl. syns (utan förklaring), och överst brytaren för på/av */
-#quick-pop > #seq-set > label.check:is(.seq-keep, .seq-power) { display: flex; }
-#quick-pop > #seq-set > label.check.seq-power { align-items: center; font-weight: 600; }
+#quick-pop > #seq-set > label.check:is(.seq-keep, .seq-power), #quick-pop > #arp-set > label.check.arp-power { display: flex; }
+#quick-pop > :is(#seq-set > label.check.seq-power, #arp-set > label.check.arp-power) { align-items: center; font-weight: 600; }
+#quick-pop > #arp-set > label.check.arp-power small { display: none; }
 /* Följ tonen: rutan som slingan på Toner följer just nu */
 .pad.seq-key { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); }
 #quick-pop > #seq-set > label.check:is(.seq-keep, .seq-power) small { display: none; }

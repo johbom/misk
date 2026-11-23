@@ -118,6 +118,7 @@ function renderQuick() {
         ui.formation.value === v ? ' on' : ''}" role="radio" aria-checked="${ui.formation.value === v}" data-formation="${v}">${
         FORMATION_ICONS[v]}<span>${name}</span></button>`).join('')}</div>${countRow()}${gapRow()}`;
     setupGapRow(pop);
+    setupChordCountRow(pop);
     pop.querySelectorAll('[data-count]').forEach((b) => b.addEventListener('click', () => {
       const el = quickCountInput();
       if (!el || el.value === b.dataset.count) return;
@@ -176,7 +177,7 @@ function renderQuick() {
 }
 
 // Antal rutor (Toner) eller ackord (Ackord) direkt i formationsrutan
-const QUICK_COUNTS = { notes: [4, 8, 12, 16], chords: [2, 3, 4, 6, 8] };
+const QUICK_COUNTS = { notes: [4, 8, 12, 16] }; // Ackord har ett skjutreglage i stället (countRow)
 function quickCountInput() {
   const tab = document.body.dataset.tab;
   return tab === 'chords' ? ui.chordCount : tab === 'notes' ? ui.noteCount : null;
@@ -185,6 +186,12 @@ function quickCountInput() {
 function countRow() {
   const el = quickCountInput();
   if (!el) return '';
+  // Ackord: skjutreglage 2–12 (alla antal med ett drag)
+  if (el === ui.chordCount) {
+    const opts = [...el.options].map((o) => Number(o.value));
+    return `<label class="quick-gap quick-chord-count"><span>${quickRowIcon('count')}${t('Antal ackord')}</span><input type="range" min="${
+      Math.min(...opts)}" max="${Math.max(...opts)}" step="1" value="${el.value}" aria-label="${t('Antal ackord')}" /><b class="val">${el.value}</b></label>`;
+  }
   const cur = Number(el.value);
   const counts = QUICK_COUNTS[document.body.dataset.tab];
   const what = document.body.dataset.tab === 'chords' ? 'Antal ackord' : 'Antal rutor';
@@ -199,17 +206,33 @@ const quickGapSrc = () => (ui.formation.value === 'ring' ? ui.ringSpace : $('pad
 const quickGapText = () => `${ui.formation.value === 'ring' ? ui.ringSpace.value : ui.padSpace.value} %`;
 function gapRow() {
   const src = quickGapSrc();
-  return `<label class="quick-gap"><span>${quickRowIcon('gap')}${t('Mellanrum')}</span><input type="range" min="${src.min}" max="${src.max}" step="${
+  return `<label class="quick-gap quick-space"><span>${quickRowIcon('gap')}${t('Mellanrum')}</span><input type="range" min="${src.min}" max="${src.max}" step="${
     src.step || 1}" value="${src.value}" aria-label="${t('Mellanrum')}" /><b class="val">${quickGapText()}</b></label>`;
 }
+function setupChordCountRow(pop) {
+  const el = pop.querySelector('.quick-chord-count input');
+  if (!el) return;
+  const val = pop.querySelector('.quick-chord-count .val');
+  el.setAttribute('aria-valuetext', `${el.value} ${t('ackord')}`);
+  el.addEventListener('input', () => {
+    val.textContent = el.value;
+    el.setAttribute('aria-valuetext', `${el.value} ${t('ackord')}`);
+    if (ui.chordCount.value === el.value) return;
+    ui.chordCount.value = el.value;
+    ui.chordCount.dispatchEvent(new Event('change')); // sparar och bygger om rutorna direkt
+  });
+  el.addEventListener('change', () => log(`Antal ackord: ${el.value}`));
+  if (typeof enhanceControl === 'function') enhanceControl(el); // − / + i läget med stora knappar
+}
+
 function setupGapRow(pop) {
-  const el = pop.querySelector('.quick-gap input');
+  const el = pop.querySelector('.quick-space input');
   if (!el) return;
   const pass = (type) => {
     const src = quickGapSrc();
     src.value = el.value;
     src.dispatchEvent(new Event(type, { bubbles: true })); // input: rita om, change: spara
-    pop.querySelector('.quick-gap .val').textContent = quickGapText();
+    pop.querySelector('.quick-space .val').textContent = quickGapText();
     el.setAttribute('aria-valuetext', quickGapText());
   };
   el.setAttribute('aria-valuetext', quickGapText());
