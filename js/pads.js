@@ -160,43 +160,67 @@ function trigger(pad) {
   release(pad);
   pad.el.classList.add('active');
 
-  const notes = pad.notes();
+  // Läge på rutan = Voicing: var på ackordrutan pekaren är väljer voicing (js/position.js)
+  pad.voiceAt = posVoicingFor(pad, padPosNow(pad));
+  const notes = pad.notes(pad.voiceAt);
   const stops = [];
   const useSample = ui.outAudio.checked && !!pad.sample;
+  // Ny voicing när pekaren går över till ett annat band på rutan: tonerna i den nya (eller null)
+  const revoice = (x) => {
+    const v = posVoicingFor(pad, x, pad.voiceAt);
+    if (!v || v === pad.voiceAt) return null;
+    pad.voiceAt = v;
+    const next = pad.notes(v);
+    showVoicing(pad);
+    log(`▶ ${pad.label()} · ${t(voicingName(v))}  (${next.map(noteName).join(' ')})`);
+    return next;
+  };
   if (arpOn()) {
     // Arpeggiator: tonerna spelas en i taget i takt (js/arp.js) så länge rutan låter
     arpAdd(pad, notes);
     pad.release = () => arpRemove(pad);
     pad.vibrato = (cents, rate) => arpVibrato(pad, cents, rate);
-    pad.posTarget = (x, first) => { arpPos(pad, x, first); if (ui.outMidi.checked) posMidi(x); };
+    pad.posTarget = (x, first) => {
+      if (posVoicingOn()) { const next = revoice(x); if (next) arpReplace(pad, next); return; }
+      arpPos(pad, x, first);
+      if (ui.outMidi.checked) posMidi(x);
+    };
   } else {
-  if (ui.outAudio.checked) {
-    if (useSample) stops.push(playSample(pad.sample));
-    else if (pad.drum) stops.push(drumHit(pad.drum));
-    else {
-      const level = 1 / Math.sqrt(notes.length);
-      notes.forEach((n) => stops.push(padEngine(pad).noteOn(n, level)));
-    }
-  }
-  if (ui.outMidi.checked) {
-    const ch = midiChannel();
-    notes.forEach((n) => noteOn(n, ch));
-    stops.push(() => notes.forEach((n) => noteOff(n, ch)));
-  }
-  const oscStop = oscNoteOn(pad, notes);
-  if (oscStop) stops.push(oscStop);
-  pad.release = () => stops.forEach((s) => s());
+  if (useSample) stops.push(playSample(pad.sample));
+  else if (ui.outAudio.checked && pad.drum) stops.push(drumHit(pad.drum));
+  // Varje ton för sig (ljud och MIDI), så att en ny voicing kan låta de gemensamma tonerna ligga kvar
+  const level = 1 / Math.sqrt(notes.length);
+  const held = new Map(); // ton -> dess stopp
+  const noteStart = (n) => {
+    const s = [];
+    if (ui.outAudio.checked && !useSample && !pad.drum) s.push(padEngine(pad).noteOn(n, level));
+    if (ui.outMidi.checked) { const ch = midiChannel(); noteOn(n, ch); s.push(() => noteOff(n, ch)); }
+    held.set(n, s);
+  };
+  notes.forEach(noteStart);
+  let oscStop = oscNoteOn(pad, notes);
+  const all = () => [...stops, ...[...held.values()].flat(), ...(oscStop ? [oscStop] : [])];
+  pad.release = () => all().forEach((s) => s());
   // Vibrato på allt som rutan spelar just nu (styrs av js/vibrato.js)
-  pad.vibrato = (cents, rate) => stops.forEach((s) => s.vibrato && s.vibrato(cents, rate));
+  pad.vibrato = (cents, rate) => all().forEach((s) => s.vibrato && s.vibrato(cents, rate));
   // Läge på rutan (avancerat, js/position.js)
   pad.posTarget = (x, first) => {
-    stops.forEach((s) => s.pos && s.pos(x, posParam(), first));
+    if (posVoicingOn()) {
+      const next = revoice(x);
+      if (!next) return;
+      for (const [n, s] of held) if (!next.includes(n)) { s.forEach((f) => f()); held.delete(n); }
+      next.forEach((n) => { if (!held.has(n)) noteStart(n); });
+      if (oscStop) { oscStop(); oscStop = oscNoteOn(pad, next); }
+      return;
+    }
+    all().forEach((s) => s.pos && s.pos(x, posParam(), first));
     if (ui.outMidi.checked) posMidi(x);
   };
   }
+  showVoicing(pad);
   pad.posX = null;
   posStart(pad);
-  log(`▶ ${pad.label()}${pad.drum ? '' : `  (${notes.map(noteName).join(' ')})`}${arpOn() ? '  · arp' : ''}`);
+  log(`▶ ${pad.label()}${pad.voiceAt ? ` · ${t(voicingName(pad.voiceAt))}` : ''}${pad.drum ? '' : `  (${notes.map(noteName).join(' ')})`}${arpOn() ? '  · arp' : ''}`);
 
   // One-shot och Bestämd längd: släpps av en timer, inte av pekaren
   const length = mode === 'fixed' ? ms(ui.noteLength) || ONESHOT_MS
@@ -218,4 +242,11 @@ function release(pad) {
   if (pad.release) { pad.release(); pad.release = null; }
   pad.vibrato = null;
   if (pad.posTarget) { pad.posTarget = null; pad.posX = null; posReleased(); }
+  if (pad.voiceAt !== undefined) { pad.voiceAt = null; showVoicing(pad); }
+}
+
+// Läge på rutan = Voicing: rutan visar vilken voicing som låter
+function showVoicing(pad) {
+  const el = pad.el.querySelector('.chord-voicing');
+  if (el) el.textContent = pad.voiceAt ? t(voicingName(pad.voiceAt)) : '';
 }

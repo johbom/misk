@@ -225,7 +225,7 @@ function seqPlayStep(page, i, time) {
 
 // En ruta i ett steg: från time till off (ljudklockans tid). x = sparat läge på rutan (eller null).
 function seqPlayPad(pad, time, off, level, x, page) {
-  const notes = pad.notes();
+  const notes = pad.notes(posVoicingFor(pad, x)); // (Läge på rutan = Voicing: stegets voicing)
   const timers = [];
   const stops = [];
   const pos = posOn() && x != null;
@@ -408,13 +408,7 @@ function seqRest() {
   if (done) log(t(`Paus i steg ${done.i + 1}`));
 }
 
-// Läget på rutan just nu: från pekaren som ligger över den (null om ingen gör det, t.ex. kontakt)
-function seqPosNow(pad) {
-  for (const { x, y } of pointerXY.values()) {
-    if (padAt(x, y) === pad) { const v = padPos(pad, x, y); return v == null ? null : Math.round(v * 1000) / 1000; }
-  }
-  return null;
-}
+const seqPosNow = (pad) => padPosNow(pad); // läget på rutan just nu (js/position.js)
 
 // Anropas av posApply (js/position.js) när läget på en ruta som låter ändras
 let seqSaveTimer = 0;

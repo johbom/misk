@@ -167,6 +167,7 @@ const EN = {
   'Volym: svagt → starkt': 'Volume: soft → loud',
   'Vibrato: inget → mycket': 'Vibrato: none → a lot',
   'Tonhöjd: böj upp en helton': 'Pitch: bend up a whole tone',
+  'Voicing (Ackord): grundläge → drop 2': 'Voicing (Chords): root position → drop 2',
   'Ljudmotorns egna': 'Sound engine’s own',
   'Ljudmotorn': 'Sound engine',
   'Klang 1': 'Tone 1',
@@ -970,6 +971,8 @@ const EN_HTML = {
     <strong>Grid and Honeycomb:</strong> from the bottom edge upwards.
     <strong>Circle, Ring and Arc:</strong> from the inner edge (towards the middle) outwards.
     <strong>Strings:</strong> along the string on Notes, across it on Chords.
+    <strong>Voicing</strong> (Chords only): the pad is split into bands – root position at the bottom, then 1st, 2nd (and 3rd) inversion,
+    open and drop 2 at the top. Slide to another band while the chord sounds and the voicing changes; notes that are in both keep sounding.
     The <strong>sound engine’s own</strong> options follow the chosen engine, e.g. wavetable position (Wavetable),
     modulation depth (FM), vowel (Voice) or breath pressure (Winds).
     MIDI sends the same: CC74 (filter), CC11 (volume), CC1 (vibrato), CC2 and CC71 (the engine’s own) or pitch bend.`,

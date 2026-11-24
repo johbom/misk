@@ -53,6 +53,13 @@ function arpCancelPending() {
   arp.pending = [];
 }
 
+// Nya toner för en ruta som arpeggieras (Läge på rutan = Voicing): takten fortsätter som förut
+function arpReplace(pad, notes) {
+  const t0 = arp.pool.find((e) => e.pad === pad)?.order ?? performance.now();
+  arp.pool = arp.pool.filter((e) => e.pad !== pad);
+  notes.forEach((note, i) => arp.pool.push({ note, pad, order: t0 + i * 1e-3 }));
+}
+
 // En ruta släpps: ta bort dess toner. Takten fortsätter ett steg till, så att ett ackordbyte
 // (Ligg kvar) eller en snabb förflyttning till nästa ruta håller takten i stället för att börja om.
 function arpRemove(pad) {

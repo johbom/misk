@@ -109,10 +109,25 @@ function voiceRandom(c, base, bass) {
   return notes;
 }
 
-function chordNotes(c) {
+// Läge på rutan = Voicing (js/position.js): rutan delas i lika stora band, ett per voicing ackordet kan ha –
+// nederst (innerst) grundläge, sedan 1:a, 2:a (och 3:e) omvändning, öppen och drop 2 längst upp (ytterst).
+const posVoicings = (c) => VOICINGS.filter(([v]) => voicingAllowed(v, c));
+function posVoicingAt(c, x, cur = null) {
+  const list = posVoicings(c);
+  const n = list.length;
+  let i = Math.min(n - 1, Math.max(0, Math.floor(x * n)));
+  // Lite marginal vid gränsen mellan två band, så att läget inte fladdrar fram och tillbaka
+  const j = list.findIndex(([v]) => v === cur);
+  if (j >= 0 && i !== j && Math.abs(x - (i > j ? i : i + 1) / n) < 0.03) i = j;
+  return list[i][0];
+}
+const voicingName = (v) => VOICINGS.find(([id]) => id === v)?.[1] || v;
+
+// voicing: en vald voicing (Läge på rutan) i stället för ackordets egen och Slumpad voicing
+function chordNotes(c, voicing = null) {
   const adv = isAdvanced();
   const base = 12 * (Number(ui.chordOctave.value) + 1 + (adv ? c.shift : 0)) + Number(c.root);
-  const random = ui.chordRandom.checked;
+  const random = ui.chordRandom.checked && !voicing;
   const slash = slashBass(c);
   let notes = CHORD_INTERVALS[c.type].map((i) => base + i);
   if (random) {
@@ -120,7 +135,8 @@ function chordNotes(c) {
     const bass = base - 12 + (slash === null ? 0 : slash - Number(c.root));
     return [bass, ...voiceRandom(c, base, bass)].map(clampNote);
   }
-  if (adv) notes = voice(notes, voicingAllowed(c.voicing, c) ? c.voicing : 'root');
+  if (voicing) notes = voice(notes, voicingAllowed(voicing, c) ? voicing : 'root');
+  else if (adv) notes = voice(notes, voicingAllowed(c.voicing, c) ? c.voicing : 'root');
   // Basen: grundtonen (om Bas är på) eller en vald egen baston (alltid), under resten av ackordet.
   if (slash !== null || ui.chordBass.checked) {
     let bass = base - 12 + (slash === null ? 0 : slash - Number(c.root));
@@ -143,10 +159,10 @@ function buildChordPads() {
     const el = document.createElement('button');
     el.type = 'button';
     el.className = 'pad chord-pad';
-    el.innerHTML = '<span class="strum"></span><span class="chord-name"></span>';
+    el.innerHTML = '<span class="strum"></span><span class="chord-name"></span><span class="chord-voicing"></span>';
     const pad = {
       el, release: null, sample: null,
-      notes: () => chordNotes(chord),
+      notes: (voicing) => chordNotes(chord, voicing),
       strumNotes: () => strumNotes(chord),
       label: () => chordName(chord),
       chord,

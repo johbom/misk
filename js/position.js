@@ -8,6 +8,22 @@
 const POS_MIDI = { filter: ['cc', 74], volume: ['cc', 11], vibrato: ['cc', 1], bend: ['bend'], timbre: ['cc', 2], timbre2: ['cc', 71] };
 const posParam = () => ui.posParam.value;
 const posOn = () => posParam() !== 'off';
+// Voicing: läget väljer hur ackordet läggs ut (bara på Ackord, js/chords.js posVoicingAt)
+const posVoicingOn = () => posParam() === 'voicing';
+
+// Voicing för läget x på en ackordruta (cur = den som låter nu). null = rutans vanliga.
+function posVoicingFor(pad, x, cur = null) {
+  if (!posVoicingOn() || !pad?.chord || x == null) return null;
+  return posVoicingAt(pad.chord, x, cur);
+}
+
+// Läget på rutan just nu: från pekaren som ligger över den (null om ingen gör det, t.ex. tangent)
+function padPosNow(pad) {
+  for (const { x, y } of pointerXY.values()) {
+    if (padAt(x, y) === pad) { const v = padPos(pad, x, y); return v == null ? null : Math.round(v * 1000) / 1000; }
+  }
+  return null;
+}
 
 // Senaste läget för varje pekare (mus, finger, blick)
 const pointerXY = new Map();
@@ -147,7 +163,7 @@ function setupPosition() {
   // Byter man parameter mitt i spelet: allt som låter går över till den nya
   ui.posParam.addEventListener('change', () => {
     posMidiLast = -1;
-    allPads().forEach((p) => { if (p.posTarget) p.posTarget(posOn() ? p.posX ?? 1 : 1, false); });
+    allPads().forEach((p) => { if (p.posTarget) p.posTarget(posOn() ? p.posX ?? (posVoicingOn() ? null : 1) : 1, false); });
     if (!posOn()) allPads().forEach((p) => { p.posX = null; });
     $('pos-hint').hidden = !posOn();
     syncPosOptions();
