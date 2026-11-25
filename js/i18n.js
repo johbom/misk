@@ -6,6 +6,12 @@
 // annars efter webbläsarens språk. Den som redan använt den svenska appen behåller svenska.
 // Laddas först av alla skript, i <head>.
 
+// Första gången appen öppnas i den här webbläsaren: inget sparat än (läses innan något skript sparar något).
+// Då startar appen i den enkla versionen (js/view.js setupAppLevel).
+const FIRST_VISIT = (() => {
+  try { return !Object.keys(localStorage).some((k) => k.startsWith('hoverPads') || k === 'midiOut'); } catch { return true; }
+})();
+
 const LANG_KEY = 'hoverPadsLang';
 const LANG = (() => {
   try {

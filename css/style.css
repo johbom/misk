@@ -2019,9 +2019,9 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 #app-level-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; margin-bottom: 12px; }
 #app-level-row > .lbl { font-weight: 600; }
 #app-level-row > .desc { flex: 1 1 220px; color: var(--muted); }
-/* Enkel: ingen stegsequencer, ingen MIDI-status, ingen Ut/MIDI/OSC-flik, inget Skruva själv, inget Läge på rutan
+/* Enkel: ingen stegsequencer, inga Spela in-knappar, ingen MIDI-status, ingen Ut/MIDI/OSC-flik, inget Skruva själv, inget Läge på rutan
    och inte de finaste reglagen (voicing, arpens Tonlängd och Retrigg) */
-body[data-level="simple"] :is(#seq-toggle, #fx-toggle, #fxpad-toggle, #fxpad-set, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
+body[data-level="simple"] :is(#seq-toggle, #fx-toggle, #fxpad-toggle, #pad-rec, #pad-rec-del, #xy-rec, #fxpad-set, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
   #settings-nav [data-panel="io"], #settings .panel[data-panel="io"], #lock-keep) { display: none !important; }
 body[data-level="simple"] label:has(#chord-advanced),
 body[data-level="simple"] label:has(#arp-gate),

@@ -342,6 +342,9 @@ function applyAppLevel() {
   }
   if (!simple) return;
   if (quick.open === 'fx') closeQuick(); // Effekter-knappen finns bara i den avancerade versionen
+  // Spela in (Toner och XY) finns bara i den avancerade versionen: pågående inspelning och inspelningsläget avslutas
+  if (typeof padRec !== 'undefined' && (padRec.on || padRec.pad)) { if (padRec.pad) micStop(); padRecSetMode(false); }
+  if (typeof xyRecording === 'function' && xyRecording()) xyRecStop();
   // Voicing-läget för ackorden visas inte i den enkla versionen
   if (ui.chordAdvanced.checked) {
     ui.chordAdvanced.checked = false;
@@ -358,7 +361,11 @@ function applyAppLevel() {
 function setupAppLevel() {
   const saved = localStorage.getItem('hoverPadsLevel');
   if (saved === 'simple' || saved === 'advanced') ui.appLevel.value = saved;
-  else ui.appLevel.value = 'advanced'; // som förut
+  else {
+    // Första gången: Enkel. Den som använt appen innan valet sparades behåller Avancerad, som förut.
+    ui.appLevel.value = FIRST_VISIT ? 'simple' : 'advanced';
+    try { localStorage.setItem('hoverPadsLevel', ui.appLevel.value); } catch {}
+  }
   segmentSelect(ui.appLevel, 'seg-level', {
     simple: '<rect x="5" y="5" width="14" height="14" rx="3.5"/>',
     advanced: document.querySelector('#tabs [data-tab="settings"] svg')?.innerHTML || '',
