@@ -933,6 +933,10 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
 
 /* Mina presets */
 #user-presets { display: block; max-width: 720px; }
+/* Återställ appen: längst ned under alla underflikar */
+#reset-set { display: block; max-width: 720px; margin-top: 28px; }
+#reset-set .row { display: flex; flex-wrap: wrap; gap: 10px; }
+#reset-set .about-erase { margin: 0; }
 #up-save { display: flex; gap: 8px; margin-bottom: 12px; }
 #up-name {
   flex: 1; min-width: 0; background: #262938; color: var(--text);

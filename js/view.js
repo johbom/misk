@@ -47,19 +47,34 @@ function setupAbout() {
     const inside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
     if (!inside) dlg.close();
   });
-  // Radera allt appen sparat i localStorage (inställningar, presets, ackord, flikar, språk).
-  // Cachen med appens filer får ligga kvar, så att appen fortfarande fungerar utan internet.
-  $('about-erase').addEventListener('click', async () => {
-    if (!confirm(t('Radera alla inställningar, presets, egna ackord och inspelningar på den här enheten? Det går inte att ångra.'))) return;
-    if (micActive()) micStop();
-    try {
-      Object.keys(localStorage)
-        .filter((k) => k.startsWith('hoverPads') || k === 'midiOut')
-        .forEach((k) => localStorage.removeItem(k));
-    } catch { /* ingen lagring att radera */ }
-    await micEraseAll(); // inspelningarna och rutornas ljudfiler (js/micrec.js)
-    location.replace(`${location.pathname}?lang=${LANG}`); // behåll språket som visas nu
-  });
+  $('about-erase').addEventListener('click', () => resetApp(true));
+  $('app-erase').addEventListener('click', () => resetApp(true));
+  $('app-reset').addEventListener('click', () => resetApp(false));
+}
+
+// Återställ appen (Inställningar, längst ned) och Radera sparade uppgifter (Om, och Inställningar).
+//  all = false: inställningarna tillbaka som vid första besöket (Enkel version), men Mina presets,
+//    inspelningarna och rutornas ljudfiler, och språket, finns kvar.
+//  all = true: allt appen sparat raderas (inställningar, presets, ackord, flikar, språk, inspelningar).
+// Cachen med appens filer får ligga kvar, så att appen fortfarande fungerar utan internet.
+const RESET_KEEP = ['hoverPadsUserPresets', 'hoverPadsLang'];
+async function resetApp(all) {
+  const ok = await askConfirm(t(all
+    ? 'Radera alla inställningar, presets, egna ackord och inspelningar på den här enheten? Det går inte att ångra.'
+    : 'Återställa alla inställningar till som när appen öppnades första gången? Mina presets och inspelningarna finns kvar.'),
+  t(all ? 'Radera allt' : 'Återställ'));
+  if (!ok) return;
+  if (micActive()) micStop();
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith('hoverPads') || k === 'midiOut')
+      .filter((k) => all || !RESET_KEEP.includes(k))
+      .forEach((k) => localStorage.removeItem(k));
+    // (presets finns kvar, så appen ser inte ut som ny: välj den enkla versionen som vid första besöket)
+    if (!all) localStorage.setItem('hoverPadsLevel', 'simple');
+  } catch { /* ingen lagring */ }
+  if (all) await micEraseAll(); // inspelningarna och rutornas ljudfiler (js/micrec.js)
+  location.replace(`${location.pathname}?lang=${LANG}`); // behåll språket som visas nu
 }
 
 // ---------- Underflikar i Inställningar ----------

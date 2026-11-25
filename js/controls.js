@@ -46,6 +46,7 @@ const ICON_SWITCH = '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r=
 const ICON_MIDI = '<circle cx="12" cy="12" r="9"/><path d="M10.5 21v-2h3v2"/>'
   + [[7, 12.5], [8.5, 9], [12, 7.5], [15.5, 9], [17, 12.5]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.2" fill="currentColor" stroke="none"/>`).join('');
 const SETTINGS_ICONS = {
+  reset: '<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v5h5"/>',
   instrument: '<rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M9 19.5v-5M15 19.5v-5"/>'
     + '<rect x="7.5" y="4.5" width="3" height="10" rx=".6" fill="currentColor" stroke="none"/><rect x="13.5" y="4.5" width="3" height="10" rx=".6" fill="currentColor" stroke="none"/>',
   sound: ICON_SPEAKER,
