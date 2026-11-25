@@ -360,6 +360,12 @@ function applyAppLevel() {
   // Spela in (Toner och XY) finns bara i den avancerade versionen: pågående inspelning och inspelningsläget avslutas
   if (typeof padRec !== 'undefined' && (padRec.on || padRec.pad)) { if (padRec.pad) micStop(); padRecSetMode(false); }
   if (typeof xyRecording === 'function' && xyRecording()) xyRecStop();
+  // Klangen Inspelning på XY (inspelningens vågform) finns inte heller: tillbaka till Sinus
+  if (ui.xySound.value === 'rec') {
+    ui.xySound.value = 'sine';
+    ui.xySound.dispatchEvent(new Event('change'));
+    if (ui.xySound.segBox) syncSegment(ui.xySound);
+  }
   // Voicing-läget för ackorden visas inte i den enkla versionen
   if (ui.chordAdvanced.checked) {
     ui.chordAdvanced.checked = false;

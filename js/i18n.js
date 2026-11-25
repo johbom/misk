@@ -596,6 +596,7 @@ const EN = {
   'Integritet och GDPR': 'Privacy and GDPR',
   'Radera sparade uppgifter': 'Erase stored data',
   'Återställ appen': 'Reset the app',
+  'Startar …': 'Starting …',
   'Allt tillbaka som när appen öppnades första gången: Enkel version, standardljud, standardackord, tangenter, tillgänglighet och sequencer. Mina presets, inspelningarna och språket finns kvar.': 'Everything back to how it was when the app was first opened: Simple version, default sound, default chords, keys, accessibility and sequencer. My presets, the recordings and the language are kept.',
   'Återställ inställningarna': 'Reset settings',
   'Radera allt, även presets och inspelningar': 'Erase everything, including presets and recordings',

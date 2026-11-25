@@ -97,7 +97,8 @@ function runShortcut(id) {
 
 // XY: klangerna i tur och ordning
 function stepXySound(dir) {
-  const opts = [...ui.xySound.options];
+  // (Inspelning finns inte i den enkla versionen)
+  const opts = [...ui.xySound.options].filter((o) => o.value !== 'rec' || document.body.dataset.level !== 'simple');
   const i = opts.findIndex((o) => o.value === ui.xySound.value);
   const next = opts[(i + dir + opts.length) % opts.length];
   ui.xySound.value = next.value;

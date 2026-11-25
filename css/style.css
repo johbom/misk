@@ -2081,6 +2081,11 @@ html.fixed-screen.steppers #play-bar .xy-sound .seg button { min-width: 0; paddi
 }
 
 /* XY: spela in från mikrofonen */
+/* Enkel: ingen klang Inspelning på XY (inspelningens vågform), eftersom Spela in inte finns där */
+body[data-level="simple"] .seg-xy button[data-value="rec"] { display: none !important; }
+/* Klicket går alltid till knappen, inte till ikonen eller texten (som byts medan inspelningen pågår) */
+:is(#xy-rec, #pad-rec, #pad-rec-del, #seq-rec) > * { pointer-events: none; }
+#xy-rec.starting { opacity: 0.7; }
 #xy-rec.recording { background: #b3261e; border-color: #ff6b5e; color: #fff; animation: rec-pulse 1s ease-in-out infinite; }
 @keyframes rec-pulse { 50% { box-shadow: 0 0 0 6px rgba(255, 80, 70, 0.25); } }
 html.reduce-motion #xy-rec.recording { animation: none; }

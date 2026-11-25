@@ -114,8 +114,14 @@ function padRecSync() {
   b.setAttribute('aria-pressed', padRec.on);
   b.querySelector('span').textContent = rec ? `${micLeft()} s` : t(padRec.on ? 'Klar' : 'Spela in');
   b.title = t(rec ? 'Sluta spela in' : padRec.on ? 'Tillbaka till att spela' : 'Spela in en egen inspelning till en ruta (från mikrofonen)');
-  b.querySelector('svg').innerHTML = rec ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>'
-    : padRec.on ? '<path d="M5 12.5l4.5 4.5L19 7.5"/>' : XYREC_DOT;
+  // (ikonen ritas bara om när läget byts – annars kan ett klick på den gå förlorat)
+  const svg = b.querySelector('svg');
+  const state = rec ? 'rec' : padRec.on ? 'on' : 'off';
+  if (svg.dataset.state !== state) {
+    svg.dataset.state = state;
+    svg.innerHTML = rec ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>'
+      : padRec.on ? '<path d="M5 12.5l4.5 4.5L19 7.5"/>' : XYREC_DOT;
+  }
   del.hidden = !padRec.on || rec;
   del.classList.toggle('on', padRec.del);
   del.setAttribute('aria-pressed', padRec.del);

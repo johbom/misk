@@ -20,7 +20,7 @@ const GRAIN_EVERY = 0.03; // tid mellan kornen (tre överlappar)
 const GRAIN_JITTER = 0.015; // slumpad förskjutning i inspelningen (s)
 const GRAIN_LEVEL = 0.55;
 
-const xyRec = { buf: null, pending: null, peaks: null, id: 0, sentId: -1, sentCtx: null, worklet: null };
+const xyRec = { starting: false, buf: null, pending: null, peaks: null, id: 0, sentId: -1, sentCtx: null, worklet: null };
 const xyGrains = new Map(); // pointerId -> { nx, ny, next, amp }
 let xyGrainTimer = 0;
 
@@ -28,10 +28,18 @@ const xyRecOn = () => xySoundKey() === 'rec';
 const xyRecording = () => micActive() && mic.onDone === xyRecDone;
 
 // ---------- Inspelning (js/micrec.js: mikrofonen, tystnaden klipps bort) ----------
+// (starting: mikrofonen håller på att öppnas – webbläsaren kan fråga om lov – så ett klick till startar
+// inte en inspelning till)
 async function xyRecStart() {
-  if (micActive()) return;
+  if (micActive() || xyRec.starting) return;
+  xyRec.starting = true;
+  xyRecSync();
   xyStopAll();
+  // Nyss stoppat: förra inspelningen görs klar (högst 0,8 s) – vänta på den i stället för att strunta i klicket
+  for (let i = 0; mic.pending && i < 25; i++) await new Promise((r) => setTimeout(r, 50));
   const ok = await micStart({ max: XYREC_MAX_S, onDone: xyRecDone, onTick: () => { xyRecSync(); xyDraw(); } });
+  xyRec.starting = false;
+  xyRecSync();
   if (!ok) return;
   xyRecSync();
   xyDraw();
@@ -78,14 +86,19 @@ function xyRecSync() {
   if (!b) return;
   const rec = xyRecording();
   b.classList.toggle('recording', rec);
+  b.classList.toggle('starting', !!xyRec.starting);
   b.setAttribute('aria-pressed', rec);
   const left = micLeft();
-  b.querySelector('span').textContent = rec ? `${left} s` : t('Spela in');
+  b.querySelector('span').textContent = rec ? `${left} s` : t(xyRec.starting ? 'Startar …' : 'Spela in');
   b.setAttribute('aria-label', rec ? t(`Sluta spela in (${left} s kvar)`) : t('Spela in'));
   b.title = t(rec ? 'Sluta spela in' : 'Spela in från mikrofonen (högst 10 sekunder) och spela det på plattan');
   // Ikonen: mikrofon, eller en stoppruta medan inspelningen pågår
+  // (bara när läget byts: ikonen ritas inte om varje kvarts sekund)
   const svg = b.querySelector('svg');
-  if (svg) svg.innerHTML = rec ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>' : XYREC_DOT;
+  if (svg && svg.dataset.rec !== String(rec)) {
+    svg.dataset.rec = rec;
+    svg.innerHTML = rec ? '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" stroke="none"/>' : XYREC_DOT;
+  }
 }
 
 async function xyRecLoad() {
