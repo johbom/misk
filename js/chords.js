@@ -304,8 +304,24 @@ function strumNotes(c) {
 
 const PLUCK_MS = 450; // hur länge en knäppt ton hålls innan den klingar ut
 const PLUCK_LEVEL = 0.5;
-// pad: strängen man är på, idx: senaste höjd, harp: har harpläget börjat på den här strängen?
-const strum = { active: false, pad: null, idx: -1, harp: false };
+// Varje pekare (mus, varje finger) har sitt eget läge – två fingrar på samma sträng får inte läsa varandras
+// läge, då såg varje rörelse ut som ett hopp över hela strängen och knäppte alla toner om och om igen.
+// active: nedtryckt (harpan gäller även utanför hover), pad: strängen pekaren är på, idx: senaste höjd,
+// harp: har harpläget börjat på den här strängen?
+const strums = new Map(); // pointerId -> läge
+function strumOf(id) {
+  let s = strums.get(id);
+  if (!s) strums.set(id, (s = { active: false, pad: null, idx: -1, harp: false }));
+  return s;
+}
+// Spelas strängen som harpa just nu (av någon pekare)? (js/vibrato.js: ingen vibrato då)
+const harpOn = (pad) => [...strums.values()].some((s) => s.harp && s.pad === pad);
+
+// Säkerhetsgräns: högst så här många knäppta toner per 200 ms (alla pekare tillsammans). Ett snabbt
+// glissando med flera fingrar ryms; mer än så låter inte bättre men kan få ljudet (och appen) att krascha.
+const PLUCK_BUDGET = 24;
+const PLUCK_WINDOW_MS = 200;
+const pluckTimes = [];
 
 // Vilken ton (prick) på strängen som ligger närmast pekaren: nerifrån och upp på lodräta strängar,
 // från vänster till höger på vågräta
@@ -334,6 +350,10 @@ function hoverHarpOk(e) {
 
 function pluck(pad, idx) {
   if (!audioCtx) return;
+  const now = performance.now();
+  while (pluckTimes.length && now - pluckTimes[0] > PLUCK_WINDOW_MS) pluckTimes.shift();
+  if (pluckTimes.length >= PLUCK_BUDGET) return;
+  pluckTimes.push(now);
   const note = pad.strumNotes()[idx];
   const stops = [];
   if (ui.outAudio.checked) {
@@ -383,6 +403,7 @@ function harpDebug(msg) {
 }
 
 function strumMove(e) {
+  const strum = strumOf(e.pointerId);
   if (!strum.active && !hoverHarpOk(e)) {
     // Pekaren lämnade spelytan (eller harpan gäller inte här): börja om nästa gång
     if (strum.pad) { strum.pad = null; strum.harp = false; }
@@ -427,6 +448,7 @@ function setupStrum() {
     if (ui.formation.value !== 'strings' || picker.open || scanning()) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     e.preventDefault(); // ingen textmarkering när man drar
+    const strum = strumOf(e.pointerId);
     strum.active = true;
     strum.pad = null;
     harpDebug('harpan aktiv (håll inne och dra)');
@@ -434,8 +456,9 @@ function setupStrum() {
   });
   window.addEventListener('pointermove', strumMove);
   const stop = (e) => {
-    if (strum.active) harpDebug(`slut: ${e.type}${e.pointerType ? ` ${e.pointerType}` : ''}`);
-    strum.active = false; strum.pad = null; strum.harp = false;
+    harpDebug(`slut: ${e.type}${e.pointerType ? ` ${e.pointerType}` : ''}`);
+    if (e.type === 'blur') strums.clear();
+    else strums.delete(e.pointerId);
   };
   window.addEventListener('pointerup', stop);
   window.addEventListener('pointercancel', stop);

@@ -80,7 +80,7 @@ function setupVibrato() {
     const pad = padOfEl(e.target) || xyPseudoPad(e.pointerId);
     let st = wiggles.get(e.pointerId);
     if (st && st.pad !== pad) { stopWiggle(e.pointerId); st = null; }
-    if (!pad || !pad.vibrato || (strum.harp && strum.pad === pad)) return; // tyst ruta eller harpa
+    if (!pad || !pad.vibrato || harpOn(pad)) return; // tyst ruta eller harpa
     if (!st) {
       st = { pad, x: { ext: null, dir: 0 }, y: { ext: null, dir: 0 }, turns: [], depth: 0 };
       wiggles.set(e.pointerId, st);
