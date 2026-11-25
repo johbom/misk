@@ -106,6 +106,7 @@ function buildSynthPanel() {
     }
     const row = document.createElement('label');
     row.className = 'knob';
+    row.dataset.key = d.key;
     row.append(d.label);
     let input;
     const output = document.createElement('output');
