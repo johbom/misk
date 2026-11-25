@@ -58,7 +58,7 @@ const EN = {
   'Om appen': 'About the app',
   'Om': 'About',
   'Installera Hover Pads som app': 'Install Hover Pads as an app',
-  'Lås spelytan: bara rutorna syns': 'Lock the play area: only the pads are shown',
+  'Lås spelytan: bara rutorna syns. Klicka, eller vila pekaren på knappen i två sekunder': 'Lock the play area: only the pads are shown. Click, or rest the pointer on the button for two seconds',
   '🔒 Lås': '🔒 Lock',
   'MIDI: ej ansluten': 'MIDI: not connected',
   'Mina presets': 'My presets',
@@ -985,7 +985,7 @@ const EN_HTML = {
   'xy-fx-hint': 'The same effects as the pads’ sound, but separate for the XY pad. The effects under <em>Sound</em> only apply to the pads.',
   'xy-hint': 'The right edge is C7. Moving up opens the filter. Sine, Triangle and Warm also get FM upwards (more overtones), and Sine vibrato too. Tone and effects can also be set on the XY page.',
   'access-hint': 'Choose a profile and fine-tune below. Everything is saved in <em>My presets</em>.',
-  'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads. Unlock by <strong>holding</strong> the button for two seconds, or <strong>resting the pointer</strong> on it for three (eye gaze, head or mouse pointer control).',
+  'lock-hint': '<strong>🔒 Lock</strong> at the top right shows only the pads – click it, or rest the pointer on it for two seconds. Unlock by <strong>holding</strong> the button for two seconds, or <strong>resting the pointer</strong> on it for three (eye gaze, head or mouse pointer control).',
   'switch-learn-msg': 'Press <strong>Learn</strong> and then the switch or key to use.',
   'key-learn-msg': 'Pads 1–10 are played with <kbd>1</kbd>–<kbd>9</kbd> and <kbd>0</kbd>. Press a pad here (<strong>Learn</strong>) and then the switch or key that should play it instead.',
   'keys': `<li><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd> play pads 1–10 directly – on the Chords page chord pads 1–10 (pads 11 and 12 get their own keys under Keys for the pads). Several can be held at once, so several switches (through a switch interface that sends numbers) can each play a chord. Hold for a long note.</li>

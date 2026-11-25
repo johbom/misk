@@ -10,7 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="Hover Pads" />
   <meta name="theme-color" content="#12131a" />
   <title>Hover Pads – ljud &amp; MIDI</title>
-  <link rel="stylesheet" href="css/style.css?v=203" />
+  <link rel="stylesheet" href="css/style.css?v=204" />
   <script>
     // Visa fel direkt på skärmen (t.ex. på iPhone där konsolen inte syns)
     // Gick en av appens filer inte att hämta (nätet svek, eller uppdatering mitt i)? Då saknas delar av appen
@@ -50,7 +50,7 @@
   </script>
   <link rel="manifest" href="manifest.webmanifest" />
   <!-- Språk: svenska eller engelska (översätter sidan när den körs) -->
-  <script src="js/i18n.js?v=203"></script>
+  <script src="js/i18n.js?v=204"></script>
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
   <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -92,7 +92,7 @@
     </nav>
     <div class="header-right">
       <button type="button" id="install-btn" hidden title="Installera Hover Pads som app">Installera</button>
-      <button type="button" id="lock-btn" class="only-play" title="Lås spelytan: bara rutorna syns">🔒 Lås</button>
+      <button type="button" id="lock-btn" class="only-play" title="Lås spelytan: bara rutorna syns. Klicka, eller vila pekaren på knappen i två sekunder">🔒 Lås</button>
       <span id="midi-status" class="status">MIDI: ej ansluten</span>
     </div>
   </header>
@@ -531,7 +531,7 @@
         <label class="check"><input type="checkbox" id="high-contrast" /> <span>Hög kontrast<small>Svart bakgrund, vita kanter, gul markering.</small></span></label>
         <label class="check"><input type="checkbox" id="reduce-motion" /> <span>Minska rörelse<small>Inga zoom- och studseffekter.</small></span></label>
         <label class="check"><input type="checkbox" id="steppers" /> <span>Stora − och + knappar<small>Ändra alla värden utan att dra eller öppna listor.</small></span></label>
-        <p class="hint" data-i18n="lock-hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna. Lås upp genom att <strong>hålla inne</strong> knappen i två sekunder, eller <strong>vila pekaren</strong> på den i tre (ögonstyrning, muspekarstyrning).</p>
+        <p class="hint" data-i18n="lock-hint"><strong>🔒 Lås</strong> uppe till höger visar bara rutorna – klicka på den, eller vila pekaren på den i två sekunder. Lås upp genom att <strong>hålla inne</strong> knappen i två sekunder, eller <strong>vila pekaren</strong> på den i tre (ögonstyrning, muspekarstyrning).</p>
         <!-- Avancerat: det som får synas på en låst spelyta (js/access.js: refreshAccess, css: body.locked.lock-…) -->
         <div class="lock-keep" id="lock-keep">
           <label class="check"><input type="checkbox" id="lock-sound" /> <span>Visa ljudlistan när spelytan är låst<small>Ljud (på XY: Klang) går att byta, men inget annat.</small></span></label>
@@ -906,44 +906,44 @@
     <p id="log" aria-live="off" data-kind="file-hint">Dra en ljudfil (wav/mp3) till en ruta på sidan Toner för att byta dess ljud.</p>
   </footer>
 
-  <script src="js/synth.js?v=203"></script>
-  <script src="js/fm-library.js?v=203"></script>
-  <script src="js/pm-library.js?v=203"></script>
-  <script src="js/wt-library.js?v=203"></script>
-  <script src="js/vwg-library.js?v=203"></script>
-  <script src="js/lib-levels.js?v=203"></script>
-  <script src="js/sound-library.js?v=203"></script>
-  <script src="js/layout.js?v=203"></script>
-  <script src="js/core.js?v=203"></script>
-  <script src="js/audio.js?v=203"></script>
-  <script src="js/drums.js?v=203"></script>
-  <script src="js/fx.js?v=203"></script>
-  <script src="js/pads.js?v=203"></script>
-  <script src="js/osc.js?v=203"></script>
-  <script src="js/arp.js?v=203"></script>
-  <script src="js/seq.js?v=203"></script>
-  <script src="js/xy.js?v=203"></script>
-  <script src="js/vibrato.js?v=203"></script>
-  <script src="js/position.js?v=203"></script>
-  <script src="js/notes.js?v=203"></script>
-  <script src="js/chords.js?v=203"></script>
-  <script src="js/sound.js?v=203"></script>
-  <script src="js/view.js?v=203"></script>
-  <script src="js/controls.js?v=203"></script>
-  <script src="js/access.js?v=203"></script>
-  <script src="js/settings.js?v=203"></script>
-  <script src="js/user-presets.js?v=203"></script>
-  <script src="js/wizard.js?v=203"></script>
-  <script src="js/quick.js?v=203"></script>
-  <script src="js/pwa.js?v=203"></script>
-  <script src="js/micrec.js?v=203"></script>
-  <script src="js/livein.js?v=203"></script>
-  <script src="js/fxpad.js?v=203"></script>
-  <script src="js/xyfx.js?v=203"></script>
-  <script src="js/xyrec.js?v=203"></script>
-  <script src="js/padrec.js?v=203"></script>
-  <script src="js/gamepad.js?v=203"></script>
-  <script src="js/shortcuts.js?v=203"></script>
-  <script src="js/main.js?v=203"></script>
+  <script src="js/synth.js?v=204"></script>
+  <script src="js/fm-library.js?v=204"></script>
+  <script src="js/pm-library.js?v=204"></script>
+  <script src="js/wt-library.js?v=204"></script>
+  <script src="js/vwg-library.js?v=204"></script>
+  <script src="js/lib-levels.js?v=204"></script>
+  <script src="js/sound-library.js?v=204"></script>
+  <script src="js/layout.js?v=204"></script>
+  <script src="js/core.js?v=204"></script>
+  <script src="js/audio.js?v=204"></script>
+  <script src="js/drums.js?v=204"></script>
+  <script src="js/fx.js?v=204"></script>
+  <script src="js/pads.js?v=204"></script>
+  <script src="js/osc.js?v=204"></script>
+  <script src="js/arp.js?v=204"></script>
+  <script src="js/seq.js?v=204"></script>
+  <script src="js/xy.js?v=204"></script>
+  <script src="js/vibrato.js?v=204"></script>
+  <script src="js/position.js?v=204"></script>
+  <script src="js/notes.js?v=204"></script>
+  <script src="js/chords.js?v=204"></script>
+  <script src="js/sound.js?v=204"></script>
+  <script src="js/view.js?v=204"></script>
+  <script src="js/controls.js?v=204"></script>
+  <script src="js/access.js?v=204"></script>
+  <script src="js/settings.js?v=204"></script>
+  <script src="js/user-presets.js?v=204"></script>
+  <script src="js/wizard.js?v=204"></script>
+  <script src="js/quick.js?v=204"></script>
+  <script src="js/pwa.js?v=204"></script>
+  <script src="js/micrec.js?v=204"></script>
+  <script src="js/livein.js?v=204"></script>
+  <script src="js/fxpad.js?v=204"></script>
+  <script src="js/xyfx.js?v=204"></script>
+  <script src="js/xyrec.js?v=204"></script>
+  <script src="js/padrec.js?v=204"></script>
+  <script src="js/gamepad.js?v=204"></script>
+  <script src="js/shortcuts.js?v=204"></script>
+  <script src="js/main.js?v=204"></script>
 </body>
 </html>

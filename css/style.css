@@ -1231,6 +1231,16 @@ kbd {
 /* Lås spelytan */
 body[data-tab="settings"] .only-play { display: none !important; }
 #lock-btn { border-radius: 999px; font-size: 0.8rem; padding: 4px 12px; }
+/* Pekaren vilar på 🔒 Lås: knappen fylls från vänster tills spelytan låses (js/access.js) */
+#lock-btn.holding {
+  color: white;
+  background-image: linear-gradient(var(--accent), var(--accent));
+  background-repeat: no-repeat;
+  background-size: 0% 100%;
+  animation: lock-fill var(--hold-ms, 2000ms) linear forwards;
+}
+@keyframes lock-fill { to { background-size: 100% 100%; } }
+.reduce-motion #lock-btn.holding { animation: none; background-size: 100% 100%; opacity: 0.85; }
 #unlock-btn {
   display: none;
   position: fixed;

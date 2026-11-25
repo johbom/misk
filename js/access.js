@@ -170,7 +170,7 @@ function gazeDwell(wait) {
 }
 
 // ---------- Klicka genom att titta (dwell-klick på knappar) ----------
-const DWELL_TARGETS = 'button:not(.pad):not(:disabled):not(#unlock-btn), [role="radio"], label.check, '
+const DWELL_TARGETS = 'button:not(.pad):not(:disabled):not(#unlock-btn):not(#lock-btn), [role="radio"], label.check, '
   + 'label:has(> input[type="checkbox"])';
 const dwellClick = { target: null, timer: 0, leave: 0 };
 
@@ -298,12 +298,15 @@ function setupSteppers() {
 // ---------- Lås spelytan ----------
 const UNLOCK_HOLD_MS = 2000;
 const UNLOCK_HOVER_MS = 3000; // pekaren vilar på knappen
+const LOCK_HOVER_MS = 2000; // pekaren vilar på 🔒 Lås: spelytan låses
 let unlockArm = null; // (sätts i setupLock: nollställ knappen när spelytan låses)
+let lockArm = null; // (sätts i setupLock: nollställ 🔒 Lås när spelytan låses upp)
 
 function setLocked(on) {
   if (document.body.classList.contains('locked') === on) return;
   document.body.classList.toggle('locked', on);
   if (on) unlockArm?.();
+  else lockArm?.();
   localStorage.setItem('hoverPadsLocked', on ? '1' : '');
   if (on) {
     closeChordPicker();
@@ -313,10 +316,40 @@ function setLocked(on) {
 }
 
 function setupLock() {
-  $('lock-btn').addEventListener('click', () => {
+  const lock = () => {
     setLocked(true);
     log('Spelytan är låst. Lås upp genom att hålla inne knappen i hörnet i två sekunder, eller vila pekaren på den i tre.');
+  };
+  $('lock-btn').addEventListener('click', lock);
+  // Låsa med hover: pekaren vilar på 🔒 Lås i två sekunder (knappen fylls). Som för att låsa upp: bara riktig
+  // rörelse räknas, och efter upplåsningen måste pekaren först ha varit utanför knappen – lås-upp-knappen
+  // sitter på samma ställe, så annars låstes det igen direkt. En pekare som darrar ut över kanten en kort
+  // stund (Släppfördröjning, minst 0,3 s) avbryter inte.
+  const lockBtn = $('lock-btn');
+  let lockTimer = 0, lockLeave = 0, lockArmed = false;
+  const lockEnd = () => {
+    clearTimeout(lockTimer); clearTimeout(lockLeave);
+    lockTimer = lockLeave = 0;
+    lockBtn.classList.remove('holding');
+  };
+  document.addEventListener('pointermove', (e) => {
+    if (document.body.classList.contains('locked') || e.pointerType === 'touch') return;
+    if (!lockBtn.contains(e.target)) {
+      lockArmed = true;
+      if (lockTimer && !lockLeave) lockLeave = setTimeout(lockEnd, Math.max(300, ms(ui.releaseDelay)));
+      return;
+    }
+    if (!lockArmed) return;
+    clearTimeout(lockLeave); lockLeave = 0;
+    if (lockTimer) return;
+    lockBtn.style.setProperty('--hold-ms', `${LOCK_HOVER_MS}ms`);
+    lockBtn.classList.remove('holding');
+    void lockBtn.offsetWidth; // (starta om fyllningen)
+    lockBtn.classList.add('holding');
+    lockTimer = setTimeout(() => { lockEnd(); lock(); }, LOCK_HOVER_MS);
   });
+  document.documentElement.addEventListener('mouseleave', lockEnd);
+  lockArm = () => { lockEnd(); lockArmed = false; };
   const btn = $('unlock-btn');
   const label = btn.querySelector('span');
   let timer = 0, tick = 0, leave = 0;
