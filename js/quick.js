@@ -56,6 +56,7 @@ function toggleQuick(kind) {
 function openQuick(kind) {
   if (quick.open === kind) return;
   allPads().forEach(release);
+  if (typeof ballRetouch === 'function') ballRetouch(); // bollarna fortsätter spela (js/ball.js)
   quick.open = kind;
   renderQuick();
   $('quick-pop').hidden = false;

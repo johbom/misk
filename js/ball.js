@@ -364,8 +364,11 @@ function ballPlay(rect) {
     });
     return;
   }
-  // Rutan under bollen (lagret släpper igenom träffen så länge)
+  // Rutan under bollen. Lagret och en öppen snabbruta (Effekter, Arp, Tonart …) släpper igenom träffen
+  // så länge: bollar som rullar bakom snabbrutan spelar också.
+  const pop = $('quick-pop');
   S.layer.style.pointerEvents = 'none';
+  pop.style.pointerEvents = 'none';
   try {
     const harp = S.tab === 'chords' && ui.formation.value === 'strings' && !picker.open && !scanning();
     moved.forEach(({ id, played: { x: cx, y: cy } }) => {
@@ -380,7 +383,18 @@ function ballPlay(rect) {
     });
   } finally {
     S.layer.style.pointerEvents = '';
+    pop.style.pointerEvents = '';
   }
+}
+
+// Alla rutor har släppts (en snabbruta öppnades): bollarna som ligger på en ruta spelar den igen
+function ballRetouch() {
+  if (!ballState.tab || ballState.tab === 'xy') return;
+  ballState.balls.forEach((bl) => {
+    moveFinger(bl.id, null);
+    strums.delete(bl.id);
+    bl.played = null;
+  });
 }
 
 // ---------- Ta tag, dra och kasta – eller knuffa ----------
