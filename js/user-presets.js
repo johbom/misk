@@ -84,6 +84,7 @@ function applySnapshot(data) {
   ui.xyReverb.dispatchEvent(new Event('input')); // XY:s reverb: ljud och värdetext
   xyFxSync(); // XY:s övriga effekter
   fxPadSync(); // effektplattan
+  ballSync(); // bollen (js/ball.js)
   syncQuick(); // snabbknapparna formation och tonart
   syncKeyState(); // presetets ackord hör redan till dess tonart
 }

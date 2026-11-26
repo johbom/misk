@@ -19,7 +19,9 @@ function posVoicingFor(pad, x, cur = null) {
 
 // Läget på rutan just nu: från pekaren som ligger över den (null om ingen gör det, t.ex. tangent)
 function padPosNow(pad) {
-  for (const { x, y } of pointerXY.values()) {
+  // Boll som pekare (js/ball.js): då är det bara bollen som spelar
+  const pts = pointerXY.has('ball') ? [pointerXY.get('ball')] : pointerXY.values();
+  for (const { x, y } of pts) {
     if (padAt(x, y) === pad) { const v = padPos(pad, x, y); return v == null ? null : Math.round(v * 1000) / 1000; }
   }
   return null;

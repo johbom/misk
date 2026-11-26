@@ -53,6 +53,7 @@ const SETTINGS_ICONS = {
   access: '<circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="7.2" r="1.5" fill="currentColor" stroke="none"/><path d="M7.5 10.2h9M12 10.2v4M12 14.2l-2.6 4M12 14.2l2.6 4"/>',
   midi: ICON_MIDI,
   mine: '<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
+  ball: '<circle cx="12" cy="9.5" r="5"/><path d="M4 20.5h16M9 17h6"/>',
   vibrato: '<path d="M2.5 12c1.6-4 3.2-4 4.8 0s3.2 4 4.8 0 3.2-4 4.8 0 3.2 4 4.6 0"/>',
   pos: '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="15" cy="9" r="2.3" fill="currentColor" stroke="none"/><path d="M7 17l5-5" opacity=".55"/>',
   quick: '<path d="M13 2.5 5 13.5h6l-1 8 8-11h-6z"/>',

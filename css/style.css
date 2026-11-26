@@ -156,7 +156,7 @@ html.steppers #quick-pop > :is(#arp-set, #seq-set) .seg button { min-height: 40p
 #quick-pop > #fxpad-set label.slider { grid-template-columns: 1fr; gap: 2px; }
 #quick-pop > #fxpad-set label.slider.fx-wide { grid-template-columns: 6em minmax(0, 1fr) auto; gap: 4px 8px; }
 #quick-pop > #fxpad-set #fxpad { width: 100%; }
-#fxpad-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+#fxpad-toggle.on, #ball-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 /* Följ tonen: rutan som slingan på Toner följer just nu */
 .pad.seq-key { box-shadow: inset 0 0 0 3px var(--accent), 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent); }
 #quick-pop > #seq-set > label.check:is(.seq-keep, .seq-power) small { display: none; }
@@ -533,7 +533,7 @@ code { font: 0.85em ui-monospace, Menlo, monospace; }
 #play-mode-desc { margin: 8px 0 4px; }
 #play-mode-set .only-fixed { margin-top: 6px; }
 @media (max-width: 480px) { #play-mode-buttons { gap: 5px; } }
-@media (max-width: 480px) { html.fixed-screen #arp-toggle, html.fixed-screen #seq-toggle, html.fixed-screen #fxpad-toggle, html.fixed-screen #xy-quant-toggle { padding-left: 10px; padding-right: 10px; } }
+@media (max-width: 480px) { html.fixed-screen #arp-toggle, html.fixed-screen #seq-toggle, html.fixed-screen #fxpad-toggle, html.fixed-screen #ball-toggle, html.fixed-screen #xy-quant-toggle { padding-left: 10px; padding-right: 10px; } }
 @media (max-width: 480px) {
   #formation-buttons { gap: 5px; }
   .formation-btn { width: 60px; padding: 6px 2px 5px; font-size: 0.7rem; }
@@ -750,7 +750,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #play-bar .quick-btn,
   html.fixed-screen #play-bar #arp-toggle,
   html.fixed-screen #play-bar #seq-toggle,
-  html.fixed-screen #play-bar #fxpad-toggle,
+  html.fixed-screen #play-bar #fxpad-toggle, html.fixed-screen #play-bar #ball-toggle,
   html.fixed-screen #play-bar #xy-quant-toggle { padding-top: 3px; padding-bottom: 3px; }
   html.fixed-screen .pad-grid { padding: 6px 10px 6px; }
   html.fixed-screen #xy-pad { margin: 6px 10px 6px; }
@@ -780,7 +780,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   #play-bar > .preset-label, #play-bar > .vol-label { order: 1; flex: 1 1 40%; min-width: 0; }
   #play-bar > .preset-label select { min-width: 0; width: 100%; max-width: none; }
   #play-bar > .vol-label input[type="range"] { min-width: 0; width: 100%; }
-  #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #fxpad-toggle, #play-bar > #xy-quant-toggle { order: 2; }
+  #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #fxpad-toggle, #play-bar > #ball-toggle, #play-bar > #xy-quant-toggle { order: 2; }
 }
 /* Smal och låg (t.ex. iPhone SE liggande): flikarna bara som ikoner, ingen MIDI-status, mindre ljudlista */
 @media (orientation: landscape) and (max-height: 500px) and (max-width: 720px) {
@@ -789,7 +789,7 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #midi-status { display: none; }
   html.fixed-screen #play-bar > .preset-label { flex-basis: 150px; }
   html.fixed-screen #play-bar { gap: 6px; flex-wrap: nowrap; }
-  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #fxpad-toggle, #play-bar > #xy-quant-toggle { order: 0; }
+  #play-bar > .preset-label, #play-bar > .vol-label, #play-bar > .quick-btn, #play-bar > #arp-toggle, #play-bar > #seq-toggle, #play-bar > #fxpad-toggle, #play-bar > #ball-toggle, #play-bar > #xy-quant-toggle { order: 0; }
   /* XY: ordet "Klang" göms (knapparna har namnen i title och listan heter Klang för skärmläsare) */
   html.fixed-screen #play-bar .xy-sound { font-size: 0; gap: 0; flex: none; } /* klangknapparna krymper inte in under reglagen */
   html.fixed-screen #play-bar .xy-sound .seg button { padding: 3px 4px; font-size: 0.9rem; }
@@ -820,12 +820,12 @@ html.fixed-screen footer #log[data-kind="error"] { white-space: normal; display:
   html.fixed-screen #quick-formation span,
   html.fixed-screen #arp-toggle span,
   html.fixed-screen #seq-toggle span,
-  html.fixed-screen #fxpad-toggle span,
+  html.fixed-screen #fxpad-toggle span, html.fixed-screen #ball-toggle span,
   html.fixed-screen #xy-quant-toggle span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   html.fixed-screen #play-bar .quick-btn,
   html.fixed-screen #play-bar #arp-toggle,
   html.fixed-screen #play-bar #seq-toggle,
-  html.fixed-screen #play-bar #fxpad-toggle,
+  html.fixed-screen #play-bar #fxpad-toggle, html.fixed-screen #play-bar #ball-toggle,
   html.fixed-screen #play-bar #xy-quant-toggle { padding-left: 9px; padding-right: 9px; }
   /* Volym: bara reglaget */
   html.fixed-screen #play-bar > .vol-label { font-size: 0; gap: 0; flex: 0 1 110px; }
@@ -1787,7 +1787,7 @@ html.high-contrast .arp-tap { background: #000; border: 2px solid #fff; color: #
 @media (max-width: 520px) { #seq-set { grid-template-columns: 1fr; } }
 
 /* ===== Stegsequencer: Sekv-knappen och raden med steg ===== */
-#seq-toggle, #fxpad-toggle, #xy-quant-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 14px; border-radius: 999px; white-space: nowrap; }
+#seq-toggle, #fxpad-toggle, #ball-toggle, #xy-quant-toggle { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 4px 14px; border-radius: 999px; white-space: nowrap; }
 #seq-toggle.on, #xy-quant-toggle.on { background: var(--accent); border-color: var(--accent); color: #fff; }
 /* En slinga går (syns även när raden är dold, t.ex. på XY): en pulserande prick */
 #seq-toggle { position: relative; }
@@ -1802,8 +1802,8 @@ html.reduce-motion #seq-toggle.running::after { animation: none; }
 #seq-other b { color: #7be3a0; }
 #seq-other.stopped { border-color: var(--border); color: var(--text); } /* stoppad: ▶ startar den igen */
 #seq-other.stopped b { color: var(--muted); }
-html.steppers #seq-toggle, html.steppers #fxpad-toggle, html.steppers #xy-quant-toggle { min-height: 46px; padding: 6px 18px; }
-html.high-contrast #seq-toggle.on, html.high-contrast #fxpad-toggle.on, html.high-contrast #xy-quant-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
+html.steppers #seq-toggle, html.steppers #fxpad-toggle, html.steppers #ball-toggle, html.steppers #xy-quant-toggle { min-height: 46px; padding: 6px 18px; }
+html.high-contrast #seq-toggle.on, html.high-contrast #fxpad-toggle.on, html.high-contrast #ball-toggle.on, html.high-contrast #xy-quant-toggle.on { background: #ffd400 !important; color: #000 !important; border-color: #ffd400 !important; }
 #seq-bar { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px 8px; padding: 6px 24px 0; }
 #seq-bar[hidden] { display: none; }
 .seq-ctl { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 4px 12px; white-space: nowrap; }
@@ -2035,7 +2035,7 @@ html.high-contrast .lang-switch button.on { background: #ffd400 !important; colo
 #app-level-row > .desc { flex: 1 1 220px; color: var(--muted); }
 /* Enkel: ingen stegsequencer, inga Spela in-knappar, ingen MIDI-status, ingen Ut/MIDI/OSC-flik, inget Skruva själv, inget Läge på rutan
    och inte de finaste reglagen (voicing, arpens Tonlängd och Retrigg) */
-body[data-level="simple"] :is(#seq-toggle, #fx-toggle, #fxpad-toggle, #pad-rec, #pad-rec-del, #xy-rec, #fxpad-set, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
+body[data-level="simple"] :is(#seq-toggle, #fx-toggle, #fxpad-toggle, #ball-toggle, #ball-set, #pad-rec, #pad-rec-del, #xy-rec, #fxpad-set, #seq-bar, #seq-set, #midi-status, #pos-set, #synth,
   #settings-nav [data-panel="io"], #settings .panel[data-panel="io"], #lock-keep) { display: none !important; }
 body[data-level="simple"] label:has(#chord-advanced),
 body[data-level="simple"] label:has(#arp-gate),
@@ -2116,3 +2116,24 @@ html.reduce-motion #pads .pad.pad-recording { animation: none; }
 
 /* Slumpad voicing på: ackordens egna voicing-val gäller inte */
 #chord-editor select:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Boll som pekare (js/ball.js): lagret över spelytan tar emot pekaren, bollen spelar */
+#ball-layer { position: fixed; z-index: 6; touch-action: none; user-select: none; -webkit-user-select: none; }
+#ball-layer[hidden] { display: none; }
+#ball-layer.near { cursor: grab; }
+#ball-layer.grabbing { cursor: grabbing; }
+#ball {
+  position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; will-change: transform;
+  background: radial-gradient(circle at 34% 30%, #fff 0, #ffe2b0 14%, var(--hit) 42%, #c86a00 100%);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--hit) 60%, transparent), 0 4px 10px rgba(0, 0, 0, 0.45);
+}
+#ball-layer.grabbing #ball { box-shadow: 0 0 0 3px #fff, 0 0 26px var(--hit), 0 8px 18px rgba(0, 0, 0, 0.5); }
+html.high-contrast #ball { background: #ffd400; box-shadow: 0 0 0 3px #000, 0 0 0 5px #fff; }
+#ball-set { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
+#ball-set > .ball-wide { grid-column: 1 / -1; }
+#ball-set > .hint { margin: 0; }
+#quick-pop > #ball-set { margin: 0; padding: 0; border: none; min-width: 0; width: min(320px, calc(100vw - 72px)); grid-template-columns: 1fr; gap: 8px; font-size: 0.85rem; }
+#quick-pop > #ball-set > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 2px 40px 0 0; font-weight: 600; color: var(--text); }
+#quick-pop > #ball-set label.check small, #quick-pop > #ball-set > .hint, #quick-pop > #ball-set .adv-tag { display: none; }
+#quick-pop > #ball-set label.check { align-items: center; font-weight: 600; }
+#quick-pop > #ball-set label.slider { grid-template-columns: 6.5em minmax(0, 1fr) auto; gap: 4px 8px; }

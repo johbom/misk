@@ -28,6 +28,7 @@ setupXY();
 setupXyFx();
 setupXyRec();
 setupPadRec();
+setupBall();
 setupArp();
 setupSeq();
 setupFxPad();

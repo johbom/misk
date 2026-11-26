@@ -355,8 +355,9 @@ function applyAppLevel() {
     if (simple && quick.open === 'fxpad') closeQuick();
     fxPadSync();
   }
+  if (typeof ballSync === 'function') ballSync(); // bollen finns bara i den avancerade versionen (js/ball.js)
   if (!simple) return;
-  if (quick.open === 'fx') closeQuick(); // Effekter-knappen finns bara i den avancerade versionen
+  if (quick.open === 'fx' || quick.open === 'ball') closeQuick(); // Effekter-knappen finns bara i den avancerade versionen
   // Spela in (Toner och XY) finns bara i den avancerade versionen: pågående inspelning och inspelningsläget avslutas
   if (typeof padRec !== 'undefined' && (padRec.on || padRec.pad)) { if (padRec.pad) micStop(); padRecSetMode(false); }
   if (typeof xyRecording === 'function' && xyRecording()) xyRecStop();

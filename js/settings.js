@@ -4,7 +4,7 @@
 const SAVED = ['outAudio', 'outMidi', 'outOsc', 'oscUrl', 'oscPrefix', 'playMode', 'padSpace', 'stringLength', 'ringSpace', 'ringHole', 'hexOrder', 'stringDir', 'formation', 'noteCount', 'notesKind', 'drumKit', 'root', 'octave', 'scale',
   'chordCount', 'chordOctave', 'chordBass', 'chordRandom', 'chordAdvanced', 'volume', 'midiCh', 'velocity',
   // Tillgänglighet
-  'noteLength', 'vibrato', 'posParam', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'seqOn', 'seqSteps', 'seqRate', 'seqGate', 'seqAdvance', 'seqAskClear', 'seqFollow', 'seqHold', 'fxpadOn', 'fxpadX', 'fxpadY', 'fxpadHold', 'lineInLevel', 'xyOctaves', 'xySound', 'xyReverb', 'xyFxParams', 'xyQuantize', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
+  'noteLength', 'vibrato', 'posParam', 'ballOn', 'ballGravity', 'ballBounce', 'arpOn', 'arpPattern', 'arpBpm', 'arpRate', 'arpOctaves', 'arpGate', 'arpRetrig', 'seqOn', 'seqSteps', 'seqRate', 'seqGate', 'seqAdvance', 'seqAskClear', 'seqFollow', 'seqHold', 'fxpadOn', 'fxpadX', 'fxpadY', 'fxpadHold', 'lineInLevel', 'xyOctaves', 'xySound', 'xyReverb', 'xyFxParams', 'xyQuantize', 'dwell', 'releaseDelay', 'lockout', 'showPointer', 'dwellClick', 'uiSize', 'steppers',
   'highContrast', 'reduceMotion', 'scanMode', 'scanSpeed', 'switch1Key', 'switch2Key', 'noteKeys', 'chordKeys', 'showKeys',
   'lockSound', 'lockPresets', 'shortcutKeys'];
 
