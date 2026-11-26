@@ -2122,18 +2122,20 @@ html.reduce-motion #pads .pad.pad-recording { animation: none; }
 #ball-layer[hidden] { display: none; }
 #ball-layer.near { cursor: grab; }
 #ball-layer.grabbing { cursor: grabbing; }
-#ball {
+#ball-layer .ball {
+  --ball-color: var(--hit);
   position: absolute; left: 0; top: 0; border-radius: 50%; pointer-events: none; will-change: transform;
-  background: radial-gradient(circle at 34% 30%, #fff 0, #ffe2b0 14%, var(--hit) 42%, #c86a00 100%);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--hit) 60%, transparent), 0 4px 10px rgba(0, 0, 0, 0.45);
+  background: radial-gradient(circle at 34% 30%, #fff 0, color-mix(in srgb, var(--ball-color) 35%, #fff) 14%, var(--ball-color) 42%, color-mix(in srgb, var(--ball-color) 60%, #000) 100%);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--ball-color) 60%, transparent), 0 4px 10px rgba(0, 0, 0, 0.45);
 }
-#ball-layer.grabbing #ball { box-shadow: 0 0 0 3px #fff, 0 0 26px var(--hit), 0 8px 18px rgba(0, 0, 0, 0.5); }
-html.high-contrast #ball { background: #ffd400; box-shadow: 0 0 0 3px #000, 0 0 0 5px #fff; }
+#ball-layer .ball.held { box-shadow: 0 0 0 3px #fff, 0 0 26px var(--ball-color), 0 8px 18px rgba(0, 0, 0, 0.5); }
+html.high-contrast #ball-layer .ball { background: var(--ball-color); box-shadow: 0 0 0 3px #000, 0 0 0 5px #fff; }
 #ball-set { display: grid; grid-template-columns: repeat(2, minmax(150px, 1fr)); gap: 12px 22px; align-content: start; max-width: 560px; }
 #ball-set > .ball-wide { grid-column: 1 / -1; }
 #ball-set > .hint { margin: 0; }
 #quick-pop > #ball-set { margin: 0; padding: 0; border: none; min-width: 0; width: min(320px, calc(100vw - 72px)); grid-template-columns: 1fr; gap: 8px; font-size: 0.85rem; }
 #quick-pop > #ball-set > legend { float: left; grid-column: 1 / -1; padding: 0; margin: 2px 40px 0 0; font-weight: 600; color: var(--text); }
 #quick-pop > #ball-set label.check small, #quick-pop > #ball-set > .hint, #quick-pop > #ball-set .adv-tag { display: none; }
-#quick-pop > #ball-set label.check { align-items: center; font-weight: 600; }
+#quick-pop > #ball-set label.check { align-items: center; }
+#quick-pop > #ball-set label.check.ball-power { font-weight: 600; }
 #quick-pop > #ball-set label.slider { grid-template-columns: 6.5em minmax(0, 1fr) auto; gap: 4px 8px; }

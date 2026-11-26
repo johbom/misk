@@ -42,7 +42,7 @@ const QUICK_SETS = {
   seq: { btn: 'seq-toggle', set: 'seq-set', name: 'Stegsequencer', close: 'Stäng sequencerns inställningar', title: 'Stäng (sequencern fortsätter)' },
   fxpad: { btn: 'fxpad-toggle', set: 'fxpad-set', name: 'Effektplatta', close: 'Stäng effektplattan', title: 'Stäng (effekterna ligger kvar)' },
   fx: { btn: 'fx-toggle', set: 'synth-fx', name: 'Effekter', close: 'Stäng effekterna', title: 'Stäng' },
-  ball: { btn: 'ball-toggle', set: 'ball-set', name: 'Boll', close: 'Stäng bollens inställningar', title: 'Stäng (bollen fortsätter)' },
+  ball: { btn: 'ball-toggle', set: 'ball-set', name: 'Bollar', close: 'Stäng bollarnas inställningar', title: 'Stäng (bollarna fortsätter)' },
   xyfx: { btn: 'xy-fx-toggle', set: 'xy-fx', name: 'Effekter för XY', close: 'Stäng effekterna', title: 'Stäng' },
 };
 const quickBtn = (kind) => $(QUICK_SETS[kind]?.btn || `quick-${kind}`);
